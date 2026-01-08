@@ -10,8 +10,8 @@ export const BottomNav = () => {
     const isActive = (path: string) => pathname === path;
 
     return (
-        <nav className="fixed bottom-0 w-full bg-white border-t border-gray-100 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-50">
-            <div className="flex items-center justify-around h-16 relative">
+        <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-50">
+            <div className="flex items-center justify-around h-16 relative max-w-md mx-auto">
                 <Link
                     href="/shop"
                     className={`flex flex-col items-center justify-center gap-1 w-16 transition-colors ${isActive('/shop') ? 'text-orange-500' : 'text-stone-400 hover:text-orange-500'
