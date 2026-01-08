@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
 import { Plus } from 'lucide-react';
 
 interface ProductCardProps {
@@ -16,6 +17,7 @@ interface ProductCardProps {
 }
 
 export const ProductCard: React.FC<ProductCardProps> = ({
+    id,
     name,
     unit,
     price,
@@ -26,7 +28,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     onAddToCart,
 }) => {
     return (
-        <div className="flex flex-col min-w-[160px] w-[160px] bg-white rounded-xl overflow-hidden border border-orange-50 shadow-sm relative group">
+        <Link href={`/shop/products/${id}`} className="flex flex-col min-w-[160px] w-[160px] bg-white rounded-xl overflow-hidden border border-orange-50 shadow-sm relative group">
             {/* Discount Badge */}
             {discount && (
                 <div className="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-sm z-10">
@@ -63,13 +65,17 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 
                 {/* Add to Cart Button */}
                 <button
-                    onClick={onAddToCart}
+                    onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        onAddToCart?.();
+                    }}
                     className="mt-2 w-full h-8 rounded-lg bg-teal-400 text-white text-sm font-bold hover:bg-teal-500 active:scale-95 transition-all shadow-sm flex items-center justify-center gap-1"
                 >
                     <Plus size={16} />
                     Keranjang
                 </button>
             </div>
-        </div>
+        </Link>
     );
 };
