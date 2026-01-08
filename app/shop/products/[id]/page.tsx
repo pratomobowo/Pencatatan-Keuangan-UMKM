@@ -152,6 +152,38 @@ export default function ProductDetailPage({ params }: ProductDetailProps) {
                 </div>
             </div>
 
+            {/* Add to Cart Section */}
+            <div className="px-5 pt-4 pb-6 bg-white border-b border-orange-100">
+                <div className="flex items-center gap-4">
+                    {/* Quantity Selector */}
+                    <div className="flex items-center justify-between bg-stone-50 border border-orange-100 rounded-xl h-12 w-32 px-3 shrink-0">
+                        <button
+                            onClick={() => handleQuantityChange(-1)}
+                            disabled={quantity <= 1}
+                            className="size-7 flex items-center justify-center text-gray-400 hover:text-stone-900 active:scale-90 transition-transform disabled:opacity-50"
+                        >
+                            <span className="text-lg">−</span>
+                        </button>
+                        <span className="text-base font-bold text-stone-900">{quantity}</span>
+                        <button
+                            onClick={() => handleQuantityChange(1)}
+                            className="size-7 flex items-center justify-center text-orange-500 active:scale-90 transition-transform"
+                        >
+                            <span className="text-lg">+</span>
+                        </button>
+                    </div>
+
+                    {/* Add to Cart Button */}
+                    <button
+                        onClick={handleAddToCart}
+                        className="flex-1 h-12 bg-orange-500 hover:bg-orange-600 active:bg-orange-700 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-orange-300/40 transition-all active:scale-[0.98]"
+                    >
+                        <ShoppingBag className="text-white" size={20} />
+                        <span className="text-white font-bold">+ Keranjang</span>
+                    </button>
+                </div>
+            </div>
+
             {/* Delivery Info */}
             <div className="px-5 mt-6 bg-white">
                 <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4 flex gap-3 items-start">
@@ -195,7 +227,7 @@ export default function ProductDetailPage({ params }: ProductDetailProps) {
             </div>
 
             {/* Reviews */}
-            <div className="px-5 pt-2 pb-40 bg-white">
+            <div className="px-5 pt-2 pb-24 bg-white">
                 <div className="flex items-center justify-between mb-4">
                     <h3 className="text-stone-900 text-lg font-bold">Ulasan Pembeli</h3>
                     <Link href="#" className="text-orange-500 text-sm font-bold hover:text-orange-600 transition-colors">
@@ -221,38 +253,6 @@ export default function ProductDetailPage({ params }: ProductDetailProps) {
                             <p className="text-xs text-gray-600 leading-relaxed italic">"{review.comment}"</p>
                         </div>
                     ))}
-                </div>
-            </div>
-
-            {/* Bottom Bar - Add to Cart (positioned above BottomNav) */}
-            <div className="fixed bottom-16 left-0 right-0 z-40 w-full bg-white border-t border-orange-100 p-4 shadow-[0_-8px_30px_-5px_rgba(0,0,0,0.05)]">
-                <div className="flex items-center gap-4 max-w-md mx-auto">
-                    {/* Quantity Selector */}
-                    <div className="flex items-center justify-between bg-stone-50 border border-orange-100 rounded-xl h-14 w-36 px-3 shrink-0">
-                        <button
-                            onClick={() => handleQuantityChange(-1)}
-                            disabled={quantity <= 1}
-                            className="size-8 flex items-center justify-center text-gray-400 hover:text-stone-900 active:scale-90 transition-transform disabled:opacity-50"
-                        >
-                            <span className="text-xl">−</span>
-                        </button>
-                        <span className="text-lg font-bold text-stone-900">{quantity}</span>
-                        <button
-                            onClick={() => handleQuantityChange(1)}
-                            className="size-8 flex items-center justify-center text-orange-500 active:scale-90 transition-transform"
-                        >
-                            <span className="text-xl">+</span>
-                        </button>
-                    </div>
-
-                    {/* Add to Cart Button */}
-                    <button
-                        onClick={handleAddToCart}
-                        className="flex-1 h-14 bg-orange-500 hover:bg-orange-600 active:bg-orange-700 rounded-2xl flex items-center justify-center gap-2 shadow-xl shadow-orange-300/40 transition-all active:scale-[0.98]"
-                    >
-                        <ShoppingBag className="text-white" size={22} />
-                        <span className="text-white font-bold text-lg">+ Keranjang</span>
-                    </button>
                 </div>
             </div>
         </>
