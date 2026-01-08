@@ -1,0 +1,99 @@
+// API utility functions for frontend
+import { Product, Customer, Order, Transaction, CostComponent } from '@/lib/types';
+
+const API_BASE = '/api';
+
+// Generic fetch wrapper
+async function fetchAPI<T>(url: string, options?: RequestInit): Promise<T> {
+    const response = await fetch(`${API_BASE}${url}`, {
+        headers: {
+            'Content-Type': 'application/json',
+            ...options?.headers,
+        },
+        ...options,
+    });
+
+    if (!response.ok) {
+        const error = await response.json().catch(() => ({ error: 'Request failed' }));
+        throw new Error(error.error || `HTTP ${response.status}`);
+    }
+
+    return response.json();
+}
+
+// Products API
+export const productsAPI = {
+    getAll: () => fetchAPI<Product[]>('/products'),
+    getOne: (id: string) => fetchAPI<Product>(`/products/${id}`),
+    create: (data: Omit<Product, 'id'>) => fetchAPI<Product>('/products', {
+        method: 'POST',
+        body: JSON.stringify(data),
+    }),
+    update: (id: string, data: Partial<Product>) => fetchAPI<Product>(`/products/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(data),
+    }),
+    delete: (id: string) => fetchAPI<{ message: string }>(`/products/${id}`, {
+        method: 'DELETE',
+    }),
+};
+
+// Customers API
+export const customersAPI = {
+    getAll: () => fetchAPI<Customer[]>('/customers'),
+    getOne: (id: string) => fetchAPI<Customer>(`/customers/${id}`),
+    create: (data: Omit<Customer, 'id' | 'totalSpent' | 'orderCount' | 'lastOrderDate'>) =>
+        fetchAPI<Customer>('/customers', {
+            method: 'POST',
+            body: JSON.stringify(data),
+        }),
+    update: (id: string, data: Partial<Customer>) => fetchAPI<Customer>(`/customers/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(data),
+    }),
+    delete: (id: string) => fetchAPI<{ message: string }>(`/customers/${id}`, {
+        method: 'DELETE',
+    }),
+};
+
+// Orders API
+export const ordersAPI = {
+    getAll: () => fetchAPI<Order[]>('/orders'),
+    getOne: (id: string) => fetchAPI<Order>(`/orders/${id}`),
+    create: (data: any) => fetchAPI<Order>('/orders', {
+        method: 'POST',
+        body: JSON.stringify(data),
+    }),
+    updateStatus: (id: string, status: 'PENDING' | 'PAID' | 'CANCELLED') =>
+        fetchAPI<Order>(`/orders/${id}`, {
+            method: 'PATCH',
+            body: JSON.stringify({ status }),
+        }),
+    delete: (id: string) => fetchAPI<{ message: string }>(`/orders/${id}`, {
+        method: 'DELETE',
+    }),
+};
+
+// Transactions API
+export const transactionsAPI = {
+    getAll: () => fetchAPI<Transaction[]>('/transactions'),
+    create: (data: Omit<Transaction, 'id' | 'createdAt'>) => fetchAPI<Transaction>('/transactions', {
+        method: 'POST',
+        body: JSON.stringify(data),
+    }),
+    delete: (id: string) => fetchAPI<{ message: string }>(`/transactions/${id}`, {
+        method: 'DELETE',
+    }),
+};
+
+// Cost Components API
+export const costComponentsAPI = {
+    getAll: () => fetchAPI<CostComponent[]>('/cost-components'),
+    create: (data: Omit<CostComponent, 'id'>) => fetchAPI<CostComponent>('/cost-components', {
+        method: 'POST',
+        body: JSON.stringify(data),
+    }),
+    delete: (id: string) => fetchAPI<{ message: string }>(`/cost-components/${id}`, {
+        method: 'DELETE',
+    }),
+};

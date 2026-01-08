@@ -1,0 +1,173 @@
+// Prisma Schema for Pasarantar Finance
+// Complete schema with all models
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================
+// USER AUTHENTICATION
+// ============================================
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String
+  password  String   // Hashed with bcrypt
+  role      String   @default("user") // user, admin
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([email])
+}
+
+// ============================================
+// PRODUCT MANAGEMENT
+// ============================================
+
+model Product {
+  id          String   @id @default(uuid())
+  sku         String   @unique
+  name        String
+  description String?
+  price       Decimal  @db.Decimal(10, 2)
+  costPrice   Decimal  @db.Decimal(10, 2)
+  stock       Int      @default(0)
+  unit        String
+  
+  orderItems  OrderItem[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([sku])
+  @@index([name])
+}
+
+// ============================================
+// CUSTOMER MANAGEMENT
+// ============================================
+
+model Customer {
+  id          String   @id @default(uuid())
+  name        String
+  phone       String   @unique
+  address     String?
+  notes       String?
+  
+  orders      Order[]
+  
+  totalSpent  Decimal  @db.Decimal(10, 2) @default(0)
+  orderCount  Int      @default(0)
+  lastOrderDate DateTime?
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([phone])
+  @@index([name])
+}
+
+// ============================================
+// ORDER MANAGEMENT
+// ============================================
+
+model Order {
+  id            String   @id @default(uuid())
+  orderNumber   String   @unique @default(cuid())
+  
+  customerId    String?
+  customer      Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  
+  customerName  String
+  customerAddress String?
+  customerPhone String?
+  
+  items         OrderItem[]
+  subtotal      Decimal  @db.Decimal(10, 2)
+  deliveryFee   Decimal  @db.Decimal(10, 2) @default(0)
+  grandTotal    Decimal  @db.Decimal(10, 2)
+  
+  status        OrderStatus @default(PENDING)
+  notes         String?
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@index([customerId])
+  @@index([orderNumber])
+  @@index([status])
+  @@index([createdAt])
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  CANCELLED
+}
+
+model OrderItem {
+  id          String   @id @default(uuid())
+  orderId     String
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  
+  productId   String?
+  product     Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  
+  productName String
+  qty         Int
+  unit        String
+  price       Decimal  @db.Decimal(10, 2)
+  costPrice   Decimal? @db.Decimal(10, 2)
+  total       Decimal  @db.Decimal(10, 2)
+  
+  @@index([orderId])
+  @@index([productId])
+}
+
+// ============================================
+// FINANCIAL MANAGEMENT
+// ============================================
+
+model Transaction {
+  id          String   @id @default(uuid())
+  date        DateTime @default(now())
+  type        TransactionType
+  amount      Decimal  @db.Decimal(10, 2)
+  category    String
+  description String
+  orderId     String?
+  
+  createdAt   DateTime @default(now())
+  
+  @@index([date])
+  @@index([type])
+  @@index([orderId])
+}
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+  CAPITAL
+}
+
+// ============================================
+// HPP CALCULATOR
+// ============================================
+
+model CostComponent {
+  id          String   @id @default(uuid())
+  name        String
+  cost        Decimal  @db.Decimal(10, 2)
+  unit        String
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([name])
+}
