@@ -195,7 +195,7 @@ export default function ProductDetailPage({ params }: ProductDetailProps) {
             </div>
 
             {/* Reviews */}
-            <div className="px-5 pt-2 pb-6 bg-white mb-24">
+            <div className="px-5 pt-2 pb-40 bg-white">
                 <div className="flex items-center justify-between mb-4">
                     <h3 className="text-stone-900 text-lg font-bold">Ulasan Pembeli</h3>
                     <Link href="#" className="text-orange-500 text-sm font-bold hover:text-orange-600 transition-colors">
@@ -224,8 +224,8 @@ export default function ProductDetailPage({ params }: ProductDetailProps) {
                 </div>
             </div>
 
-            {/* Bottom Bar - Add to Cart */}
-            <div className="fixed bottom-0 left-0 right-0 z-40 w-full bg-white border-t border-orange-100 p-4 pb-8 shadow-[0_-8px_30px_-5px_rgba(0,0,0,0.05)]">
+            {/* Bottom Bar - Add to Cart (positioned above BottomNav) */}
+            <div className="fixed bottom-16 left-0 right-0 z-40 w-full bg-white border-t border-orange-100 p-4 shadow-[0_-8px_30px_-5px_rgba(0,0,0,0.05)]">
                 <div className="flex items-center gap-4 max-w-md mx-auto">
                     {/* Quantity Selector */}
                     <div className="flex items-center justify-between bg-stone-50 border border-orange-100 rounded-xl h-14 w-36 px-3 shrink-0">
