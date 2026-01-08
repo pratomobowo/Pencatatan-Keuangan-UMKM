@@ -2,7 +2,9 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { Plus } from 'lucide-react';
+import { Plus, Check } from 'lucide-react';
+import { useCart } from '@/contexts/CartContext';
+import { useState } from 'react';
 
 interface ProductCardProps {
     id: string;
@@ -13,7 +15,6 @@ interface ProductCardProps {
     discount?: number;
     image: string;
     badge?: string;
-    onAddToCart?: () => void;
 }
 
 export const ProductCard: React.FC<ProductCardProps> = ({
@@ -25,8 +26,22 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     discount,
     image,
     badge,
-    onAddToCart,
 }) => {
+    const { addItem } = useCart();
+    const [added, setAdded] = useState(false);
+
+    const handleAddToCart = () => {
+        addItem({
+            id,
+            name,
+            variant: unit,
+            price,
+            image,
+        });
+        setAdded(true);
+        setTimeout(() => setAdded(false), 1500);
+    };
+
     return (
         <Link href={`/shop/products/${id}`} className="flex flex-col min-w-[160px] w-[160px] bg-white rounded-xl overflow-hidden border border-orange-50 shadow-sm relative group">
             {/* Discount Badge */}
@@ -68,14 +83,25 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                     onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        onAddToCart?.();
+                        handleAddToCart();
                     }}
-                    className="mt-2 w-full h-8 rounded-lg bg-teal-400 text-white text-sm font-bold hover:bg-teal-500 active:scale-95 transition-all shadow-sm flex items-center justify-center gap-1"
+                    className={`mt-2 w-full h-8 rounded-lg text-white text-sm font-bold active:scale-95 transition-all shadow-sm flex items-center justify-center gap-1 ${added ? 'bg-green-500' : 'bg-teal-400 hover:bg-teal-500'
+                        }`}
                 >
-                    <Plus size={16} />
-                    Keranjang
+                    {added ? (
+                        <>
+                            <Check size={16} />
+                            Ditambahkan
+                        </>
+                    ) : (
+                        <>
+                            <Plus size={16} />
+                            Keranjang
+                        </>
+                    )}
                 </button>
             </div>
         </Link>
     );
 };
+

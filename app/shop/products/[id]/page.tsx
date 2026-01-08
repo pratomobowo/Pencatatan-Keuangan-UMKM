@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowLeft, ShoppingBag, Heart, Star, Truck, Shield, Thermometer, ChevronDown } from 'lucide-react';
+import { ArrowLeft, ShoppingBag, Heart, Star, Truck, Shield, Thermometer, ChevronDown, Check } from 'lucide-react';
+import { useCart } from '@/contexts/CartContext';
 
 interface ProductDetailProps {
     params: {
@@ -52,14 +53,23 @@ export default function ProductDetailPage({ params }: ProductDetailProps) {
     const [selectedWeight, setSelectedWeight] = useState(productData.weights[0]);
     const [quantity, setQuantity] = useState(1);
     const [isFavorite, setIsFavorite] = useState(false);
+    const [added, setAdded] = useState(false);
+    const { addItem } = useCart();
 
     const handleQuantityChange = (delta: number) => {
         setQuantity(Math.max(1, quantity + delta));
     };
 
     const handleAddToCart = () => {
-        console.log('Add to cart:', { product: productData, weight: selectedWeight, quantity });
-        // Will implement cart functionality later
+        addItem({
+            id: `${productData.id}-${selectedWeight.value}`,
+            name: productData.name,
+            variant: selectedWeight.label,
+            price: selectedWeight.price,
+            image: productData.images[0],
+        }, quantity);
+        setAdded(true);
+        setTimeout(() => setAdded(false), 1500);
     };
 
     return (
@@ -176,10 +186,20 @@ export default function ProductDetailPage({ params }: ProductDetailProps) {
                     {/* Add to Cart Button */}
                     <button
                         onClick={handleAddToCart}
-                        className="flex-1 h-12 bg-orange-500 hover:bg-orange-600 active:bg-orange-700 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-orange-300/40 transition-all active:scale-[0.98]"
+                        className={`flex-1 h-12 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-orange-300/40 transition-all active:scale-[0.98] ${added ? 'bg-green-500' : 'bg-orange-500 hover:bg-orange-600 active:bg-orange-700'
+                            }`}
                     >
-                        <ShoppingBag className="text-white" size={20} />
-                        <span className="text-white font-bold">+ Keranjang</span>
+                        {added ? (
+                            <>
+                                <Check className="text-white" size={20} />
+                                <span className="text-white font-bold">Ditambahkan!</span>
+                            </>
+                        ) : (
+                            <>
+                                <ShoppingBag className="text-white" size={20} />
+                                <span className="text-white font-bold">+ Keranjang</span>
+                            </>
+                        )}
                     </button>
                 </div>
             </div>

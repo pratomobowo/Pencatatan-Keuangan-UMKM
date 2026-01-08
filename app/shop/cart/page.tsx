@@ -1,60 +1,23 @@
 'use client';
 
-import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowLeft, MapPin, ChevronRight, Trash2, Minus, Plus, ArrowRight } from 'lucide-react';
-
-// Mock cart data - will be replaced with context/state management
-const initialCartItems = [
-    {
-        id: '1',
-        name: 'Daging Sapi Rendang',
-        variant: 'Premium • 1 kg',
-        price: 120000,
-        quantity: 1,
-        image: 'https://images.unsplash.com/photo-1603048297172-c92544798d5a?w=400&q=80',
-    },
-    {
-        id: '2',
-        name: 'Udang Vaname Segar',
-        variant: 'Laut • 1 kg',
-        price: 85000,
-        quantity: 2,
-        image: 'https://images.unsplash.com/photo-1565680018434-b513d5e5fd47?w=400&q=80',
-    },
-    {
-        id: '3',
-        name: 'Ayam Broiler Utuh',
-        variant: 'Segar • 1 Ekor',
-        price: 45000,
-        quantity: 1,
-        image: 'https://images.unsplash.com/photo-1587593810167-a84920ea0781?w=400&q=80',
-    },
-];
+import { useCart } from '@/contexts/CartContext';
 
 const shippingFee = 15000;
 
 export default function CartPage() {
-    const [cartItems, setCartItems] = useState(initialCartItems);
+    const { items: cartItems, removeItem, updateQuantity, itemCount, subtotal } = useCart();
 
     const handleQuantityChange = (id: string, delta: number) => {
-        setCartItems(items =>
-            items.map(item =>
-                item.id === id
-                    ? { ...item, quantity: Math.max(1, item.quantity + delta) }
-                    : item
-            )
-        );
+        const item = cartItems.find(i => i.id === id);
+        if (item) {
+            updateQuantity(id, item.quantity + delta);
+        }
     };
 
-    const handleRemoveItem = (id: string) => {
-        setCartItems(items => items.filter(item => item.id !== id));
-    };
-
-    const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-    const total = subtotal + shippingFee;
-    const itemCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+    const total = subtotal + (cartItems.length > 0 ? shippingFee : 0);
 
     return (
         <>
@@ -121,7 +84,7 @@ export default function CartPage() {
                                             <p className="text-gray-500 text-xs mt-1">{item.variant}</p>
                                         </div>
                                         <button
-                                            onClick={() => handleRemoveItem(item.id)}
+                                            onClick={() => removeItem(item.id)}
                                             className="text-gray-400 hover:text-red-500 transition-colors p-1 -mr-2 -mt-2"
                                         >
                                             <Trash2 size={20} />
