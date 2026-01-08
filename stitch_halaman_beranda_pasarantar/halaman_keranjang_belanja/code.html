@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Keranjang Belanja - Pasarantar</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#FFAD7A", // Pastel Orange
+                        "primary-hover": "#FF9F63", 
+                        "primary-text": "#E8631C", // Darker orange for high visibility text
+                        "accent": "#98E6C8", // Mint Green
+                        "accent-text": "#0F825F", // Darker mint for text
+                        "background-light": "#FFF9F2", // Soft Cream
+                        "background-dark": "#1C1917", // Warm dark
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#292524",
+                    },
+                    fontFamily: {
+                        "display": ["Work Sans", "sans-serif"],
+                        "body": ["Noto Sans", "sans-serif"],
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>.no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-[#2D2420] dark:text-gray-100 antialiased selection:bg-primary/30">
+<div class="relative flex h-full min-h-screen w-full flex-col overflow-x-hidden pb-32">
+<div class="sticky top-0 z-40 flex items-center bg-surface-light dark:bg-surface-dark px-4 py-3 shadow-sm justify-between transition-colors">
+<div class="flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-orange-50 dark:hover:bg-white/10 cursor-pointer text-[#2D2420] dark:text-white">
+<span class="material-symbols-outlined">arrow_back</span>
+</div>
+<h2 class="text-[#2D2420] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center pr-10">Keranjang Belanja</h2>
+</div>
+<div class="mt-4 mx-4">
+<div class="flex items-center gap-4 bg-surface-light dark:bg-surface-dark rounded-xl p-4 shadow-sm border border-orange-50 dark:border-gray-800">
+<div class="flex items-center gap-4 flex-1">
+<div class="text-accent-text flex items-center justify-center rounded-full bg-accent/20 shrink-0 size-10">
+<span class="material-symbols-outlined text-[20px]">location_on</span>
+</div>
+<div class="flex flex-col justify-center">
+<p class="text-[#2D2420] dark:text-white text-sm font-semibold leading-normal line-clamp-1">Alamat Pengiriman</p>
+<p class="text-gray-500 dark:text-gray-400 text-xs font-normal leading-normal line-clamp-1">Jl. Melati No. 12, Jakarta Selatan</p>
+</div>
+</div>
+<div class="shrink-0 text-gray-400 dark:text-gray-500">
+<span class="material-symbols-outlined">chevron_right</span>
+</div>
+</div>
+</div>
+<div class="px-4 pb-2 pt-6 flex justify-between items-end">
+<h3 class="text-[#2D2420] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]">Daftar Pesanan</h3>
+<span class="text-sm text-accent-text font-medium">3 Item</span>
+</div>
+<div class="mx-4 mt-2">
+<div class="flex flex-col bg-surface-light dark:bg-surface-dark rounded-xl p-4 shadow-sm border border-orange-50 dark:border-gray-800">
+<div class="flex gap-4">
+<div class="bg-center bg-no-repeat bg-cover rounded-lg size-[80px] shrink-0 border border-gray-100 dark:border-gray-700" data-alt="Fresh raw beef rendang meat cubes" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCSKaGAZt2tf3XEHZdXMeyolurlsJVPEnJ5XwXqYDamiLtbB0MRQDsjV-oiorAYKkmOZSu194vkqqtm9wOk6jaIJ5x1iRFUuFLzNc4pQeSMfZ-PZyHnWnn3OX1b2mCZqPuc4e_jdWCNwVQLMxR2dLpobBPGc0TMv5LPD46yJgz6kHUAEkE323PJBkHUuubUksX_l4XwrTgXBI1feOINCPN2pB5qzCFBe8pxqPRFU5NdkKzW8coyzYXcZKYrwkhh6IEvJN_Jz_EUOcI");'></div>
+<div class="flex flex-1 flex-col justify-between h-[80px]">
+<div class="flex justify-between items-start">
+<div>
+<p class="text-[#2D2420] dark:text-white text-base font-semibold leading-snug line-clamp-2">Daging Sapi Rendang</p>
+<p class="text-gray-500 dark:text-gray-400 text-xs font-normal mt-1">Premium • 1 kg</p>
+</div>
+<button class="text-gray-400 hover:text-red-500 transition-colors p-1 -mr-2 -mt-2">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+</button>
+</div>
+<div class="flex justify-between items-end">
+<p class="text-primary-text text-sm font-bold">Rp 120.000</p>
+<div class="flex items-center gap-3 bg-background-light dark:bg-background-dark rounded-full px-2 py-1">
+<button class="flex items-center justify-center size-6 rounded-full bg-white dark:bg-gray-700 shadow-sm text-[#2D2420] dark:text-white hover:bg-orange-50 dark:hover:bg-gray-600 transition-colors">
+<span class="material-symbols-outlined text-[16px]">remove</span>
+</button>
+<span class="text-sm font-semibold w-4 text-center dark:text-white">1</span>
+<button class="flex items-center justify-center size-6 rounded-full bg-primary text-[#2C2119] shadow-sm hover:bg-primary-hover transition-colors">
+<span class="material-symbols-outlined text-[16px]">add</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="mx-4 mt-3">
+<div class="flex flex-col bg-surface-light dark:bg-surface-dark rounded-xl p-4 shadow-sm border border-orange-50 dark:border-gray-800">
+<div class="flex gap-4">
+<div class="bg-center bg-no-repeat bg-cover rounded-lg size-[80px] shrink-0 border border-gray-100 dark:border-gray-700" data-alt="Fresh raw vaname shrimp on ice" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDnnY9vZwBkdzTQO_ntO5-EwLQldzyFQOHxTi8S-2FE7BXNh_653JO1THAjs8YtHPOzftrwZzcajvjKcYfcdPcS79P_XJF4LJUdETzDf-etS_FWf4NTa3CkhZ9jEyEtfXomLALxF3Qj1Swu_nlPN3-rv3Gc4yDeNeHvKJNu96daCID9MvgvZemcbjYdp_lYBGSsITEfuxdxnk-02en6PtQXfWHAr7B1Xad7KG7OkPNn_5sZtd5YZR_5FBtaP-7CthbXruTC-p6d3CQ");'></div>
+<div class="flex flex-1 flex-col justify-between h-[80px]">
+<div class="flex justify-between items-start">
+<div>
+<p class="text-[#2D2420] dark:text-white text-base font-semibold leading-snug">Udang Vaname Segar</p>
+<p class="text-gray-500 dark:text-gray-400 text-xs font-normal mt-1">Laut • 1 kg</p>
+</div>
+<button class="text-gray-400 hover:text-red-500 transition-colors p-1 -mr-2 -mt-2">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+</button>
+</div>
+<div class="flex justify-between items-end">
+<p class="text-primary-text text-sm font-bold">Rp 170.000</p>
+<div class="flex items-center gap-3 bg-background-light dark:bg-background-dark rounded-full px-2 py-1">
+<button class="flex items-center justify-center size-6 rounded-full bg-white dark:bg-gray-700 shadow-sm text-[#2D2420] dark:text-white hover:bg-orange-50 dark:hover:bg-gray-600 transition-colors">
+<span class="material-symbols-outlined text-[16px]">remove</span>
+</button>
+<span class="text-sm font-semibold w-4 text-center dark:text-white">2</span>
+<button class="flex items-center justify-center size-6 rounded-full bg-primary text-[#2C2119] shadow-sm hover:bg-primary-hover transition-colors">
+<span class="material-symbols-outlined text-[16px]">add</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="mx-4 mt-3">
+<div class="flex flex-col bg-surface-light dark:bg-surface-dark rounded-xl p-4 shadow-sm border border-orange-50 dark:border-gray-800">
+<div class="flex gap-4">
+<div class="bg-center bg-no-repeat bg-cover rounded-lg size-[80px] shrink-0 border border-gray-100 dark:border-gray-700" data-alt="Whole raw broiler chicken" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuA47epEOgsVmuVoZNqzr-lHUQ96NlXR9cOVYdp22faSUc3vawYsX1jx7njZ0q4IUoWjb3CQPFOs3XNFUULe8XxXuMnWKNOtE4jj8saNZzORGh0bi3tOThZEFH1W6PgPi0WXitM2u3FIwXPwBQXjbT6f8qjlwLeQnLE3s_B0UI8gGSjCasHsFqeq8y8rCVQT0byPYr-4a7ZIMuzeip5yeq37hK79qcWlwpOEJwN5OMwVcQf9Vo7XosrkeEx8Hz9IfQdfgrDn5wdjk7w");'></div>
+<div class="flex flex-1 flex-col justify-between h-[80px]">
+<div class="flex justify-between items-start">
+<div>
+<p class="text-[#2D2420] dark:text-white text-base font-semibold leading-snug">Ayam Broiler Utuh</p>
+<p class="text-gray-500 dark:text-gray-400 text-xs font-normal mt-1">Segar • 1 Ekor</p>
+</div>
+<button class="text-gray-400 hover:text-red-500 transition-colors p-1 -mr-2 -mt-2">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+</button>
+</div>
+<div class="flex justify-between items-end">
+<p class="text-primary-text text-sm font-bold">Rp 45.000</p>
+<div class="flex items-center gap-3 bg-background-light dark:bg-background-dark rounded-full px-2 py-1">
+<button class="flex items-center justify-center size-6 rounded-full bg-white dark:bg-gray-700 shadow-sm text-[#2D2420] dark:text-white hover:bg-orange-50 dark:hover:bg-gray-600 transition-colors">
+<span class="material-symbols-outlined text-[16px]">remove</span>
+</button>
+<span class="text-sm font-semibold w-4 text-center dark:text-white">1</span>
+<button class="flex items-center justify-center size-6 rounded-full bg-primary text-[#2C2119] shadow-sm hover:bg-primary-hover transition-colors">
+<span class="material-symbols-outlined text-[16px]">add</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="mx-4 my-6 h-px bg-gray-200 dark:bg-gray-700"></div>
+<div class="px-4 pb-4">
+<h3 class="text-[#2D2420] dark:text-white text-lg font-bold leading-tight mb-4">Rincian Pembayaran</h3>
+<div class="flex flex-col gap-3">
+<div class="flex justify-between items-center text-sm">
+<span class="text-gray-600 dark:text-gray-400">Subtotal Produk</span>
+<span class="font-medium text-[#2D2420] dark:text-white">Rp 335.000</span>
+</div>
+<div class="flex justify-between items-center text-sm">
+<span class="text-gray-600 dark:text-gray-400">Biaya Pengiriman</span>
+<span class="font-medium text-[#2D2420] dark:text-white">Rp 15.000</span>
+</div>
+<div class="flex justify-between items-center text-sm">
+<span class="text-gray-600 dark:text-gray-400">Biaya Layanan</span>
+<span class="font-medium text-accent-text">Gratis</span>
+</div>
+<div class="my-2 border-t border-dashed border-gray-300 dark:border-gray-600"></div>
+<div class="flex justify-between items-center text-base font-bold">
+<span class="text-[#2D2420] dark:text-white">Total Pembayaran</span>
+<span class="text-[#2D2420] dark:text-white">Rp 350.000</span>
+</div>
+</div>
+</div>
+<div class="h-6"></div>
+</div>
+<div class="fixed bottom-0 left-0 w-full bg-surface-light dark:bg-surface-dark border-t border-gray-100 dark:border-gray-800 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] px-4 py-4 z-50">
+<div class="flex items-center justify-between gap-4 max-w-md mx-auto">
+<div class="flex flex-col">
+<span class="text-xs text-gray-500 dark:text-gray-400 font-medium">Total Belanja</span>
+<span class="text-xl font-bold text-[#2D2420] dark:text-white tracking-tight">Rp 350.000</span>
+</div>
+<button class="flex-1 bg-primary hover:bg-primary-hover active:scale-[0.98] transition-all h-12 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-primary/20">
+<span class="text-[#2C2119] font-bold text-base">Lanjut Checkout</span>
+<span class="material-symbols-outlined text-[#2C2119] text-[20px]">arrow_forward</span>
+</button>
+</div>
+<div class="h-2 w-full"></div>
+</div>
+
+</body></html>

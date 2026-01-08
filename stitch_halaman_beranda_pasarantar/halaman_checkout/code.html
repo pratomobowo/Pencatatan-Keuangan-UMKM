@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Pasarantar Checkout</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#FFAB73","primary-hover": "#FF9654",
+                        "secondary": "#A7F3D0","secondary-dark": "#065F46",
+                        "accent-blue": "#BAE6FD","accent-blue-dark": "#0C4A6E",
+                        "background-light": "#FFF9F4","background-dark": "#1C1917",
+                        "surface-light": "#FFFFFF",
+                        "surface-dark": "#292524",
+                    },
+                    fontFamily: {
+                        "display": ["Work Sans", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<style>.hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-stone-800 dark:text-stone-100 antialiased selection:bg-orange-200 selection:text-orange-900">
+<div class="relative flex min-h-screen w-full flex-col overflow-x-hidden pb-24 mx-auto max-w-md bg-background-light dark:bg-background-dark shadow-xl">
+<header class="sticky top-0 z-50 flex items-center bg-surface-light dark:bg-surface-dark px-4 py-3 shadow-sm justify-between transition-colors duration-300">
+<button class="flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-orange-50 dark:hover:bg-white/10 transition-colors text-stone-800 dark:text-white">
+<span class="material-symbols-outlined text-[24px]">arrow_back</span>
+</button>
+<h2 class="text-stone-800 dark:text-white text-lg font-bold leading-tight flex-1 text-center pr-10">Checkout</h2>
+</header>
+<main class="flex flex-col gap-2 p-4">
+<section>
+<h3 class="text-stone-800 dark:text-stone-200 text-lg font-bold leading-tight mb-3 px-1">Alamat Pengiriman</h3>
+<div class="flex flex-col gap-4 bg-surface-light dark:bg-surface-dark p-4 rounded-2xl shadow-sm border border-orange-100 dark:border-stone-700">
+<div class="flex gap-4">
+<div class="flex items-start justify-center rounded-xl bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-300 shrink-0 size-10 mt-1">
+<span class="material-symbols-outlined text-[20px] leading-[40px]">location_on</span>
+</div>
+<div class="flex flex-1 flex-col">
+<div class="flex justify-between items-start">
+<p class="text-stone-800 dark:text-white text-base font-bold">Rumah (Ibu Ani)</p>
+<button class="text-orange-600 dark:text-primary text-sm font-semibold px-2 py-1 rounded hover:bg-orange-50 dark:hover:bg-white/10 transition-colors">
+                                    Ubah
+                                </button>
+</div>
+<p class="text-stone-500 dark:text-stone-400 text-sm mt-1 leading-relaxed">
+                                Jl. Mawar Indah No. 12, RT 05/RW 02, Cilandak, Jakarta Selatan
+                            </p>
+<p class="text-stone-500 dark:text-stone-400 text-sm mt-1">0812-3456-7890</p>
+</div>
+</div>
+</div>
+</section>
+<section class="mt-4">
+<h3 class="text-stone-800 dark:text-stone-200 text-lg font-bold leading-tight mb-3 px-1">Waktu Pengiriman</h3>
+<div class="flex gap-3 overflow-x-auto hide-scrollbar pb-1">
+<label class="cursor-pointer relative group shrink-0">
+<input checked="" class="peer sr-only" name="delivery_time" type="radio"/>
+<div class="flex flex-col items-center justify-center gap-1 rounded-xl border-2 border-primary bg-primary/20 dark:bg-primary/20 px-4 py-3 peer-checked:bg-primary peer-checked:border-primary peer-checked:text-stone-900 transition-all">
+<span class="text-xs font-semibold uppercase tracking-wider opacity-70">Besok Pagi</span>
+<span class="text-sm font-bold">06:00 - 08:00</span>
+</div>
+</label>
+<label class="cursor-pointer relative group shrink-0">
+<input class="peer sr-only" name="delivery_time" type="radio"/>
+<div class="flex flex-col items-center justify-center gap-1 rounded-xl border border-stone-200 dark:border-stone-700 bg-surface-light dark:bg-surface-dark px-4 py-3 peer-checked:bg-primary peer-checked:border-primary peer-checked:text-stone-900 text-stone-500 dark:text-stone-400 transition-all">
+<span class="text-xs font-medium uppercase tracking-wider opacity-70">Besok Siang</span>
+<span class="text-sm font-medium">10:00 - 12:00</span>
+</div>
+</label>
+<label class="cursor-pointer relative group shrink-0">
+<input class="peer sr-only" name="delivery_time" type="radio"/>
+<div class="flex flex-col items-center justify-center gap-1 rounded-xl border border-stone-200 dark:border-stone-700 bg-surface-light dark:bg-surface-dark px-4 py-3 peer-checked:bg-primary peer-checked:border-primary peer-checked:text-stone-900 text-stone-500 dark:text-stone-400 transition-all">
+<span class="text-xs font-medium uppercase tracking-wider opacity-70">Besok Sore</span>
+<span class="text-sm font-medium">15:00 - 17:00</span>
+</div>
+</label>
+</div>
+</section>
+<section class="mt-4">
+<h3 class="text-stone-800 dark:text-stone-200 text-lg font-bold leading-tight mb-3 px-1">Ringkasan Pesanan</h3>
+<div class="flex flex-col gap-3">
+<div class="flex gap-4 bg-surface-light dark:bg-surface-dark p-3 rounded-2xl shadow-sm border border-orange-100 dark:border-stone-700 items-center">
+<div class="size-16 rounded-lg bg-stone-100 dark:bg-stone-800 overflow-hidden shrink-0 relative">
+<img alt="Fresh raw salmon fillet on dark surface" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCY0pADT8sNBF7_KQZTJ_lXoe1DLvOsIjZbT8JFTLRQES_FWtzPOtAPAfICXM6ItCEm0HUG2UHx6twRh7VlXqNe5YIXS5qF_PBBbVYTdJdR1sdpEARrX7DKlyEH99e9vUpIxPLGF4-J43SYb3af2DpZL3qToa6jy_l0DbdnG03QnjQ7MIJL7EgYcBFcJFhhtJ1l3gAOJBOQh81sb_ky7U2LyT-ZdZdgkYTQ_eCmu00sXNjNFlss4desnzabty_7TtaS8PMTZ3m9g1A"/>
+</div>
+<div class="flex flex-1 flex-col">
+<p class="text-stone-800 dark:text-white text-base font-bold leading-tight">Salmon Fillet Segar</p>
+<p class="text-stone-500 dark:text-stone-400 text-xs font-normal">500 gram / pack</p>
+<div class="flex justify-between items-end mt-1">
+<p class="text-stone-800 dark:text-stone-200 text-sm font-medium">Rp 85.000</p>
+<p class="text-stone-500 dark:text-stone-400 text-sm">x 1</p>
+</div>
+</div>
+</div>
+<div class="flex gap-4 bg-surface-light dark:bg-surface-dark p-3 rounded-2xl shadow-sm border border-orange-100 dark:border-stone-700 items-center">
+<div class="size-16 rounded-lg bg-stone-100 dark:bg-stone-800 overflow-hidden shrink-0 relative">
+<img alt="Fresh raw chicken breast pieces" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA8GuObKq0yXSNL3Q58La1yhrtTOM3-wB1SxBUigCe8RM3AQ5GNy9wASDOjxWBJ7ogPDYZ6vAvGzHfsOA7htNR1J7YbFyxnLD_YYM7k6BXuWK3P2tJD65nDITBTJV-FthdYBLIW6YXcIHXU6UOgpgW8NyrqhSElFsK1vqr0bAc-pin6xOeKl3n6kSyifN-n3vqhqOLGAZ5ulFm-jPQoITQufNKjHBUPJXr_bxUG3JB2Mx-F-PGfG_2Z2lqEQc-ySN3y0lS5_SaacGI"/>
+</div>
+<div class="flex flex-1 flex-col">
+<p class="text-stone-800 dark:text-white text-base font-bold leading-tight">Dada Ayam Fillet</p>
+<p class="text-stone-500 dark:text-stone-400 text-xs font-normal">1 kg</p>
+<div class="flex justify-between items-end mt-1">
+<p class="text-stone-800 dark:text-stone-200 text-sm font-medium">Rp 45.000</p>
+<p class="text-stone-500 dark:text-stone-400 text-sm">x 1</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class="mt-4">
+<h3 class="text-stone-800 dark:text-stone-200 text-lg font-bold leading-tight mb-3 px-1">Metode Pembayaran</h3>
+<div class="flex flex-col gap-3">
+<label class="cursor-pointer relative">
+<input checked="" class="peer sr-only" name="payment_method" type="radio"/>
+<div class="flex items-center gap-4 bg-surface-light dark:bg-surface-dark p-4 rounded-2xl border-2 border-transparent peer-checked:border-primary peer-checked:bg-primary/5 dark:peer-checked:bg-primary/10 transition-all shadow-sm">
+<div class="flex items-center justify-center rounded-full bg-secondary/30 dark:bg-secondary/20 text-secondary-dark dark:text-secondary shrink-0 size-10">
+<span class="material-symbols-outlined text-[24px]">payments</span>
+</div>
+<div class="flex flex-1 flex-col">
+<p class="text-stone-800 dark:text-white text-base font-bold">COD (Bayar di Tempat)</p>
+<p class="text-stone-500 dark:text-stone-400 text-sm">Bayar tunai saat kurir sampai</p>
+</div>
+<div class="size-5 rounded-full border-2 border-stone-300 dark:border-stone-600 peer-checked:border-primary peer-checked:bg-primary flex items-center justify-center transition-colors">
+<div class="size-2 rounded-full bg-white hidden peer-checked:block"></div>
+</div>
+</div>
+</label>
+<label class="cursor-pointer relative">
+<input class="peer sr-only" name="payment_method" type="radio"/>
+<div class="flex items-center gap-4 bg-surface-light dark:bg-surface-dark p-4 rounded-2xl border-2 border-transparent peer-checked:border-primary peer-checked:bg-primary/5 dark:peer-checked:bg-primary/10 transition-all shadow-sm">
+<div class="flex items-center justify-center rounded-full bg-accent-blue/30 dark:bg-accent-blue/20 text-accent-blue-dark dark:text-accent-blue shrink-0 size-10">
+<span class="material-symbols-outlined text-[24px]">account_balance</span>
+</div>
+<div class="flex flex-1 flex-col">
+<p class="text-stone-800 dark:text-white text-base font-bold">Transfer Bank</p>
+<p class="text-stone-500 dark:text-stone-400 text-sm">BCA, Mandiri, BNI, BRI</p>
+</div>
+<div class="size-5 rounded-full border-2 border-stone-300 dark:border-stone-600 peer-checked:border-primary peer-checked:bg-primary flex items-center justify-center transition-colors">
+<div class="size-2 rounded-full bg-white hidden peer-checked:block"></div>
+</div>
+</div>
+</label>
+</div>
+</section>
+<section class="mt-4 mb-6">
+<div class="bg-surface-light dark:bg-surface-dark p-4 rounded-2xl border border-orange-100 dark:border-stone-700 shadow-sm">
+<h3 class="text-stone-800 dark:text-stone-200 text-base font-bold mb-3">Rincian Biaya</h3>
+<div class="space-y-2">
+<div class="flex justify-between text-sm">
+<span class="text-stone-500 dark:text-stone-400">Total Harga Barang</span>
+<span class="font-medium text-stone-800 dark:text-white">Rp 130.000</span>
+</div>
+<div class="flex justify-between text-sm">
+<span class="text-stone-500 dark:text-stone-400">Ongkos Kirim</span>
+<span class="font-medium text-stone-800 dark:text-white">Rp 15.000</span>
+</div>
+<div class="flex justify-between text-sm">
+<span class="text-stone-500 dark:text-stone-400">Biaya Layanan</span>
+<span class="font-medium text-stone-800 dark:text-white">Rp 1.000</span>
+</div>
+<div class="my-2 border-t border-stone-200 dark:border-stone-700 border-dashed"></div>
+<div class="flex justify-between items-center">
+<span class="text-base font-bold text-stone-800 dark:text-white">Total Pembayaran</span>
+<span class="text-lg font-bold text-orange-600 dark:text-primary">Rp 146.000</span>
+</div>
+</div>
+<div class="mt-4 flex items-center justify-center gap-2 rounded-lg bg-secondary/20 dark:bg-secondary/10 py-2">
+<span class="material-symbols-outlined text-secondary-dark dark:text-secondary text-[18px]">verified_user</span>
+<span class="text-xs font-medium text-secondary-dark dark:text-secondary">Jaminan Produk Segar &amp; Higienis</span>
+</div>
+</div>
+</section>
+</main>
+<div class="fixed bottom-0 left-0 right-0 z-40 w-full max-w-md mx-auto bg-surface-light dark:bg-surface-dark border-t border-stone-100 dark:border-stone-800 p-4 pb-6 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+<div class="flex gap-4 items-center">
+<div class="flex flex-col">
+<span class="text-xs text-stone-500 dark:text-stone-400 font-medium">Total Tagihan</span>
+<span class="text-xl font-bold text-stone-800 dark:text-white">Rp 146.000</span>
+</div>
+<button class="flex-1 bg-primary hover:bg-primary-hover active:scale-[0.98] text-stone-900 font-bold rounded-xl h-12 flex items-center justify-center gap-2 shadow-lg shadow-orange-200 dark:shadow-none transition-all">
+<span>Pesan Sekarang</span>
+<span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+
+</body></html>

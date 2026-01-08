@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html class="light" lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Pasarantar - Belanja Protein Segar</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#FF9F66",      // Pastel Orange
+                        "accent": "#2DD4BF",       // Mint/Teal Green for interactions
+                        "background-light": "#FFFBF5", // Soft Warm Cream
+                        "background-dark": "#1C1917",  // Warm Dark Grey
+                        "text-main": "#332D2B",
+                        "text-muted": "#857F79",
+                    },
+                    fontFamily: {
+                        "display": ["Work Sans", "Noto Sans", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-text-main font-display antialiased selection:bg-primary selection:text-white">
+<div class="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden pb-24">
+<header class="sticky top-0 z-40 bg-white/80 backdrop-blur-md shadow-sm dark:bg-[#1C1917]/90">
+<div class="flex items-center justify-between p-4 pb-2">
+<div class="flex flex-1 flex-col justify-center">
+<span class="text-xs font-medium text-text-muted">Dikirim ke:</span>
+<div class="flex items-center gap-1 cursor-pointer group">
+<span class="material-symbols-outlined text-primary group-hover:text-accent transition-colors" style="font-size: 20px;">location_on</span>
+<h2 class="text-text-main dark:text-white text-sm font-bold leading-tight truncate max-w-[240px]">Rumah (Jakarta Selatan)</h2>
+<span class="material-symbols-outlined text-text-main dark:text-white" style="font-size: 18px;">expand_more</span>
+</div>
+</div>
+<button class="flex size-10 items-center justify-center rounded-full bg-background-light dark:bg-background-dark hover:bg-orange-50 transition-colors relative">
+<span class="material-symbols-outlined text-text-main dark:text-white">notifications</span>
+<span class="absolute top-2 right-2 size-2 bg-red-500 rounded-full border border-white"></span>
+</button>
+</div>
+<div class="px-4 pb-4">
+<label class="flex flex-col w-full">
+<div class="flex w-full items-center rounded-xl bg-background-light dark:bg-background-dark border border-transparent focus-within:border-primary transition-all h-12 overflow-hidden ring-1 ring-transparent focus-within:ring-primary/20">
+<div class="flex items-center justify-center pl-4 pr-2">
+<span class="material-symbols-outlined text-text-muted">search</span>
+</div>
+<input class="flex w-full min-w-0 flex-1 bg-transparent text-text-main dark:text-white placeholder:text-text-muted focus:outline-0 border-none h-full text-base font-normal px-2" placeholder="Cari ikan, daging, bumbu..." value=""/>
+</div>
+</label>
+</div>
+</header>
+<main class="flex flex-col gap-6 w-full">
+<div class="w-full px-4 mt-4">
+<div class="flex overflow-x-auto hide-scrollbar gap-4 snap-x snap-mandatory rounded-xl">
+<div class="snap-center shrink-0 w-full relative aspect-[2/1] rounded-xl overflow-hidden bg-gray-200">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="Fresh raw salmon fillet on dark stone background with lemon slices" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDlLivChGaiFLIlFwXrVyh-LMD_w9q_9-pdR0_S2XQicUfyM1ApzRzhXyLVwUQdhTgxORGlPdzrJmp0MneJsbNu2G2wvivXVm5GQEeK3wsUCzjhqXi4eDryNnlf9pS0sZ_pe6pNi7Ggq2lbzZTnTIBKzyf6oyVvas7UJdOuDZZB85inGEIu5495EVPIK0Qh7-YHg7R6iKoE6jheWfW2mMQXHjQkJUuQPdwu08J9b2gkMWMrkDuNZJzYGzuKLN_4JknzgKGz9aU8BTk");'></div>
+<div class="absolute inset-0 bg-gradient-to-r from-black/70 to-transparent flex flex-col justify-center p-6">
+<span class="bg-primary text-white text-xs font-bold px-2 py-1 rounded w-fit mb-2 shadow-sm">PROMO SPESIAL</span>
+<h2 class="text-white text-2xl font-bold leading-tight mb-1">Ikan Laut Segar</h2>
+<p class="text-white/90 text-sm mb-4">Langsung dari nelayan lokal</p>
+<button class="bg-white text-text-main px-4 py-2 rounded-lg text-sm font-bold w-fit hover:bg-primary hover:text-white transition-colors">Belanja Sekarang</button>
+</div>
+</div>
+<div class="snap-center shrink-0 w-full relative aspect-[2/1] rounded-xl overflow-hidden bg-gray-200">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="Various raw meat cuts on a wooden table" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAhXTu2Cc62rCpFT4RjVSFgxwyS5lTF993jhPGBxSypr4pX5s6YMFwhmpzncq7HE6aBG_QSnR4HdmFWbVOkMWv1QGwJc0Xy0L6U20wqwpfspFhALMOkOECnlSKmN7UJurRjXkxiLTD4mDr2ruQ3Dy6tRhnmAdylymKDGzbuAA4Kv5SnteFkE8x5nIP-UJ9JxiS-I0LFH6E9JZR5L5mXbK8nPJtQhCXOIW8os0tMoe416i31HdnVYWwoHxsNSYdr6WEb-_WNzhRNhLU");'></div>
+<div class="absolute inset-0 bg-gradient-to-r from-black/70 to-transparent flex flex-col justify-center p-6">
+<span class="bg-orange-500 text-white text-xs font-bold px-2 py-1 rounded w-fit mb-2">FLASH SALE</span>
+<h2 class="text-white text-2xl font-bold leading-tight mb-1">Daging Sapi Pilihan</h2>
+<p class="text-white/90 text-sm mb-4">Potongan premium untuk keluarga</p>
+</div>
+</div>
+</div>
+</div>
+<div class="px-4">
+<div class="grid grid-cols-4 sm:grid-cols-5 gap-3">
+<a class="flex flex-col items-center gap-2 group" href="#">
+<div class="size-16 rounded-2xl bg-white dark:bg-[#1C1917] shadow-sm border border-orange-50 dark:border-gray-800 flex items-center justify-center group-active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-blue-400 text-3xl">set_meal</span>
+</div>
+<span class="text-xs font-medium text-text-main dark:text-white text-center">Ikan Laut</span>
+</a>
+<a class="flex flex-col items-center gap-2 group" href="#">
+<div class="size-16 rounded-2xl bg-white dark:bg-[#1C1917] shadow-sm border border-orange-50 dark:border-gray-800 flex items-center justify-center group-active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-primary text-3xl">water_full</span>
+</div>
+<span class="text-xs font-medium text-text-main dark:text-white text-center">Seafood</span>
+</a>
+<a class="flex flex-col items-center gap-2 group" href="#">
+<div class="size-16 rounded-2xl bg-white dark:bg-[#1C1917] shadow-sm border border-orange-50 dark:border-gray-800 flex items-center justify-center group-active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-yellow-500 text-3xl">egg</span>
+</div>
+<span class="text-xs font-medium text-text-main dark:text-white text-center">Ayam &amp; Telur</span>
+</a>
+<a class="flex flex-col items-center gap-2 group" href="#">
+<div class="size-16 rounded-2xl bg-white dark:bg-[#1C1917] shadow-sm border border-orange-50 dark:border-gray-800 flex items-center justify-center group-active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-red-400 text-3xl">lunch_dining</span>
+</div>
+<span class="text-xs font-medium text-text-main dark:text-white text-center">Daging Sapi</span>
+</a>
+<a class="flex flex-col items-center gap-2 group col-span-4 sm:col-span-1" href="#">
+<div class="size-16 rounded-2xl bg-white dark:bg-[#1C1917] shadow-sm border border-orange-50 dark:border-gray-800 flex items-center justify-center group-active:scale-95 transition-transform mx-auto">
+<span class="material-symbols-outlined text-accent text-3xl">eco</span>
+</div>
+<span class="text-xs font-medium text-text-main dark:text-white text-center">Bumbu</span>
+</a>
+</div>
+</div>
+<div class="flex flex-col gap-3">
+<div class="flex items-center justify-between px-4">
+<h2 class="text-text-main dark:text-white text-lg font-bold">Promo Hari Ini 🔥</h2>
+<a class="text-sm font-semibold text-primary hover:text-orange-600 transition-colors" href="#">Lihat Semua</a>
+</div>
+<div class="flex overflow-x-auto hide-scrollbar px-4 pb-2 gap-4">
+<div class="flex flex-col min-w-[160px] w-[160px] bg-white dark:bg-[#1C1917] rounded-xl overflow-hidden border border-orange-50 dark:border-gray-800 shadow-sm relative group">
+<div class="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-sm z-10">20% OFF</div>
+<div class="aspect-square bg-gray-100 relative overflow-hidden">
+<div class="absolute inset-0 bg-cover bg-center group-hover:scale-105 transition-transform duration-500" data-alt="Fresh raw shrimp on ice" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBxG8aXousaWjDG2vpoo_6IgdEo6O11_yZRgAYJlcOcmcNT2VymE_L5ihqZ2wQa8nWwDTcY93cVFWTD-X5XTQc2zKsE1iyoCpAf7BcN5bHAnNumOx7AEVweAmXSs0thsvL0JROOH0doCdOCNTVW4G2CLL1OUb_-ElDfwHQB6OB-aGJpf6pNohfANGbQcrUGOLhtOVS_IwMZiYqzx9RWQDXrRRibAGJUsFSpEEHeFvTFHMgvppk4awER28ETvmSlinivao6D1_LfvRI");'></div>
+</div>
+<div class="p-3 flex flex-col gap-1">
+<h3 class="text-sm font-semibold text-text-main dark:text-white line-clamp-2 min-h-[40px]">Udang Vaname Segar</h3>
+<p class="text-xs text-text-muted">500 gram</p>
+<div class="flex flex-col mt-1">
+<span class="text-xs text-text-muted line-through">Rp 55.000</span>
+<span class="text-base font-bold text-primary">Rp 44.000</span>
+</div>
+<button class="mt-2 w-full h-8 rounded-lg bg-accent text-white text-sm font-bold hover:bg-teal-500 active:scale-95 transition-all shadow-sm">
+                            + Keranjang
+                        </button>
+</div>
+</div>
+<div class="flex flex-col min-w-[160px] w-[160px] bg-white dark:bg-[#1C1917] rounded-xl overflow-hidden border border-orange-50 dark:border-gray-800 shadow-sm relative group">
+<div class="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-sm z-10">10% OFF</div>
+<div class="aspect-square bg-gray-100 relative overflow-hidden">
+<div class="absolute inset-0 bg-cover bg-center group-hover:scale-105 transition-transform duration-500" data-alt="Fresh raw chicken breast on wooden board" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCgyhm0Yn74lk9SKeCXE6E0ilWn7Ua0QszkRsJZsIlYkMLA30N-4oC8R42wOguP9fuvLuWutkRufsZouQWZgSW-cfmCagrNoOHhpPKIUt1RcNyVeNxtrT4wnIW4Gc-GHqVlzOWW9lCTeyGmCpMYVM4BhTYKupyjchEbNSzRPlEzrCTjqFr-TLJaWMU-ItzxJCDVCsxQTk5_RSMV4CquKQveVvx1_sK0r2J_q5ukynUDSEgU8P_uPUPqLiieFhyjRbXGWr84qOwGXjI");'></div>
+</div>
+<div class="p-3 flex flex-col gap-1">
+<h3 class="text-sm font-semibold text-text-main dark:text-white line-clamp-2 min-h-[40px]">Dada Ayam Fillet</h3>
+<p class="text-xs text-text-muted">1 kg</p>
+<div class="flex flex-col mt-1">
+<span class="text-xs text-text-muted line-through">Rp 60.000</span>
+<span class="text-base font-bold text-primary">Rp 54.000</span>
+</div>
+<button class="mt-2 w-full h-8 rounded-lg bg-accent text-white text-sm font-bold hover:bg-teal-500 active:scale-95 transition-all shadow-sm">
+                            + Keranjang
+                        </button>
+</div>
+</div>
+<div class="flex flex-col min-w-[160px] w-[160px] bg-white dark:bg-[#1C1917] rounded-xl overflow-hidden border border-orange-50 dark:border-gray-800 shadow-sm relative group">
+<div class="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-sm z-10">15% OFF</div>
+<div class="aspect-square bg-gray-100 relative overflow-hidden">
+<div class="absolute inset-0 bg-cover bg-center group-hover:scale-105 transition-transform duration-500" data-alt="Red snapper fish on ice market display" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDaUnwRAoSz9ZwLNRxwHaChQa5m6IKGY3Gu5gej7h1Rrn9q4CGHKz_2YMIzW0LBMV70rHzYCH8wtlgUfrBXLe-TFPPHCrkDo_br7GkG5nJ4ZxA06Y5Cj84UqwaiPP1aXZ7BECVRrynMws0TOYSswdhbfTLygxX0IW74-4yDw9bYvd0Log2LAH5evQtf8THb-d92tqMOxDtTFCOtFIDr4PXscnRFEjnEnDSo31z7I7zryGRlS5LN49q2f6Sbt0Ut-2m0UfffZK8IJ2g");'></div>
+</div>
+<div class="p-3 flex flex-col gap-1">
+<h3 class="text-sm font-semibold text-text-main dark:text-white line-clamp-2 min-h-[40px]">Ikan Kakap Merah</h3>
+<p class="text-xs text-text-muted">1 Ekor (700g)</p>
+<div class="flex flex-col mt-1">
+<span class="text-xs text-text-muted line-through">Rp 85.000</span>
+<span class="text-base font-bold text-primary">Rp 72.250</span>
+</div>
+<button class="mt-2 w-full h-8 rounded-lg bg-accent text-white text-sm font-bold hover:bg-teal-500 active:scale-95 transition-all shadow-sm">
+                            + Keranjang
+                        </button>
+</div>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-3 px-4">
+<div class="flex items-center justify-between">
+<h2 class="text-text-main dark:text-white text-lg font-bold">Pilihan Bunda ❤️</h2>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="flex flex-col bg-white dark:bg-[#1C1917] rounded-xl overflow-hidden border border-orange-50 dark:border-gray-800 shadow-sm group">
+<div class="aspect-square bg-gray-100 relative overflow-hidden">
+<div class="absolute top-2 left-2 bg-green-50 text-green-700 border border-green-100 text-[10px] font-bold px-2 py-0.5 rounded shadow-sm z-10">DIJAMIN SEGAR</div>
+<div class="absolute inset-0 bg-cover bg-center group-hover:scale-105 transition-transform duration-500" data-alt="Raw beef steak cut on wooden board" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuB6Ll7Ti7AblzWEGxKQSHCZ8iMveWxStRlmaMEm16gZGkV1Z1hxh0xYeaz5RhWPx-liDTLyZ9wxOUIypEV94ctVF1eAEbmd5zd0hReTzvWNiK5PfCvQdj4uSelO7jKZMLZ3m_aV3Z9W3eOPOpWDgUJ2lrbUt3eFkM80RpkbpUXkxyMEfD5HAlh0hk235AJgZQzCUWcKEIonWlI7aR3-RgYsozHq4FaahDQqDdZ8eEY_9wpQ28fIpbC8jJPbhysk56LV99hqnDKZFBM");'></div>
+</div>
+<div class="p-3 flex flex-col gap-1 flex-1">
+<h3 class="text-sm font-semibold text-text-main dark:text-white line-clamp-2">Daging Sapi Rendang</h3>
+<p class="text-xs text-text-muted">1 kg</p>
+<div class="flex items-end justify-between mt-auto pt-2">
+<span class="text-base font-bold text-text-main dark:text-white">Rp 120.000</span>
+<button class="size-8 rounded-full bg-accent flex items-center justify-center text-white hover:bg-teal-500 active:scale-95 transition-all shadow-sm">
+<span class="material-symbols-outlined text-lg">add</span>
+</button>
+</div>
+</div>
+</div>
+<div class="flex flex-col bg-white dark:bg-[#1C1917] rounded-xl overflow-hidden border border-orange-50 dark:border-gray-800 shadow-sm group">
+<div class="aspect-square bg-gray-100 relative overflow-hidden">
+<div class="absolute inset-0 bg-cover bg-center group-hover:scale-105 transition-transform duration-500" data-alt="Whole raw chicken on table" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDkMSD30_lv_fwxGuq_Tkok0sNA1MxsJtXT7yrO4cOEeVRQX2ZMlWpb4VFzq5TEcHh-IQ5NfpKRZwy29KB51gDD0CNAwuMma1XzmqERpYwcgz5GREf3F5NS5ssH9QAxCE3hmJM04ED5vuOYeE0AI8Q2KVMOm7CYkxNBGKzyFJ_WGEfNUTYJ5hE3VpQNA7GwZFhLcBVbsLCh77i-BQFKm9K04_wni3Zmp9XBUX1XHwmmVKHRTG2pWT1p6sgJyTph2Mes6bhZeI3SnfY");'></div>
+</div>
+<div class="p-3 flex flex-col gap-1 flex-1">
+<h3 class="text-sm font-semibold text-text-main dark:text-white line-clamp-2">Ayam Utuh Karkas</h3>
+<p class="text-xs text-text-muted">0.8 - 1.0 kg</p>
+<div class="flex items-end justify-between mt-auto pt-2">
+<span class="text-base font-bold text-text-main dark:text-white">Rp 45.000</span>
+<button class="size-8 rounded-full bg-accent flex items-center justify-center text-white hover:bg-teal-500 active:scale-95 transition-all shadow-sm">
+<span class="material-symbols-outlined text-lg">add</span>
+</button>
+</div>
+</div>
+</div>
+<div class="flex flex-col bg-white dark:bg-[#1C1917] rounded-xl overflow-hidden border border-orange-50 dark:border-gray-800 shadow-sm group">
+<div class="aspect-square bg-gray-100 relative overflow-hidden">
+<div class="absolute inset-0 bg-cover bg-center group-hover:scale-105 transition-transform duration-500" data-alt="Salmon fillet slice on dark background" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAR8-LyRzR61C71r6_M9act3sy1wazyOx9ao0r0tYaEWU1fY1ZZ2SON2-JQDFD-f8bikrerdjgdW0rToxwEY_vVfCgR-BLtvJoXCklNdf-9NcKPXzzvFfZoC6VJndtXGFYZXo0ZxF7_rrOmA8oN55BtFLsmiXS4R4QWLFQ3-uMIbYcGA54KUFudMKCdNRa8ZcXXWMF5L_BBtkD5vSThLD9znxeNSdb2LCkMVKgOHYqEOXIjhBu17CkPYzxbBJyyfJ2zM3yBrmi0yBA");'></div>
+</div>
+<div class="p-3 flex flex-col gap-1 flex-1">
+<h3 class="text-sm font-semibold text-text-main dark:text-white line-clamp-2">Salmon Trout Fillet</h3>
+<p class="text-xs text-text-muted">200 gram</p>
+<div class="flex items-end justify-between mt-auto pt-2">
+<span class="text-base font-bold text-text-main dark:text-white">Rp 65.000</span>
+<button class="size-8 rounded-full bg-accent flex items-center justify-center text-white hover:bg-teal-500 active:scale-95 transition-all shadow-sm">
+<span class="material-symbols-outlined text-lg">add</span>
+</button>
+</div>
+</div>
+</div>
+<div class="flex flex-col bg-white dark:bg-[#1C1917] rounded-xl overflow-hidden border border-orange-50 dark:border-gray-800 shadow-sm group">
+<div class="aspect-square bg-gray-100 relative overflow-hidden">
+<div class="absolute inset-0 bg-cover bg-center group-hover:scale-105 transition-transform duration-500" data-alt="Fresh green vegetables and herbs" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBFh___2eg3aUCuIU-x9UJN6FQtlyxGO9cei3R20eGWd4YIlyNj_h3PkzDa1Dtqqcm175fWPAmJ9qP91dtR4y5akgvKAPregzdUFBW_ND5fBRmWTV9er7fq1L5p_q7yywitDynAS4qXmgkudFvwv3Xp7zthNT3gGuj8kPnL0v72Ehhqbv_y_KklE1Mu1Paq8yTE611sxhDW5PE8cmQ4cwh_migF5y8Olq5zX-h3D0mPmDVyhdOYUZksrbLJDi-CVDGcEp-jCPPdvFU");'></div>
+</div>
+<div class="p-3 flex flex-col gap-1 flex-1">
+<h3 class="text-sm font-semibold text-text-main dark:text-white line-clamp-2">Paket Sayur Sop</h3>
+<p class="text-xs text-text-muted">1 Pack</p>
+<div class="flex items-end justify-between mt-auto pt-2">
+<span class="text-base font-bold text-text-main dark:text-white">Rp 15.000</span>
+<button class="size-8 rounded-full bg-accent flex items-center justify-center text-white hover:bg-teal-500 active:scale-95 transition-all shadow-sm">
+<span class="material-symbols-outlined text-lg">add</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<nav class="fixed bottom-0 w-full bg-white dark:bg-[#1C1917] border-t border-gray-100 dark:border-gray-800 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-50">
+<div class="flex items-center justify-around h-16 max-w-lg mx-auto relative">
+<a class="flex flex-col items-center justify-center gap-1 w-16 text-primary" href="#">
+<span class="material-symbols-outlined fill-current">home</span>
+<span class="text-[10px] font-bold">Beranda</span>
+</a>
+<a class="flex flex-col items-center justify-center gap-1 w-16 text-text-muted dark:text-gray-400 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">grid_view</span>
+<span class="text-[10px] font-medium">Kategori</span>
+</a>
+<div class="relative -top-6">
+<a class="flex items-center justify-center size-14 rounded-full bg-primary text-white shadow-lg shadow-orange-200 dark:shadow-none hover:scale-105 transition-transform border-4 border-white dark:border-[#1C1917]" href="#">
+<span class="material-symbols-outlined" style="font-size: 28px;">shopping_cart</span>
+<span class="absolute top-2 right-2 size-2.5 bg-red-600 rounded-full border border-primary"></span>
+</a>
+</div>
+<a class="flex flex-col items-center justify-center gap-1 w-16 text-text-muted dark:text-gray-400 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">receipt_long</span>
+<span class="text-[10px] font-medium">Pesanan</span>
+</a>
+<a class="flex flex-col items-center justify-center gap-1 w-16 text-text-muted dark:text-gray-400 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="text-[10px] font-medium">Akun</span>
+</a>
+</div>
+</nav>
+</div>
+
+</body></html>

@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html class="light" lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Detail Produk - Pasarantar</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Work+Sans:ital,wght@0,100..900;1,100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#FFAB76","primary-dark": "#E68A5C",
+                        "accent-mint": "#A0E8AF","accent-blue": "#AECBEB","background-light": "#FFFDF5","background-dark": "#1C1C1E",
+                        "text-main": "#4A3B32","surface-cream": "#F9F4EF",
+                    },
+                    fontFamily: {
+                        "display": ["Work Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem", 
+                        "lg": "0.5rem", 
+                        "xl": "0.75rem", 
+                        "2xl": "1rem",
+                        "full": "9999px"
+                    },
+                    boxShadow: {
+                        'soft': '0 4px 20px -2px rgba(255, 171, 118, 0.15)',
+                    }
+                },
+            },
+        }
+    </script>
+<style>.hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display antialiased text-text-main dark:text-gray-100">
+<div class="relative flex h-full min-h-screen w-full flex-col overflow-x-hidden max-w-md mx-auto bg-background-light dark:bg-gray-900 shadow-2xl pb-24 border-x border-gray-100 dark:border-gray-800">
+<div class="sticky top-0 z-50 flex items-center bg-background-light/90 dark:bg-gray-900/90 backdrop-blur-md p-4 justify-between border-b border-orange-100 dark:border-gray-800">
+<button class="flex size-10 items-center justify-center rounded-full hover:bg-orange-50 dark:hover:bg-gray-800 transition-colors text-text-main dark:text-white">
+<span class="material-symbols-outlined text-[24px]">arrow_back</span>
+</button>
+<h2 class="text-text-main dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]">Detail Produk</h2>
+<button class="flex size-10 items-center justify-center rounded-full hover:bg-orange-50 dark:hover:bg-gray-800 transition-colors text-text-main dark:text-white relative">
+<span class="material-symbols-outlined text-[24px]">shopping_bag</span>
+<span class="absolute top-1 right-1 size-2.5 bg-red-500 rounded-full border-2 border-background-light dark:border-gray-900"></span>
+</button>
+</div>
+<div class="relative w-full aspect-[4/3] bg-surface-cream dark:bg-gray-800">
+<div class="absolute inset-0 flex overflow-x-auto snap-x snap-mandatory hide-scrollbar">
+<div class="flex-none w-full h-full snap-center bg-center bg-cover bg-no-repeat" data-alt="Fresh premium salmon fillet on a wooden board" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuA1ZYYqQPer144w6GB3H2Aj4IgK62P4rDrUsBf0HKyRyau0t1jWmYI6ZMp0lM1CTr7GJztMP8tPsFqhh78zrNBN11dTIZHDqa_H_H9XcczkSn1f7qCouTmFCIAeXOWwn2D7mjtura5FmQ0w_WE6a8gXyR4MFcYFxCf0tt7tBHsNBW-GVUStQQzlbZsRgLdNtLi3Pmb_q8pNgKC-AqhJo1ZFXM_TiQjskC0FX0eFOUZ5Dv9LZVAtQtHMOemHcbPVmPKOIcib6ZJX77s');">
+</div>
+<div class="flex-none w-full h-full snap-center bg-center bg-cover bg-no-repeat" data-alt="Raw salmon slices prepared for cooking" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDGfAjmBzmuSTELLprQlwlvPpcbne39KPDT69AAA5AtI16HgeSGHM0NtGxAI8SmSDCTIBrOmdLT0TRmxE4Ko_yxU2k9qFapxelpuBiEjlDwjB3aCp3bFDGsMBLvFqEvvdsr4hEimAXm4jTVbuEDYNzVoxuTK1erawhHPsToC8ytHAEZ2xt4vPhcYSu8KuCivOZjVnqv1K_CQiWP5L1uR1CkAPzJkJNi46WgpT7KMaeK0cq6gKYnqoIncLVM70kBvIn3YlFr-B0QNEE');">
+</div>
+</div>
+<button class="absolute top-4 right-4 size-10 bg-white/80 dark:bg-gray-900/60 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg text-gray-400 hover:text-red-500 transition-colors">
+<span class="material-symbols-outlined text-[24px]">favorite</span>
+</button>
+<div class="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+<div class="w-2 h-2 rounded-full bg-primary shadow-sm"></div>
+<div class="w-2 h-2 rounded-full bg-white/60 shadow-sm"></div>
+</div>
+</div>
+<div class="px-5 pt-6 bg-background-light dark:bg-gray-900 rounded-t-3xl -mt-6 relative z-10">
+<div class="flex items-start justify-between gap-4">
+<div class="w-full">
+<div class="flex items-center gap-2 mb-2">
+<span class="px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-accent-mint/30 text-green-800 dark:text-green-300">Stok Tersedia</span>
+<div class="flex items-center gap-1 text-yellow-500 bg-yellow-50 dark:bg-yellow-900/20 px-2 py-0.5 rounded-md">
+<span class="material-symbols-outlined text-[14px] fill-current">star</span>
+<span class="text-xs font-bold text-gray-700 dark:text-gray-300">4.8</span>
+<span class="text-xs text-gray-400 dark:text-gray-500">(128)</span>
+</div>
+</div>
+<h1 class="text-text-main dark:text-white text-2xl font-bold leading-tight tracking-tight mb-1">Ikan Salmon Fillet Premium</h1>
+<p class="text-gray-500 dark:text-gray-400 text-sm">Norwegia • Grade A Sashimi</p>
+</div>
+</div>
+<div class="mt-4 flex items-end gap-2 border-b border-orange-100 dark:border-gray-800 pb-6">
+<h2 class="text-primary text-3xl font-bold tracking-tight">Rp 85.000</h2>
+<span class="text-gray-400 dark:text-gray-500 mb-1.5 text-base font-medium">/ 500gr</span>
+</div>
+</div>
+<div class="px-5 pt-6 bg-background-light dark:bg-gray-900">
+<h3 class="text-text-main dark:text-white text-base font-bold mb-3">Pilih Berat</h3>
+<div class="flex gap-3 flex-wrap">
+<button class="group relative flex h-10 items-center justify-center gap-x-2 rounded-xl bg-primary pl-5 pr-5 shadow-sm shadow-orange-200 dark:shadow-none ring-2 ring-transparent transition-all">
+<p class="text-white text-sm font-bold leading-normal">500gr</p>
+</button>
+<button class="group relative flex h-10 items-center justify-center gap-x-2 rounded-xl bg-surface-cream dark:bg-gray-800 border border-orange-100 dark:border-gray-700 hover:bg-orange-50 dark:hover:bg-gray-700 pl-5 pr-5 transition-all">
+<p class="text-gray-600 dark:text-gray-300 text-sm font-medium leading-normal">1kg</p>
+<span class="text-[10px] bg-accent-mint/40 text-green-800 px-1.5 py-0.5 rounded-full font-bold ml-1">Hemat 5%</span>
+</button>
+<button class="group relative flex h-10 items-center justify-center gap-x-2 rounded-xl bg-surface-cream dark:bg-gray-800 border border-orange-100 dark:border-gray-700 hover:bg-orange-50 dark:hover:bg-gray-700 pl-5 pr-5 transition-all">
+<p class="text-gray-600 dark:text-gray-300 text-sm font-medium leading-normal">250gr</p>
+</button>
+</div>
+</div>
+<div class="px-5 mt-6 bg-background-light dark:bg-gray-900">
+<div class="bg-blue-50/70 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-900 rounded-2xl p-4 flex gap-3 items-start">
+<div class="bg-accent-blue/30 dark:bg-blue-800 rounded-full p-2 shrink-0 text-blue-600 dark:text-blue-300">
+<span class="material-symbols-outlined text-[20px]">local_shipping</span>
+</div>
+<div>
+<p class="text-sm font-bold text-text-main dark:text-white mb-0.5">Dikirim besok pagi</p>
+<p class="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">Pesan sebelum jam 20:00 untuk pengiriman besok pukul 06:00 - 09:00.</p>
+</div>
+</div>
+</div>
+<div class="px-5 pt-6 pb-4 bg-background-light dark:bg-gray-900">
+<h3 class="text-text-main dark:text-white text-lg font-bold mb-3">Tentang Produk</h3>
+<p class="text-gray-600 dark:text-gray-300 text-[15px] leading-7">
+            Salmon segar pilihan terbaik yang kaya akan omega-3, protein, dan vitamin D. Ikan kami didatangkan langsung dari perairan dingin Norwegia untuk menjaga kualitas dan rasa. 
+        </p>
+<p class="text-gray-600 dark:text-gray-300 text-[15px] leading-7 mt-3">
+            Tekstur daging lembut dan juicy, sangat cocok untuk MPASI si kecil, menu grill keluarga di akhir pekan, atau dimasak pan-seared sederhana.
+        </p>
+<div class="flex items-center gap-2 mt-4 text-primary font-bold text-sm cursor-pointer hover:underline">
+<span>Baca selengkapnya</span>
+<span class="material-symbols-outlined text-[16px]">expand_more</span>
+</div>
+</div>
+<div class="px-5 py-4 border-t border-orange-100 dark:border-gray-800 bg-background-light dark:bg-gray-900">
+<div class="grid grid-cols-2 gap-4">
+<div class="flex items-center gap-3 bg-surface-cream dark:bg-gray-800 p-3 rounded-xl border border-orange-50 dark:border-gray-700">
+<span class="material-symbols-outlined text-green-600 dark:text-green-400 text-2xl">verified_user</span>
+<div>
+<p class="text-xs font-bold text-text-main dark:text-white">Dijamin Segar</p>
+<p class="text-[10px] text-gray-500">Uang kembali 100%</p>
+</div>
+</div>
+<div class="flex items-center gap-3 bg-surface-cream dark:bg-gray-800 p-3 rounded-xl border border-orange-50 dark:border-gray-700">
+<span class="material-symbols-outlined text-blue-500 dark:text-blue-400 text-2xl">thermometer</span>
+<div>
+<p class="text-xs font-bold text-text-main dark:text-white">Suhu Terjaga</p>
+<p class="text-[10px] text-gray-500">Dikirim ice gel</p>
+</div>
+</div>
+</div>
+</div>
+<div class="px-5 pt-2 pb-6 bg-background-light dark:bg-gray-900">
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-text-main dark:text-white text-lg font-bold">Ulasan Pembeli</h3>
+<a class="text-primary text-sm font-bold hover:text-orange-600 transition-colors" href="#">Lihat Semua</a>
+</div>
+<div class="flex flex-col gap-4">
+<div class="bg-surface-cream dark:bg-gray-800/50 rounded-2xl p-4 border border-orange-50 dark:border-gray-700">
+<div class="flex items-center justify-between mb-2">
+<div class="flex items-center gap-2">
+<div class="size-9 rounded-full bg-orange-100 dark:bg-gray-700 bg-center bg-cover border-2 border-white dark:border-gray-600" data-alt="User avatar placeholder" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAp7SrTl3Ai4RHUewbgnuJkEgUHuQaOaSXQ9mmLtgu7aUh7UCr26pS85X0Wacfy-YL6fCd7pHK5SFY-y-o-L8L0Zau_mkRaD0OrOsHqthxgM2knkHLTHsky67r4lSKV3jY8rronFyuSXwu2f1dEml8lxmlBO4pYy7-fjheff8eU8Z2E2JGgRLuvEku17OZQuu5y4bJQ8wVD-i7a8jfqvbksZrKTZKQKpEzA22-Gnm88ntpISDb8M8D1DTAabhzo4V-Fe8ppdboBiaE');"></div>
+<span class="text-sm font-bold text-text-main dark:text-white">Sari P.</span>
+</div>
+<div class="flex text-yellow-400">
+<span class="material-symbols-outlined text-[16px] fill-current">star</span>
+<span class="material-symbols-outlined text-[16px] fill-current">star</span>
+<span class="material-symbols-outlined text-[16px] fill-current">star</span>
+<span class="material-symbols-outlined text-[16px] fill-current">star</span>
+<span class="material-symbols-outlined text-[16px] fill-current">star</span>
+</div>
+</div>
+<p class="text-xs text-gray-600 dark:text-gray-300 leading-relaxed italic">"Ikannya seger banget! Anakku suka, gak amis sama sekali. Packingnya juga rapi pake ice gel banyak."</p>
+</div>
+</div>
+</div>
+<div class="fixed bottom-0 left-0 right-0 z-40 w-full max-w-md mx-auto bg-background-light dark:bg-gray-900 border-t border-orange-100 dark:border-gray-800 p-4 pb-8 shadow-[0_-8px_30px_-5px_rgba(0,0,0,0.05)]">
+<div class="flex items-center gap-4">
+<div class="flex items-center justify-between bg-surface-cream dark:bg-gray-800 border border-orange-100 dark:border-gray-700 rounded-xl h-14 w-36 px-3 shrink-0">
+<button class="size-8 flex items-center justify-center text-gray-400 hover:text-text-main dark:text-gray-400 dark:hover:text-white active:scale-90 transition-transform disabled:opacity-50">
+<span class="material-symbols-outlined text-[20px]">remove</span>
+</button>
+<span class="text-lg font-bold text-text-main dark:text-white">1</span>
+<button class="size-8 flex items-center justify-center text-primary active:scale-90 transition-transform">
+<span class="material-symbols-outlined text-[20px]">add</span>
+</button>
+</div>
+<button class="flex-1 h-14 bg-primary hover:bg-primary-dark active:bg-orange-600 rounded-2xl flex items-center justify-center gap-2 shadow-xl shadow-orange-300/40 dark:shadow-orange-900/20 transition-all active:scale-[0.98]">
+<span class="material-symbols-outlined text-white text-[22px]">shopping_cart</span>
+<span class="text-white font-bold text-lg">+ Keranjang</span>
+</button>
+</div>
+</div>
+</div>
+
+</body></html>

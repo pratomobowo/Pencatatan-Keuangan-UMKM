@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Pasarantar - Registrasi</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#FF9F68", // Pastel Orange
+                        "primary-hover": "#FF8C48",
+                        "accent": "#A7F3D0", // Mint Green
+                        "accent-text": "#064E3B", // Dark Green for contrast
+                        "background-light": "#FFFBF7", // Soft Cream
+                        "background-dark": "#1C1917", // Warm Dark Brown
+                        "text-main": "#432818", // Dark Brown
+                        "text-muted": "#9D8D85", // Warm Muted Gray
+                    },
+                    fontFamily: {
+                        "display": ["Work Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }.no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+        body {
+          min-height: max(884px, 100dvh);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-gray-100 dark:bg-background-dark font-display antialiased">
+<div class="relative flex h-full min-h-screen w-full flex-col overflow-x-hidden max-w-md mx-auto shadow-2xl bg-background-light dark:bg-background-dark">
+<div class="sticky top-0 z-10 flex items-center justify-between p-4 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-md">
+<button class="flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-orange-100 dark:hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-text-main dark:text-white" style="font-size: 24px;">arrow_back_ios_new</span>
+</button>
+<h1 class="text-text-main dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]">Registrasi</h1>
+<div class="size-10"></div> 
+</div>
+<div class="px-4 py-2">
+<div class="w-full h-[180px] rounded-xl overflow-hidden relative group">
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10"></div>
+<div class="w-full h-full bg-center bg-cover bg-no-repeat transform group-hover:scale-105 transition-transform duration-700" data-alt="Fresh fish, chicken and vegetables on a wooden table" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCGt_mDwDKquxm55zOJGFZRhTjg2gLpyNPG1RyClooZz7_kmzlgcBzdtiY9o9dv6WLL_57fF3QGtFsD6EdsoNhBXPCzRpKL289hP2sV_cGms750tVXeOcNXnJT1SFtJTr3f4LvkCM080gVdznXElvE2snBsac0p40lbW4lv2P84CcWk_IVe2URy8xQVDy1Xv8o6440QQfUMBsodCURFFcT2EdQWhJEVb3C0wds2DzoittRACpDe5h1r-NFggBeRXsZ2joi-DK6lNBA");'>
+</div>
+<div class="absolute bottom-4 left-4 z-20">
+<span class="inline-flex items-center justify-center rounded-full bg-accent px-3 py-1 text-xs font-bold text-accent-text mb-2">
+<span class="material-symbols-outlined mr-1 text-sm">local_offer</span>
+                        Promo Pengguna Baru
+                    </span>
+<h2 class="text-white text-2xl font-bold leading-tight shadow-sm">Mulai Belanja Segar</h2>
+</div>
+</div>
+</div>
+<div class="flex-1 flex flex-col px-5 py-4 gap-5">
+<div class="space-y-1">
+<p class="text-text-main dark:text-white text-xl font-bold">Buat Akun Baru</p>
+<p class="text-text-muted dark:text-gray-400 text-sm font-normal">Isi data diri Anda untuk kemudahan belanja protein segar setiap hari.</p>
+</div>
+<form class="flex flex-col gap-4">
+<div class="space-y-1.5">
+<label class="text-text-main dark:text-gray-200 text-sm font-medium">Nama Lengkap</label>
+<div class="relative group">
+<div class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
+<span class="material-symbols-outlined text-text-muted group-focus-within:text-primary transition-colors">person</span>
+</div>
+<input class="form-input block w-full rounded-xl border-gray-200 dark:border-gray-700 bg-white dark:bg-white/5 pl-11 pr-4 py-3.5 text-text-main dark:text-white placeholder:text-text-muted/60 focus:border-primary focus:ring-primary dark:focus:border-primary sm:text-sm sm:leading-6 transition-all shadow-sm" placeholder="Contoh: Siti Aminah" required="" type="text"/>
+</div>
+</div>
+<div class="space-y-1.5">
+<label class="text-text-main dark:text-gray-200 text-sm font-medium">Email atau Nomor Telepon</label>
+<div class="relative group">
+<div class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
+<span class="material-symbols-outlined text-text-muted group-focus-within:text-primary transition-colors">mail</span>
+</div>
+<input class="form-input block w-full rounded-xl border-gray-200 dark:border-gray-700 bg-white dark:bg-white/5 pl-11 pr-4 py-3.5 text-text-main dark:text-white placeholder:text-text-muted/60 focus:border-primary focus:ring-primary dark:focus:border-primary sm:text-sm sm:leading-6 transition-all shadow-sm" placeholder="Contoh: nama@email.com" required="" type="text"/>
+</div>
+</div>
+<div class="space-y-1.5">
+<label class="text-text-main dark:text-gray-200 text-sm font-medium">Kata Sandi</label>
+<div class="relative group">
+<div class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
+<span class="material-symbols-outlined text-text-muted group-focus-within:text-primary transition-colors">lock</span>
+</div>
+<input class="form-input block w-full rounded-xl border-gray-200 dark:border-gray-700 bg-white dark:bg-white/5 pl-11 pr-11 py-3.5 text-text-main dark:text-white placeholder:text-text-muted/60 focus:border-primary focus:ring-primary dark:focus:border-primary sm:text-sm sm:leading-6 transition-all shadow-sm" placeholder="Minimal 6 karakter" required="" type="password"/>
+<button class="absolute inset-y-0 right-0 flex items-center pr-3.5 text-text-muted hover:text-text-main dark:hover:text-white transition-colors" type="button">
+<span class="material-symbols-outlined" style="font-size: 20px;">visibility_off</span>
+</button>
+</div>
+</div>
+<div class="space-y-1.5">
+<label class="text-text-main dark:text-gray-200 text-sm font-medium">Konfirmasi Kata Sandi</label>
+<div class="relative group">
+<div class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
+<span class="material-symbols-outlined text-text-muted group-focus-within:text-primary transition-colors">lock_reset</span>
+</div>
+<input class="form-input block w-full rounded-xl border-gray-200 dark:border-gray-700 bg-white dark:bg-white/5 pl-11 pr-11 py-3.5 text-text-main dark:text-white placeholder:text-text-muted/60 focus:border-primary focus:ring-primary dark:focus:border-primary sm:text-sm sm:leading-6 transition-all shadow-sm" placeholder="Ulangi kata sandi" required="" type="password"/>
+<button class="absolute inset-y-0 right-0 flex items-center pr-3.5 text-text-muted hover:text-text-main dark:hover:text-white transition-colors" type="button">
+<span class="material-symbols-outlined" style="font-size: 20px;">visibility_off</span>
+</button>
+</div>
+</div>
+<div class="flex items-start gap-3 mt-2">
+<div class="flex h-6 items-center">
+<input class="size-5 rounded border-gray-300 dark:border-gray-600 bg-white dark:bg-white/10 text-primary focus:ring-primary focus:ring-offset-0" id="terms" type="checkbox"/>
+</div>
+<label class="text-sm leading-tight text-text-muted dark:text-gray-400 pt-[2px]" for="terms">
+                        Saya menyetujui <a class="font-semibold text-primary hover:underline underline-offset-2" href="#">Syarat &amp; Ketentuan</a> serta <a class="font-semibold text-primary hover:underline underline-offset-2" href="#">Kebijakan Privasi</a> Pasarantar.
+                    </label>
+</div>
+<button class="mt-4 flex w-full items-center justify-center rounded-xl bg-primary px-4 py-4 text-base font-bold text-text-main shadow-lg shadow-primary/20 hover:bg-primary-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary transition-all active:scale-[0.98]" type="button">
+                    Daftar Sekarang
+                </button>
+</form>
+<div class="relative mt-2">
+<div aria-hidden="true" class="absolute inset-0 flex items-center">
+<div class="w-full border-t border-gray-200 dark:border-gray-700"></div>
+</div>
+<div class="relative flex justify-center text-sm font-medium leading-6">
+<span class="bg-background-light dark:bg-background-dark px-4 text-text-muted dark:text-gray-500">Atau daftar dengan</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<button class="flex w-full items-center justify-center gap-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-white/5 px-4 py-3 text-sm font-semibold text-text-main dark:text-white shadow-sm hover:bg-orange-50 dark:hover:bg-white/10 transition-colors" type="button">
+<svg aria-hidden="true" class="h-5 w-5" viewBox="0 0 24 24">
+<path class="dark:fill-white" d="M12.0003 20.45C16.6669 20.45 20.5843 17.275 22.0128 13.0625H12.0003V10.1875H22.4278C22.5653 10.9375 22.6278 11.6375 22.6278 12.5C22.6278 18.575 18.5653 22.95 12.0003 22.95C5.95278 22.95 1.05029 18.05 1.05029 12C1.05029 5.95 5.95278 1.05 12.0003 1.05C14.6528 1.05 17.1528 1.9375 19.1403 3.6125L17.2028 5.55C15.8278 4.4125 14.1528 3.75 12.0003 3.75C7.45279 3.75 3.75279 7.45 3.75279 12C3.75279 16.55 7.45279 20.25 12.0003 20.25L12.0003 20.45Z" fill="#432818"></path>
+</svg>
+                    Google
+                </button>
+<button class="flex w-full items-center justify-center gap-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-white/5 px-4 py-3 text-sm font-semibold text-text-main dark:text-white shadow-sm hover:bg-orange-50 dark:hover:bg-white/10 transition-colors" type="button">
+<svg aria-hidden="true" class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+<path class="fill-[#432818] dark:fill-white" d="M13.253 1.98a8.313 8.313 0 0 1-.225 5.54c2.257.063 4.887-1.396 5.396-5.463a6.83 6.83 0 0 1-5.17 1.904zm-1.633 6.077c-1.848 0-3.328 1.04-4.195 1.04-.853 0-2.148-1.008-3.535-1.008-3.64 0-7.052 3.827-7.052 9.273 0 5.432 3.664 12.723 6.945 12.723 1.296 0 1.836-.88 4.38-1.168 2.512.256 3.12 1.168 4.4 1.168 2.688 0 5.152-4.144 5.944-6.304-3.136-1.504-3.504-5.696-1.12-7.584-1.44-1.808-3.6-2.992-5.76-2.992z"></path>
+</svg>
+                    Apple
+                </button>
+</div>
+<div class="pb-6 pt-2 text-center">
+<p class="text-sm text-text-muted dark:text-gray-400">
+                    Sudah punya akun? 
+                    <a class="font-bold text-primary hover:text-orange-500 transition-colors" href="#">Masuk di sini</a>
+</p>
+</div>
+</div>
+</div>
+
+</body></html>
