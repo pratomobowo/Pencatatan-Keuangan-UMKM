@@ -5,7 +5,7 @@ import { Search, Bell, MapPin, ChevronDown } from 'lucide-react';
 
 export const ShopNavbar = () => {
     return (
-        <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md shadow-sm">
+        <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md shadow-sm w-full max-w-md mx-auto">
             {/* Location & Notification */}
             <div className="flex items-center justify-between p-4 pb-2">
                 <div className="flex flex-1 flex-col justify-center">
