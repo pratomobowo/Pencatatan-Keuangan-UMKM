@@ -39,6 +39,9 @@ model Product {
   costPrice   Decimal  @db.Decimal(10, 2)
   stock       Int      @default(0)
   unit        String
+  image       String?  // URL to product image
+  category    String?  // Product category for shop
+  isActive    Boolean  @default(true) // Show in shop
   
   orderItems  OrderItem[]
   
@@ -47,6 +50,8 @@ model Product {
   
   @@index([sku])
   @@index([name])
+  @@index([category])
+  @@index([isActive])
 }
 
 // ============================================

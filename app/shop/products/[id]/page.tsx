@@ -1,93 +1,111 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, use } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowLeft, ShoppingBag, Heart, Star, Truck, Shield, Thermometer, ChevronDown, Check } from 'lucide-react';
+import { ArrowLeft, ShoppingBag, Heart, Truck, Shield, Thermometer, Check, Loader2 } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 
-interface ProductDetailProps {
-    params: {
-        id: string;
-    };
+interface Product {
+    id: string;
+    name: string;
+    description?: string;
+    price: number;
+    stock: number;
+    unit: string;
+    image?: string;
+    category?: string;
 }
 
-// Mock data - will be replaced with API call
-const productData = {
-    id: '1',
-    name: 'Ikan Salmon Fillet Premium',
-    origin: 'Norwegia • Grade A Sashimi',
-    price: 85000,
-    unit: '500gr',
-    rating: 4.8,
-    reviewCount: 128,
-    stock: 'Stok Tersedia',
-    images: [
-        'https://images.unsplash.com/photo-1599084993091-1cb5c0721cc6?w=800&q=80',
-        'https://images.unsplash.com/photo-1580476262798-bddd9f4b7369?w=800&q=80',
-    ],
-    weights: [
-        { value: '500gr', price: 85000, label: '500gr' },
-        { value: '1kg', price: 161500, label: '1kg', discount: 'Hemat 5%' },
-        { value: '250gr', price: 45000, label: '250gr' },
-    ],
-    description: `Salmon segar pilihan terbaik yang kaya akan omega-3, protein, dan vitamin D. Ikan kami didatangkan langsung dari perairan dingin Norwegia untuk menjaga kualitas dan rasa.
+const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&q=80';
 
-Tekstur daging lembut dan juicy, sangat cocok untuk MPASI si kecil, menu grill keluarga di akhir pekan, atau dimasak pan-seared sederhana.`,
-    features: [
-        { icon: Shield, title: 'Dijamin Segar', subtitle: 'Uang kembali 100%', color: 'text-green-600' },
-        { icon: Thermometer, title: 'Suhu Terjaga', subtitle: 'Dikirim ice gel', color: 'text-blue-500' },
-    ],
-    customerReviews: [
-        {
-            name: 'Sari P.',
-            rating: 5,
-            comment: 'Ikannya seger banget! Anakku suka, gak amis sama sekali. Packingnya juga rapi pake ice gel banyak.',
-            avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80',
-        },
-    ],
-};
-
-export default function ProductDetailPage({ params }: ProductDetailProps) {
-    const [currentImageIndex, setCurrentImageIndex] = useState(0);
-    const [selectedWeight, setSelectedWeight] = useState(productData.weights[0]);
+export default function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = use(params);
+    const [product, setProduct] = useState<Product | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const [quantity, setQuantity] = useState(1);
     const [isFavorite, setIsFavorite] = useState(false);
     const [added, setAdded] = useState(false);
     const { addItem } = useCart();
+
+    useEffect(() => {
+        fetchProduct();
+    }, [id]);
+
+    const fetchProduct = async () => {
+        try {
+            setLoading(true);
+            const response = await fetch(`/api/shop/products/${id}`);
+            if (!response.ok) {
+                if (response.status === 404) {
+                    throw new Error('Produk tidak ditemukan');
+                }
+                throw new Error('Failed to fetch product');
+            }
+            const data = await response.json();
+            setProduct(data);
+        } catch (err: any) {
+            console.error('Error fetching product:', err);
+            setError(err.message || 'Gagal memuat produk');
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const handleQuantityChange = (delta: number) => {
         setQuantity(Math.max(1, quantity + delta));
     };
 
     const handleAddToCart = () => {
+        if (!product) return;
+
         addItem({
-            id: `${productData.id}-${selectedWeight.value}`,
-            name: productData.name,
-            variant: selectedWeight.label,
-            price: selectedWeight.price,
-            image: productData.images[0],
+            id: product.id,
+            name: product.name,
+            variant: product.unit,
+            price: product.price,
+            image: product.image || DEFAULT_IMAGE,
         }, quantity);
         setAdded(true);
         setTimeout(() => setAdded(false), 1500);
     };
 
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center py-20">
+                <Loader2 className="animate-spin text-orange-500" size={40} />
+            </div>
+        );
+    }
+
+    if (error || !product) {
+        return (
+            <div className="flex flex-col items-center justify-center py-20 px-4">
+                <p className="text-red-500 mb-4">{error || 'Produk tidak ditemukan'}</p>
+                <Link
+                    href="/shop"
+                    className="px-4 py-2 bg-orange-500 text-white rounded-lg"
+                >
+                    Kembali ke Beranda
+                </Link>
+            </div>
+        );
+    }
+
+    const productImage = product.image || DEFAULT_IMAGE;
+    const isInStock = product.stock > 0;
+
     return (
         <>
             {/* Image Gallery */}
             <div className="relative w-full aspect-[4/3] bg-stone-100">
-                <div className="absolute inset-0 flex overflow-x-auto snap-x snap-mandatory hide-scrollbar">
-                    {productData.images.map((image, index) => (
-                        <div key={index} className="flex-none w-full h-full snap-center relative">
-                            <Image
-                                src={image}
-                                alt={productData.name}
-                                fill
-                                className="object-cover"
-                            />
-                        </div>
-                    ))}
-                </div>
+                <Image
+                    src={productImage}
+                    alt={product.name}
+                    fill
+                    className="object-cover"
+                />
 
                 {/* Favorite Button */}
                 <button
@@ -97,16 +115,13 @@ export default function ProductDetailPage({ params }: ProductDetailProps) {
                     <Heart size={24} className={isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-400'} />
                 </button>
 
-                {/* Image Indicators */}
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-                    {productData.images.map((_, index) => (
-                        <div
-                            key={index}
-                            className={`w-2 h-2 rounded-full shadow-sm ${index === currentImageIndex ? 'bg-orange-500' : 'bg-white/60'
-                                }`}
-                        />
-                    ))}
-                </div>
+                {/* Back Button */}
+                <Link
+                    href="/shop"
+                    className="absolute top-4 left-4 size-10 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg transition-colors"
+                >
+                    <ArrowLeft size={24} className="text-gray-700" />
+                </Link>
             </div>
 
             {/* Product Info */}
@@ -114,51 +129,26 @@ export default function ProductDetailPage({ params }: ProductDetailProps) {
                 <div className="flex items-start justify-between gap-4">
                     <div className="w-full">
                         <div className="flex items-center gap-2 mb-2">
-                            <span className="px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-green-100 text-green-800">
-                                {productData.stock}
+                            <span className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${isInStock ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                                }`}>
+                                {isInStock ? `Stok: ${product.stock}` : 'Stok Habis'}
                             </span>
-                            <div className="flex items-center gap-1 text-yellow-500 bg-yellow-50 px-2 py-0.5 rounded-md">
-                                <Star size={14} fill="currentColor" />
-                                <span className="text-xs font-bold text-gray-700">{productData.rating}</span>
-                                <span className="text-xs text-gray-400">({productData.reviewCount})</span>
-                            </div>
+                            {product.category && (
+                                <span className="px-2 py-1 rounded-md text-[10px] font-medium bg-gray-100 text-gray-600">
+                                    {product.category}
+                                </span>
+                            )}
                         </div>
-                        <h1 className="text-stone-900 text-2xl font-bold leading-tight mb-1">{productData.name}</h1>
-                        <p className="text-gray-500 text-sm">{productData.origin}</p>
+                        <h1 className="text-stone-900 text-2xl font-bold leading-tight mb-1">{product.name}</h1>
+                        <p className="text-gray-500 text-sm">{product.unit}</p>
                     </div>
                 </div>
 
                 <div className="mt-4 flex items-end gap-2 border-b border-orange-100 pb-6">
                     <h2 className="text-orange-500 text-3xl font-bold">
-                        Rp {selectedWeight.price.toLocaleString('id-ID')}
+                        Rp {product.price.toLocaleString('id-ID')}
                     </h2>
-                    <span className="text-gray-400 mb-1.5 text-base font-medium">/ {selectedWeight.label}</span>
-                </div>
-            </div>
-
-            {/* Weight Selection */}
-            <div className="px-5 pt-6 bg-white">
-                <h3 className="text-stone-900 text-base font-bold mb-3">Pilih Berat</h3>
-                <div className="flex gap-3 flex-wrap">
-                    {productData.weights.map((weight) => (
-                        <button
-                            key={weight.value}
-                            onClick={() => setSelectedWeight(weight)}
-                            className={`flex h-10 items-center justify-center gap-x-2 rounded-xl px-5 transition-all ${selectedWeight.value === weight.value
-                                ? 'bg-orange-500 text-white shadow-sm shadow-orange-200'
-                                : 'bg-stone-50 border border-orange-100 hover:bg-orange-50 text-gray-600'
-                                }`}
-                        >
-                            <p className={`text-sm font-bold ${selectedWeight.value === weight.value ? 'text-white' : ''}`}>
-                                {weight.label}
-                            </p>
-                            {weight.discount && (
-                                <span className="text-[10px] bg-green-100 text-green-800 px-1.5 py-0.5 rounded-full font-bold">
-                                    {weight.discount}
-                                </span>
-                            )}
-                        </button>
-                    ))}
+                    <span className="text-gray-400 mb-1.5 text-base font-medium">/ {product.unit}</span>
                 </div>
             </div>
 
@@ -177,7 +167,8 @@ export default function ProductDetailPage({ params }: ProductDetailProps) {
                         <span className="text-base font-bold text-stone-900">{quantity}</span>
                         <button
                             onClick={() => handleQuantityChange(1)}
-                            className="size-7 flex items-center justify-center text-orange-500 active:scale-90 transition-transform"
+                            disabled={quantity >= product.stock}
+                            className="size-7 flex items-center justify-center text-orange-500 active:scale-90 transition-transform disabled:opacity-50"
                         >
                             <span className="text-lg">+</span>
                         </button>
@@ -186,7 +177,12 @@ export default function ProductDetailPage({ params }: ProductDetailProps) {
                     {/* Add to Cart Button */}
                     <button
                         onClick={handleAddToCart}
-                        className={`flex-1 h-12 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-orange-300/40 transition-all active:scale-[0.98] ${added ? 'bg-green-500' : 'bg-orange-500 hover:bg-orange-600 active:bg-orange-700'
+                        disabled={!isInStock}
+                        className={`flex-1 h-12 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-orange-300/40 transition-all active:scale-[0.98] ${added
+                                ? 'bg-green-500'
+                                : isInStock
+                                    ? 'bg-orange-500 hover:bg-orange-600 active:bg-orange-700'
+                                    : 'bg-gray-400 cursor-not-allowed'
                             }`}
                     >
                         {added ? (
@@ -220,61 +216,37 @@ export default function ProductDetailPage({ params }: ProductDetailProps) {
             </div>
 
             {/* Description */}
-            <div className="px-5 pt-6 pb-4 bg-white">
-                <h3 className="text-stone-900 text-lg font-bold mb-3">Tentang Produk</h3>
-                <p className="text-gray-600 text-[15px] leading-7 whitespace-pre-line">
-                    {productData.description}
-                </p>
-                <div className="flex items-center gap-2 mt-4 text-orange-500 font-bold text-sm cursor-pointer hover:underline">
-                    <span>Baca selengkapnya</span>
-                    <ChevronDown size={16} />
+            {product.description && (
+                <div className="px-5 pt-6 pb-4 bg-white">
+                    <h3 className="text-stone-900 text-lg font-bold mb-3">Tentang Produk</h3>
+                    <p className="text-gray-600 text-[15px] leading-7 whitespace-pre-line">
+                        {product.description}
+                    </p>
                 </div>
-            </div>
+            )}
 
             {/* Features */}
             <div className="px-5 py-4 border-t border-orange-100 bg-white">
                 <div className="grid grid-cols-2 gap-4">
-                    {productData.features.map((feature, index) => (
-                        <div key={index} className="flex items-center gap-3 bg-stone-50 p-3 rounded-xl border border-orange-50">
-                            <feature.icon className={`${feature.color} text-2xl`} size={24} />
-                            <div>
-                                <p className="text-xs font-bold text-stone-900">{feature.title}</p>
-                                <p className="text-[10px] text-gray-500">{feature.subtitle}</p>
-                            </div>
+                    <div className="flex items-center gap-3 bg-stone-50 p-3 rounded-xl border border-orange-50">
+                        <Shield className="text-green-600" size={24} />
+                        <div>
+                            <p className="text-xs font-bold text-stone-900">Dijamin Segar</p>
+                            <p className="text-[10px] text-gray-500">Uang kembali 100%</p>
                         </div>
-                    ))}
+                    </div>
+                    <div className="flex items-center gap-3 bg-stone-50 p-3 rounded-xl border border-orange-50">
+                        <Thermometer className="text-blue-500" size={24} />
+                        <div>
+                            <p className="text-xs font-bold text-stone-900">Suhu Terjaga</p>
+                            <p className="text-[10px] text-gray-500">Dikirim ice gel</p>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            {/* Reviews */}
-            <div className="px-5 pt-2 pb-24 bg-white">
-                <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-stone-900 text-lg font-bold">Ulasan Pembeli</h3>
-                    <Link href="#" className="text-orange-500 text-sm font-bold hover:text-orange-600 transition-colors">
-                        Lihat Semua
-                    </Link>
-                </div>
-                <div className="flex flex-col gap-4">
-                    {productData.customerReviews.map((review, index) => (
-                        <div key={index} className="bg-stone-50 rounded-2xl p-4 border border-orange-50">
-                            <div className="flex items-center justify-between mb-2">
-                                <div className="flex items-center gap-2">
-                                    <div className="size-9 rounded-full bg-orange-100 bg-center bg-cover border-2 border-white relative">
-                                        <Image src={review.avatar} alt={review.name} fill className="rounded-full object-cover" />
-                                    </div>
-                                    <span className="text-sm font-bold text-stone-900">{review.name}</span>
-                                </div>
-                                <div className="flex text-yellow-400">
-                                    {[...Array(review.rating)].map((_, i) => (
-                                        <Star key={i} size={16} fill="currentColor" />
-                                    ))}
-                                </div>
-                            </div>
-                            <p className="text-xs text-gray-600 leading-relaxed italic">"{review.comment}"</p>
-                        </div>
-                    ))}
-                </div>
-            </div>
+            {/* Bottom Padding for BottomNav */}
+            <div className="h-24 bg-white"></div>
         </>
     );
 }
