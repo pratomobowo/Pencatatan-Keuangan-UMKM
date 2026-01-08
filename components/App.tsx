@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { Transaction, TransactionType, FinancialSummary, ViewState, Order, Product, Customer, CostComponent } from '@/lib/types';
+import { Transaction, TransactionType, FinancialSummary, ViewState, Order, Product, Customer, CostComponent, User } from '@/lib/types';
 import { Dashboard } from '@/components/Dashboard';
 import { TransactionManager } from '@/components/TransactionManager';
 import { OrderManager } from '@/components/OrderManager';
@@ -10,22 +10,29 @@ import { CustomerManager } from '@/components/CustomerManager';
 import { ReportManager } from '@/components/ReportManager';
 import { AIAdvisor } from '@/components/AIAdvisor';
 import { HPPCalculator } from '@/components/HPPCalculator';
-import { LayoutDashboard, List, BrainCircuit, ShoppingCart, Package, Users, Download, PieChart, Calculator, LogOut } from 'lucide-react';
+import { UserManager } from '@/components/UserManager';
+import { Profile } from '@/components/Profile';
+import { LayoutDashboard, List, BrainCircuit, ShoppingCart, Package, Users as UsersIcon, Download, PieChart, Calculator, LogOut, UserCog, User as UserIcon } from 'lucide-react';
 import { productsAPI, customersAPI, ordersAPI, transactionsAPI, costComponentsAPI } from '@/lib/api';
 import { useSession, signOut } from 'next-auth/react';
 
 const App: React.FC = () => {
+    const { data: session } = useSession();
+
     // State
     const [transactions, setTransactions] = useState<Transaction[]>([]);
     const [orders, setOrders] = useState<Order[]>([]);
     const [products, setProducts] = useState<Product[]>([]);
     const [customers, setCustomers] = useState<Customer[]>([]);
     const [costComponents, setCostComponents] = useState<CostComponent[]>([]);
+    const [users, setUsers] = useState<User[]>([]);
     const [view, setView] = useState<ViewState>('DASHBOARD');
     const [loading, setLoading] = useState(true);
 
     // State for Quick Order Integration
     const [quickOrderCustomerId, setQuickOrderCustomerId] = useState<string | null>(null);
+
+    const isAdmin = (session?.user as any)?.role === 'admin';
 
     // Load from API on Mount
     useEffect(() => {

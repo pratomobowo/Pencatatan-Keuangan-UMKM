@@ -1,5 +1,5 @@
 // API utility functions for frontend
-import { Product, Customer, Order, Transaction, CostComponent } from '@/lib/types';
+import { Product, Customer, Order, Transaction, CostComponent, User } from '@/lib/types';
 
 const API_BASE = '/api';
 
@@ -96,4 +96,28 @@ export const costComponentsAPI = {
     delete: (id: string) => fetchAPI<{ message: string }>(`/cost-components/${id}`, {
         method: 'DELETE',
     }),
+};
+
+// Users API
+export const usersAPI = {
+    getAll: () => fetchAPI<User[]>('/users'),
+    getOne: (id: string) => fetchAPI<User>(`/users/${id}`),
+    create: (data: { email: string; name: string; password: string; role: string }) =>
+        fetchAPI<User>('/users', {
+            method: 'POST',
+            body: JSON.stringify(data),
+        }),
+    update: (id: string, data: Partial<User> & { password?: string }) =>
+        fetchAPI<User>(`/users/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify(data),
+        }),
+    delete: (id: string) => fetchAPI<{ message: string }>(`/users/${id}`, {
+        method: 'DELETE',
+    }),
+    changePassword: (oldPassword: string, newPassword: string) =>
+        fetchAPI<{ message: string }>('/users/change-password', {
+            method: 'PUT',
+            body: JSON.stringify({ oldPassword, newPassword }),
+        }),
 };

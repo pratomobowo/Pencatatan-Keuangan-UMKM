@@ -22,7 +22,16 @@ export interface FinancialSummary {
   netProfit: number; // Income - Expense (ignoring capital)
 }
 
-export type ViewState = 'DASHBOARD' | 'TRANSACTIONS' | 'ORDERS' | 'PRODUCTS' | 'ANALYSIS' | 'CUSTOMERS' | 'REPORTS' | 'HPP_CALCULATOR';
+export type ViewState = 'DASHBOARD' | 'TRANSACTIONS' | 'ORDERS' | 'PRODUCTS' | 'ANALYSIS' | 'CUSTOMERS' | 'REPORTS' | 'HPP_CALCULATOR' | 'USER_MANAGEMENT' | 'PROFILE';
+
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+  role: 'admin' | 'user';
+  createdAt: string;
+  updatedAt: string;
+}
 
 export const CATEGORIES = {
   [TransactionType.INCOME]: [
