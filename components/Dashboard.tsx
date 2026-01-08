@@ -119,7 +119,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ transactions, summary, pro
                   <XAxis dataKey="name" stroke="#64748b" tick={{ fontSize: 12 }} />
                   <YAxis hide />
                   <Tooltip
-                    formatter={(value: number) => formatCurrency(value)}
+                    formatter={(value: number | undefined) => value ? formatCurrency(value) : ''}
                     contentStyle={{ backgroundColor: '#fff', borderRadius: '8px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                   />
                   <Legend />
@@ -179,7 +179,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ transactions, summary, pro
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
-                    <Tooltip formatter={(value: number) => formatCurrency(value)} />
+                    <Tooltip formatter={(value: number | undefined) => value ? formatCurrency(value) : ''} />
                     <Legend layout="horizontal" verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: '11px', paddingTop: '20px' }} />
                   </PieChart>
                 </ResponsiveContainer>
