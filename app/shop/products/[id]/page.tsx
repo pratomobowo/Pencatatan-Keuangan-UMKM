@@ -64,18 +64,6 @@ export default function ProductDetailPage({ params }: ProductDetailProps) {
 
     return (
         <>
-            {/* Header */}
-            <div className="sticky top-0 z-50 flex items-center bg-white/90 backdrop-blur-md p-4 justify-between border-b border-orange-100">
-                <Link href="/shop" className="flex size-10 items-center justify-center rounded-full hover:bg-orange-50 transition-colors">
-                    <ArrowLeft size={24} />
-                </Link>
-                <h2 className="text-stone-900 text-lg font-bold">Detail Produk</h2>
-                <Link href="/shop/cart" className="flex size-10 items-center justify-center rounded-full hover:bg-orange-50 transition-colors relative">
-                    <ShoppingBag size={24} />
-                    <span className="absolute top-1 right-1 size-2.5 bg-red-500 rounded-full border-2 border-white"></span>
-                </Link>
-            </div>
-
             {/* Image Gallery */}
             <div className="relative w-full aspect-[4/3] bg-stone-100">
                 <div className="absolute inset-0 flex overflow-x-auto snap-x snap-mandatory hide-scrollbar">
