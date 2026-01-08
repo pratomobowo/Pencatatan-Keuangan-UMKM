@@ -21,7 +21,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
-        const { sku, name, description, price, costPrice, stock, unit } = body;
+        const { sku, name, description, price, costPrice, stock, unit, image, category, isActive } = body;
 
         // Auto-generate SKU if not provided
         const productSku = sku || `SKU-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
@@ -35,6 +35,9 @@ export async function POST(request: NextRequest) {
                 costPrice,
                 stock: stock || 0,
                 unit,
+                image: image || null,
+                category: category || null,
+                isActive: isActive !== undefined ? isActive : true,
             },
         });
 
