@@ -351,7 +351,7 @@ const App: React.FC = () => {
                                 : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600'
                                 }`}
                         >
-                            <Users size={20} />
+                            <UsersIcon size={20} />
                             <span>Pelanggan</span>
                         </button>
 
@@ -376,6 +376,36 @@ const App: React.FC = () => {
                         >
                             <PieChart size={20} />
                             <span>Laporan Laba Rugi</span>
+                        </button>
+
+                        {/* User Management - Admin Only */}
+                        {isAdmin && (
+                            <>
+                                <div className="text-xs font-medium text-slate-400 px-4 mb-2 mt-4 uppercase tracking-wider">Admin</div>
+                                <button
+                                    onClick={() => setView('USER_MANAGEMENT')}
+                                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${view === 'USER_MANAGEMENT'
+                                        ? 'bg-blue-600 text-white shadow-md'
+                                        : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600'
+                                        }`}
+                                >
+                                    <UserCog size={20} />
+                                    <span>User Management</span>
+                                </button>
+                            </>
+                        )}
+
+                        {/* Profile */}
+                        <div className="text-xs font-medium text-slate-400 px-4 mb-2 mt-4 uppercase tracking-wider">Account</div>
+                        <button
+                            onClick={() => setView('PROFILE')}
+                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${view === 'PROFILE'
+                                ? 'bg-blue-600 text-white shadow-md'
+                                : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600'
+                                }`}
+                        >
+                            <UserIcon size={20} />
+                            <span>Profile</span>
                         </button>
 
                         <div className="text-xs font-medium text-slate-400 px-4 mb-2 mt-4 uppercase tracking-wider">Insight</div>
@@ -424,6 +454,8 @@ const App: React.FC = () => {
                             {view === 'CUSTOMERS' && 'Database Pelanggan'}
                             {view === 'TRANSACTIONS' && 'Buku Kas Harian'}
                             {view === 'ANALYSIS' && 'Konsultan AI'}
+                            {view === 'USER_MANAGEMENT' && 'User Management'}
+                            {view === 'PROFILE' && 'Profile'}
                         </h2>
                         <p className="text-slate-500 text-sm mt-1">
                             {view === 'DASHBOARD' && 'Pantau arus kas penjualan protein dan biaya operasional.'}
@@ -434,6 +466,8 @@ const App: React.FC = () => {
                             {view === 'CUSTOMERS' && 'Kelola data kontak pelanggan dan riwayat belanja.'}
                             {view === 'TRANSACTIONS' && 'Catat pembelian pasar, penjualan customer, dan biaya lain.'}
                             {view === 'ANALYSIS' && 'Evaluasi performa penjualan dan efisiensi pengiriman.'}
+                            {view === 'USER_MANAGEMENT' && 'Manage system users, roles, and permissions.'}
+                            {view === 'PROFILE' && 'Update your account information and change password.'}
                         </p>
                     </div>
                 </header>
@@ -479,6 +513,70 @@ const App: React.FC = () => {
                         onAddCostComponent={addCostComponent}
                         onDeleteCostComponent={deleteCostComponent}
                         onSaveProduct={addProduct}
+                    />
+                )}
+
+                {view === 'USER_MANAGEMENT' && isAdmin && (
+                    <UserManager
+                        users={users}
+                        onCreateUser={async (data) => {
+                            try {
+                                const newUser = await fetch('/api/users', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify(data),
+                                }).then(r => r.json());
+                                setUsers([...users, newUser]);
+                                alert('User berhasil dibuat!');
+                            } catch (error: any) {
+                                alert(error.message || 'Gagal membuat user');
+                            }
+                        }}
+                        onUpdateUser={async (id, data) => {
+                            try {
+                                const updated = await fetch(`/api/users/${id}`, {
+                                    method: 'PUT',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify(data),
+                                }).then(r => r.json());
+                                setUsers(users.map(u => u.id === id ? updated : u));
+                                alert('User berhasil diupdate!');
+                            } catch (error: any) {
+                                alert(error.message || 'Gagal update user');
+                            }
+                        }}
+                        onDeleteUser={async (id) => {
+                            try {
+                                await fetch(`/api/users/${id}`, { method: 'DELETE' });
+                                setUsers(users.filter(u => u.id !== id));
+                                alert('User berhasil dihapus!');
+                            } catch (error: any) {
+                                alert(error.message || 'Gagal hapus user');
+                            }
+                        }}
+                    />
+                )}
+
+                {view === 'PROFILE' && session?.user && (
+                    <Profile
+                        user={{
+                            id: (session.user as any).id,
+                            email: session.user.email || '',
+                            name: session.user.name || '',
+                            role: (session.user as any).role || 'user',
+                        }}
+                        onChangePassword={async (oldPassword, newPassword) => {
+                            const response = await fetch('/api/users/change-password', {
+                                method: 'PUT',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ oldPassword, newPassword }),
+                            });
+
+                            if (!response.ok) {
+                                const error = await response.json();
+                                throw new Error(error.error || 'Failed to change password');
+                            }
+                        }}
                     />
                 )}
 
