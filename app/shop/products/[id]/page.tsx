@@ -19,7 +19,7 @@ const productData = {
     price: 85000,
     unit: '500gr',
     rating: 4.8,
-    reviews: 128,
+    reviewCount: 128,
     stock: 'Stok Tersedia',
     images: [
         'https://images.unsplash.com/photo-1599084993091-1cb5c0721cc6?w=800&q=80',
@@ -37,7 +37,7 @@ Tekstur daging lembut dan juicy, sangat cocok untuk MPASI si kecil, menu grill k
         { icon: Shield, title: 'Dijamin Segar', subtitle: 'Uang kembali 100%', color: 'text-green-600' },
         { icon: Thermometer, title: 'Suhu Terjaga', subtitle: 'Dikirim ice gel', color: 'text-blue-500' },
     ],
-    reviews: [
+    customerReviews: [
         {
             name: 'Sari P.',
             rating: 5,
@@ -122,7 +122,7 @@ export default function ProductDetailPage({ params }: ProductDetailProps) {
                             <div className="flex items-center gap-1 text-yellow-500 bg-yellow-50 px-2 py-0.5 rounded-md">
                                 <Star size={14} fill="currentColor" />
                                 <span className="text-xs font-bold text-gray-700">{productData.rating}</span>
-                                <span className="text-xs text-gray-400">({productData.reviews})</span>
+                                <span className="text-xs text-gray-400">({productData.reviewCount})</span>
                             </div>
                         </div>
                         <h1 className="text-stone-900 text-2xl font-bold leading-tight mb-1">{productData.name}</h1>
@@ -147,8 +147,8 @@ export default function ProductDetailPage({ params }: ProductDetailProps) {
                             key={weight.value}
                             onClick={() => setSelectedWeight(weight)}
                             className={`flex h-10 items-center justify-center gap-x-2 rounded-xl px-5 transition-all ${selectedWeight.value === weight.value
-                                    ? 'bg-orange-500 text-white shadow-sm shadow-orange-200'
-                                    : 'bg-stone-50 border border-orange-100 hover:bg-orange-50 text-gray-600'
+                                ? 'bg-orange-500 text-white shadow-sm shadow-orange-200'
+                                : 'bg-stone-50 border border-orange-100 hover:bg-orange-50 text-gray-600'
                                 }`}
                         >
                             <p className={`text-sm font-bold ${selectedWeight.value === weight.value ? 'text-white' : ''}`}>
@@ -215,7 +215,7 @@ export default function ProductDetailPage({ params }: ProductDetailProps) {
                     </Link>
                 </div>
                 <div className="flex flex-col gap-4">
-                    {productData.reviews.map((review, index) => (
+                    {productData.customerReviews.map((review, index) => (
                         <div key={index} className="bg-stone-50 rounded-2xl p-4 border border-orange-50">
                             <div className="flex items-center justify-between mb-2">
                                 <div className="flex items-center gap-2">
