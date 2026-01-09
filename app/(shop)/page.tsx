@@ -95,6 +95,41 @@ export default function ShopHomepage() {
                 </div>
             </div>
 
+            {/* Produk Promo - Slide Style */}
+            {products.length > 0 && (
+                <div className="flex flex-col gap-3">
+                    <div className="flex items-center justify-between px-4">
+                        <h2 className="text-stone-900 text-lg font-bold">🔥 Produk Promo</h2>
+                        <Link href="/products" className="text-sm font-semibold text-orange-500 hover:text-orange-600 transition-colors">
+                            Lihat Semua
+                        </Link>
+                    </div>
+                    {/* Slide container - shows 2 cards + peek of 3rd */}
+                    <div className="flex overflow-x-auto hide-scrollbar pl-4 pb-2 gap-3 snap-x snap-mandatory">
+                        {products.slice(0, 8).map((product, index) => (
+                            <div
+                                key={product.id}
+                                className="snap-start shrink-0"
+                                style={{ width: 'calc((100% - 32px - 12px) / 2.15)' }}
+                            >
+                                <ProductCard
+                                    id={product.id}
+                                    name={product.name}
+                                    unit={product.unit}
+                                    price={product.price}
+                                    originalPrice={Math.round(product.price * 1.2)}
+                                    discount={20}
+                                    image={product.image || DEFAULT_IMAGE}
+                                    isGrid={true}
+                                />
+                            </div>
+                        ))}
+                        {/* Right padding spacer */}
+                        <div className="shrink-0 w-4"></div>
+                    </div>
+                </div>
+            )}
+
             {/* Products Section */}
             {products.length === 0 ? (
                 <div className="px-4 py-8 text-center">
