@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Search, Filter, Loader2, X } from 'lucide-react';
+import { ArrowLeft, Search, Loader2, X } from 'lucide-react';
 import { ProductCard } from '@/components/shop/ProductCard';
 
 interface Product {
@@ -28,7 +28,7 @@ const categories = [
 
 const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=400&q=80';
 
-export default function ProductsPage() {
+function ProductsContent() {
     const searchParams = useSearchParams();
     const categoryParam = searchParams.get('category');
 
@@ -120,8 +120,8 @@ export default function ProductsPage() {
                             key={cat.id}
                             onClick={() => setSelectedCategory(cat.id)}
                             className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${selectedCategory === cat.id
-                                    ? 'bg-orange-500 text-white'
-                                    : 'bg-stone-100 text-gray-600 hover:bg-stone-200'
+                                ? 'bg-orange-500 text-white'
+                                : 'bg-stone-100 text-gray-600 hover:bg-stone-200'
                                 }`}
                         >
                             {cat.name}
@@ -174,5 +174,17 @@ export default function ProductsPage() {
                 )}
             </main>
         </>
+    );
+}
+
+export default function ProductsPage() {
+    return (
+        <Suspense fallback={
+            <div className="flex items-center justify-center py-20">
+                <Loader2 className="animate-spin text-orange-500" size={40} />
+            </div>
+        }>
+            <ProductsContent />
+        </Suspense>
     );
 }
