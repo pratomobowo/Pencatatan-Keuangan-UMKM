@@ -176,3 +176,105 @@ model CostComponent {
   
   @@index([name])
 }
+
+// ============================================
+// SHOP CUSTOMER (Separate from Admin User)
+// ============================================
+
+model ShopCustomer {
+  id          String   @id @default(uuid())
+  name        String
+  phone       String   @unique
+  password    String   // Hashed with bcrypt
+  email       String?
+  
+  addresses   ShopAddress[]
+  orders      ShopOrder[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([phone])
+  @@index([email])
+}
+
+model ShopAddress {
+  id          String   @id @default(uuid())
+  customerId  String
+  customer    ShopCustomer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  
+  label       String
+  name        String
+  phone       String
+  address     String
+  isDefault   Boolean  @default(false)
+  type        String   @default("home") // home, office
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([customerId])
+}
+
+model ShopOrder {
+  id            String   @id @default(uuid())
+  orderNumber   String   @unique @default(cuid())
+  
+  customerId    String
+  customer      ShopCustomer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  
+  // Shipping
+  addressLabel  String?
+  addressName   String
+  addressPhone  String
+  addressFull   String
+  deliveryTime  String
+  
+  // Items
+  items         ShopOrderItem[]
+  
+  // Pricing
+  subtotal      Decimal  @db.Decimal(10, 2)
+  shippingFee   Decimal  @db.Decimal(10, 2) @default(15000)
+  serviceFee    Decimal  @db.Decimal(10, 2) @default(1000)
+  total         Decimal  @db.Decimal(10, 2)
+  
+  // Payment & Status
+  paymentMethod String   @default("cod")
+  status        ShopOrderStatus @default(PENDING)
+  notes         String?
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@index([customerId])
+  @@index([orderNumber])
+  @@index([status])
+  @@index([createdAt])
+}
+
+enum ShopOrderStatus {
+  PENDING
+  CONFIRMED
+  PREPARING
+  SHIPPING
+  DELIVERED
+  CANCELLED
+}
+
+model ShopOrderItem {
+  id          String   @id @default(uuid())
+  orderId     String
+  order       ShopOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  
+  productId   String?
+  productName String
+  productImage String?
+  variant     String
+  qty         Int
+  price       Decimal  @db.Decimal(10, 2)
+  total       Decimal  @db.Decimal(10, 2)
+  
+  @@index([orderId])
+}
+
