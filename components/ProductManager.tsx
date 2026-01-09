@@ -24,6 +24,7 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
   onAddTransaction
 }) => {
   const [isEditing, setIsEditing] = useState(false);
+  const [showFormModal, setShowFormModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
   const [promoFilter, setPromoFilter] = useState<string>('');
@@ -111,8 +112,10 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
         id: crypto.randomUUID()
       });
     }
-    // Reset form
+    // Reset form and close modal
     setFormData({ id: '', name: '', description: '', unit: 'kg', price: 0, costPrice: 0, stock: 0, image: '', category: '', isPromo: false, promoPrice: 0, promoDiscount: 0, variants: [] });
+    setShowFormModal(false);
+    setIsEditing(false);
   };
 
   const handleEdit = (product: Product) => {
@@ -129,10 +132,12 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
       variants: product.variants || [],
     });
     setIsEditing(true);
+    setShowFormModal(true);
   };
 
   const handleCancel = () => {
     setIsEditing(false);
+    setShowFormModal(false);
     setFormData({ id: '', name: '', description: '', unit: 'kg', price: 0, costPrice: 0, stock: 0, image: '', category: '', isPromo: false, promoPrice: 0, promoDiscount: 0, variants: [] });
   };
 
@@ -337,9 +342,9 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
 
   return (
     <>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 relative">
+      <div className="relative">
         {/* Product List */}
-        <div className="lg:col-span-2 order-2 lg:order-1">
+        <div>
           <Card className="h-full">
             {/* Header & Tools */}
             <div className="flex flex-col gap-4 mb-6">
@@ -368,6 +373,12 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
                     title="Download Excel"
                   >
                     <Download size={16} /> <span className="hidden sm:inline">Export</span>
+                  </button>
+                  <button
+                    onClick={() => setShowFormModal(true)}
+                    className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium transition-colors"
+                  >
+                    <Plus size={16} /> Tambah Produk
                   </button>
                 </div>
               </div>
@@ -569,312 +580,326 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
           </Card>
         </div>
 
-        {/* Form */}
-        <div className="lg:col-span-1 order-1 lg:order-2">
-          <div className="sticky top-6">
-            <Card title={isEditing ? "Edit Produk" : "Tambah Produk Baru"}>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-sm text-slate-700 mb-1">Nama Produk</label>
-                  <input
-                    required
-                    type="text"
-                    placeholder="Contoh: Ikan Gurame Hidup"
-                    value={formData.name}
-                    onChange={e => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full p-2.5 bg-white border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
-                  />
-                </div>
+        {/* Product Form Modal */}
+        {showFormModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+            <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+              <div className="sticky top-0 z-10 flex items-center justify-between p-4 border-b bg-white">
+                <h2 className="text-xl font-bold text-slate-800">
+                  {isEditing ? "Edit Produk" : "Tambah Produk Baru"}
+                </h2>
+                <button
+                  onClick={handleCancel}
+                  className="p-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100 transition-colors"
+                >
+                  <X size={24} />
+                </button>
+              </div>
 
-                {/* Deskripsi Singkat */}
-                <div>
-                  <label className="block text-sm text-slate-700 mb-1">Deskripsi Singkat</label>
-                  <textarea
-                    placeholder="Deskripsi produk untuk ditampilkan di toko..."
-                    value={formData.description || ''}
-                    onChange={e => setFormData({ ...formData, description: e.target.value })}
-                    rows={2}
-                    className="w-full p-2.5 bg-white border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm resize-none"
-                  />
-                </div>
+              <div className="p-6">
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div>
+                    <label className="block text-sm text-slate-700 mb-1">Nama Produk</label>
+                    <input
+                      required
+                      type="text"
+                      placeholder="Contoh: Ikan Gurame Hidup"
+                      value={formData.name}
+                      onChange={e => setFormData({ ...formData, name: e.target.value })}
+                      className="w-full p-2.5 bg-white border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
+                    />
+                  </div>
 
-                {/* Gambar Produk */}
-                <div>
-                  <label className="block text-sm text-slate-700 mb-1">Gambar Produk</label>
-                  <input
-                    type="file"
-                    ref={imageInputRef}
-                    accept="image/png,image/jpeg,image/jpg,image/webp"
-                    onChange={handleImageUpload}
-                    className="hidden"
-                  />
-                  <div
-                    onClick={() => imageInputRef.current?.click()}
-                    className={`relative border-2 border-dashed rounded-lg cursor-pointer transition-colors ${formData.image
-                      ? 'border-green-300 bg-green-50'
-                      : 'border-slate-300 hover:border-blue-400 bg-slate-50'
-                      } ${isUploading ? 'opacity-50 pointer-events-none' : ''}`}
-                  >
-                    {formData.image ? (
-                      <div className="p-2">
-                        <img
-                          src={formData.image}
-                          alt="Preview"
-                          className="w-full h-32 object-cover rounded-lg"
-                        />
-                        <p className="text-xs text-green-600 mt-1 text-center">Klik untuk ganti gambar</p>
-                      </div>
-                    ) : (
-                      <div className="p-4 text-center">
-                        {isUploading ? (
-                          <Loader2 className="w-8 h-8 mx-auto text-blue-500 animate-spin" />
-                        ) : (
-                          <ImageIcon className="w-8 h-8 mx-auto text-slate-400" />
-                        )}
-                        <p className="text-sm text-slate-500 mt-2">
-                          {isUploading ? 'Mengupload...' : 'Klik untuk upload gambar'}
-                        </p>
-                        <p className="text-xs text-slate-400 mt-1">PNG, JPG, WebP (maks. 5MB)</p>
+                  {/* Deskripsi Singkat */}
+                  <div>
+                    <label className="block text-sm text-slate-700 mb-1">Deskripsi Singkat</label>
+                    <textarea
+                      placeholder="Deskripsi produk untuk ditampilkan di toko..."
+                      value={formData.description || ''}
+                      onChange={e => setFormData({ ...formData, description: e.target.value })}
+                      rows={2}
+                      className="w-full p-2.5 bg-white border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm resize-none"
+                    />
+                  </div>
+
+                  {/* Gambar Produk */}
+                  <div>
+                    <label className="block text-sm text-slate-700 mb-1">Gambar Produk</label>
+                    <input
+                      type="file"
+                      ref={imageInputRef}
+                      accept="image/png,image/jpeg,image/jpg,image/webp"
+                      onChange={handleImageUpload}
+                      className="hidden"
+                    />
+                    <div
+                      onClick={() => imageInputRef.current?.click()}
+                      className={`relative border-2 border-dashed rounded-lg cursor-pointer transition-colors ${formData.image
+                        ? 'border-green-300 bg-green-50'
+                        : 'border-slate-300 hover:border-blue-400 bg-slate-50'
+                        } ${isUploading ? 'opacity-50 pointer-events-none' : ''}`}
+                    >
+                      {formData.image ? (
+                        <div className="p-2">
+                          <img
+                            src={formData.image}
+                            alt="Preview"
+                            className="w-full h-32 object-cover rounded-lg"
+                          />
+                          <p className="text-xs text-green-600 mt-1 text-center">Klik untuk ganti gambar</p>
+                        </div>
+                      ) : (
+                        <div className="p-4 text-center">
+                          {isUploading ? (
+                            <Loader2 className="w-8 h-8 mx-auto text-blue-500 animate-spin" />
+                          ) : (
+                            <ImageIcon className="w-8 h-8 mx-auto text-slate-400" />
+                          )}
+                          <p className="text-sm text-slate-500 mt-2">
+                            {isUploading ? 'Mengupload...' : 'Klik untuk upload gambar'}
+                          </p>
+                          <p className="text-xs text-slate-400 mt-1">PNG, JPG, WebP (maks. 5MB)</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Kategori */}
+                  <div>
+                    <label className="block text-sm text-slate-700 mb-1">Kategori</label>
+                    <select
+                      value={formData.category || ''}
+                      onChange={e => setFormData({ ...formData, category: e.target.value })}
+                      className="w-full p-2.5 bg-white border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
+                    >
+                      <option value="">Pilih Kategori</option>
+                      <option value="ikan-laut">Ikan Laut</option>
+                      <option value="seafood">Seafood</option>
+                      <option value="ayam">Ayam & Telur</option>
+                      <option value="daging-sapi">Daging Sapi</option>
+                      <option value="bumbu">Bumbu</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm text-slate-700 mb-1">Satuan</label>
+                    <select
+                      value={formData.unit}
+                      onChange={e => setFormData({ ...formData, unit: e.target.value })}
+                      className="w-full p-2.5 bg-white border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
+                    >
+                      <option value="kg">kg</option>
+                      <option value="pack">pack</option>
+                      <option value="ekor">ekor</option>
+                      <option value="gr">gram</option>
+                      <option value="ikat">ikat</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm text-slate-700 mb-1">Stok Saat Ini</label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.1"
+                        placeholder="0"
+                        value={formData.stock || ''}
+                        onChange={e => setFormData({ ...formData, stock: parseFloat(e.target.value) })}
+                        className="flex-1 p-2.5 bg-white border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
+                      />
+                      <span className="text-sm text-slate-500">{formData.unit}</span>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm text-slate-700 mb-1">Harga Modal</label>
+                      <input
+                        type="number"
+                        min="0"
+                        placeholder="0"
+                        value={formData.costPrice || ''}
+                        onChange={e => setFormData({ ...formData, costPrice: parseFloat(e.target.value) })}
+                        className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
+                      />
+                      <p className="text-[10px] text-slate-400 mt-1">HPP per unit</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm text-slate-700 mb-1">Harga Jual</label>
+                      <input
+                        required
+                        type="number"
+                        min="0"
+                        value={formData.price || ''}
+                        onChange={e => setFormData({ ...formData, price: parseFloat(e.target.value) })}
+                        className="w-full p-2.5 bg-white border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
+                      />
+                      <p className="text-[10px] text-slate-400 mt-1">Harga customer</p>
+                    </div>
+                  </div>
+
+                  {/* Promo Settings */}
+                  <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                    <label className="flex items-center gap-2 cursor-pointer mb-3">
+                      <input
+                        type="checkbox"
+                        checked={formData.isPromo || false}
+                        onChange={e => setFormData({ ...formData, isPromo: e.target.checked })}
+                        className="w-4 h-4 text-blue-600 bg-white border-slate-300 rounded focus:ring-blue-500"
+                      />
+                      <span className="text-sm font-medium text-slate-700">Aktifkan Promo</span>
+                    </label>
+
+                    {formData.isPromo && (
+                      <div className="grid grid-cols-2 gap-3 mt-2">
+                        <div>
+                          <label className="block text-xs text-slate-600 mb-1">Harga Promo</label>
+                          <input
+                            type="number"
+                            min="0"
+                            placeholder="0"
+                            value={formData.promoPrice || ''}
+                            onChange={e => setFormData({ ...formData, promoPrice: parseFloat(e.target.value) })}
+                            className="w-full p-2 bg-white border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs text-slate-600 mb-1">Diskon (%)</label>
+                          <input
+                            type="number"
+                            min="0"
+                            max="100"
+                            placeholder="0"
+                            value={formData.promoDiscount || ''}
+                            onChange={e => setFormData({ ...formData, promoDiscount: parseInt(e.target.value) })}
+                            className="w-full p-2 bg-white border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
+                          />
+                        </div>
                       </div>
                     )}
                   </div>
-                </div>
 
-                {/* Kategori */}
-                <div>
-                  <label className="block text-sm text-slate-700 mb-1">Kategori</label>
-                  <select
-                    value={formData.category || ''}
-                    onChange={e => setFormData({ ...formData, category: e.target.value })}
-                    className="w-full p-2.5 bg-white border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
-                  >
-                    <option value="">Pilih Kategori</option>
-                    <option value="ikan-laut">Ikan Laut</option>
-                    <option value="seafood">Seafood</option>
-                    <option value="ayam">Ayam & Telur</option>
-                    <option value="daging-sapi">Daging Sapi</option>
-                    <option value="bumbu">Bumbu</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm text-slate-700 mb-1">Satuan</label>
-                  <select
-                    value={formData.unit}
-                    onChange={e => setFormData({ ...formData, unit: e.target.value })}
-                    className="w-full p-2.5 bg-white border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
-                  >
-                    <option value="kg">kg</option>
-                    <option value="pack">pack</option>
-                    <option value="ekor">ekor</option>
-                    <option value="gr">gram</option>
-                    <option value="ikat">ikat</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm text-slate-700 mb-1">Stok Saat Ini</label>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="number"
-                      min="0"
-                      step="0.1"
-                      placeholder="0"
-                      value={formData.stock || ''}
-                      onChange={e => setFormData({ ...formData, stock: parseFloat(e.target.value) })}
-                      className="flex-1 p-2.5 bg-white border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
-                    />
-                    <span className="text-sm text-slate-500">{formData.unit}</span>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm text-slate-700 mb-1">Harga Modal</label>
-                    <input
-                      type="number"
-                      min="0"
-                      placeholder="0"
-                      value={formData.costPrice || ''}
-                      onChange={e => setFormData({ ...formData, costPrice: parseFloat(e.target.value) })}
-                      className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
-                    />
-                    <p className="text-[10px] text-slate-400 mt-1">HPP per unit</p>
-                  </div>
-                  <div>
-                    <label className="block text-sm text-slate-700 mb-1">Harga Jual</label>
-                    <input
-                      required
-                      type="number"
-                      min="0"
-                      value={formData.price || ''}
-                      onChange={e => setFormData({ ...formData, price: parseFloat(e.target.value) })}
-                      className="w-full p-2.5 bg-white border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
-                    />
-                    <p className="text-[10px] text-slate-400 mt-1">Harga customer</p>
-                  </div>
-                </div>
-
-                {/* Promo Settings */}
-                <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
-                  <label className="flex items-center gap-2 cursor-pointer mb-3">
-                    <input
-                      type="checkbox"
-                      checked={formData.isPromo || false}
-                      onChange={e => setFormData({ ...formData, isPromo: e.target.checked })}
-                      className="w-4 h-4 text-blue-600 bg-white border-slate-300 rounded focus:ring-blue-500"
-                    />
-                    <span className="text-sm font-medium text-slate-700">Aktifkan Promo</span>
-                  </label>
-
-                  {formData.isPromo && (
-                    <div className="grid grid-cols-2 gap-3 mt-2">
-                      <div>
-                        <label className="block text-xs text-slate-600 mb-1">Harga Promo</label>
-                        <input
-                          type="number"
-                          min="0"
-                          placeholder="0"
-                          value={formData.promoPrice || ''}
-                          onChange={e => setFormData({ ...formData, promoPrice: parseFloat(e.target.value) })}
-                          className="w-full p-2 bg-white border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs text-slate-600 mb-1">Diskon (%)</label>
-                        <input
-                          type="number"
-                          min="0"
-                          max="100"
-                          placeholder="0"
-                          value={formData.promoDiscount || ''}
-                          onChange={e => setFormData({ ...formData, promoDiscount: parseInt(e.target.value) })}
-                          className="w-full p-2 bg-white border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
-                        />
-                      </div>
+                  {/* Variant Editor */}
+                  <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-sm font-medium text-slate-700">Opsi Satuan</span>
+                      <button
+                        type="button"
+                        onClick={addVariant}
+                        className="text-xs px-2.5 py-1.5 bg-slate-600 text-white rounded-lg hover:bg-slate-700 flex items-center gap-1 transition-colors"
+                      >
+                        <Plus size={12} /> Tambah Varian
+                      </button>
                     </div>
-                  )}
-                </div>
 
-                {/* Variant Editor */}
-                <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-sm font-medium text-slate-700">Opsi Satuan</span>
-                    <button
-                      type="button"
-                      onClick={addVariant}
-                      className="text-xs px-2.5 py-1.5 bg-slate-600 text-white rounded-lg hover:bg-slate-700 flex items-center gap-1 transition-colors"
-                    >
-                      <Plus size={12} /> Tambah Varian
-                    </button>
-                  </div>
-
-                  {(formData.variants?.length || 0) === 0 ? (
-                    <p className="text-xs text-slate-400 text-center py-3">
-                      Belum ada varian. Tambahkan opsi satuan seperti 1kg, 500gr, ekor.
-                    </p>
-                  ) : (
-                    <div className="space-y-2">
-                      {formData.variants?.map((variant, index) => (
-                        <div key={variant.id || index} className="bg-white p-3 rounded-lg border border-slate-200">
-                          <div className="flex items-center justify-between mb-2">
-                            <div className="flex items-center gap-2">
-                              <span className="text-xs font-medium text-slate-500">Varian {index + 1}</span>
-                              {index === 0 && (
-                                <span className="text-[10px] px-1.5 py-0.5 bg-blue-100 text-blue-600 rounded font-medium">
-                                  Default
-                                </span>
-                              )}
+                    {(formData.variants?.length || 0) === 0 ? (
+                      <p className="text-xs text-slate-400 text-center py-3">
+                        Belum ada varian. Tambahkan opsi satuan seperti 1kg, 500gr, ekor.
+                      </p>
+                    ) : (
+                      <div className="space-y-2">
+                        {formData.variants?.map((variant, index) => (
+                          <div key={variant.id || index} className="bg-white p-3 rounded-lg border border-slate-200">
+                            <div className="flex items-center justify-between mb-2">
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs font-medium text-slate-500">Varian {index + 1}</span>
+                                {index === 0 && (
+                                  <span className="text-[10px] px-1.5 py-0.5 bg-blue-100 text-blue-600 rounded font-medium">
+                                    Default
+                                  </span>
+                                )}
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => removeVariant(index)}
+                                className="p-1 text-slate-400 hover:text-rose-500 transition-colors"
+                              >
+                                <X size={14} />
+                              </button>
                             </div>
-                            <button
-                              type="button"
-                              onClick={() => removeVariant(index)}
-                              className="p-1 text-slate-400 hover:text-rose-500 transition-colors"
-                            >
-                              <X size={14} />
-                            </button>
-                          </div>
-                          <div className="grid grid-cols-4 gap-2">
-                            <div>
-                              <label className="block text-[10px] text-slate-500 mb-1">Satuan</label>
-                              <input
-                                type="text"
-                                placeholder="1kg"
-                                value={variant.unit}
-                                onChange={e => updateVariant(index, 'unit', e.target.value)}
-                                className="w-full px-2 py-1.5 text-xs border border-slate-200 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                              />
-                            </div>
-                            <div>
-                              <label className="block text-[10px] text-slate-500 mb-1">Qty Base</label>
-                              <input
-                                type="number"
-                                step="0.1"
-                                placeholder="1"
-                                value={variant.unitQty || ''}
-                                onChange={e => updateVariant(index, 'unitQty', parseFloat(e.target.value))}
-                                className="w-full px-2 py-1.5 text-xs border border-slate-200 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                              />
-                            </div>
-                            <div>
-                              <label className="block text-[10px] text-slate-500 mb-1">Harga Modal</label>
-                              <input
-                                type="number"
-                                placeholder="0"
-                                value={variant.costPrice || ''}
-                                onChange={e => updateVariant(index, 'costPrice', parseFloat(e.target.value))}
-                                className="w-full px-2 py-1.5 text-xs border border-slate-200 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                              />
-                            </div>
-                            <div>
-                              <label className="block text-[10px] text-slate-500 mb-1">Harga Jual</label>
-                              <input
-                                type="number"
-                                placeholder="0"
-                                value={variant.price || ''}
-                                onChange={e => updateVariant(index, 'price', parseFloat(e.target.value))}
-                                className="w-full px-2 py-1.5 text-xs border border-slate-200 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                              />
+                            <div className="grid grid-cols-4 gap-2">
+                              <div>
+                                <label className="block text-[10px] text-slate-500 mb-1">Satuan</label>
+                                <input
+                                  type="text"
+                                  placeholder="1kg"
+                                  value={variant.unit}
+                                  onChange={e => updateVariant(index, 'unit', e.target.value)}
+                                  className="w-full px-2 py-1.5 text-xs border border-slate-200 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-[10px] text-slate-500 mb-1">Qty Base</label>
+                                <input
+                                  type="number"
+                                  step="0.1"
+                                  placeholder="1"
+                                  value={variant.unitQty || ''}
+                                  onChange={e => updateVariant(index, 'unitQty', parseFloat(e.target.value))}
+                                  className="w-full px-2 py-1.5 text-xs border border-slate-200 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-[10px] text-slate-500 mb-1">Harga Modal</label>
+                                <input
+                                  type="number"
+                                  placeholder="0"
+                                  value={variant.costPrice || ''}
+                                  onChange={e => updateVariant(index, 'costPrice', parseFloat(e.target.value))}
+                                  className="w-full px-2 py-1.5 text-xs border border-slate-200 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-[10px] text-slate-500 mb-1">Harga Jual</label>
+                                <input
+                                  type="number"
+                                  placeholder="0"
+                                  value={variant.price || ''}
+                                  onChange={e => updateVariant(index, 'price', parseFloat(e.target.value))}
+                                  className="w-full px-2 py-1.5 text-xs border border-slate-200 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                                />
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
 
-                {/* Profit Preview */}
-                <div className="p-3 bg-blue-50 rounded-lg border border-blue-100 flex items-center justify-between">
-                  <span className="text-xs text-blue-700 font-medium flex items-center gap-1">
-                    <TrendingUp size={14} /> Margin Laba
-                  </span>
-                  <span className="text-sm font-bold text-blue-700">
-                    {formatCurrency((formData.price || 0) - (formData.costPrice || 0))}
-                  </span>
-                </div>
+                  {/* Profit Preview */}
+                  <div className="p-3 bg-blue-50 rounded-lg border border-blue-100 flex items-center justify-between">
+                    <span className="text-xs text-blue-700 font-medium flex items-center gap-1">
+                      <TrendingUp size={14} /> Margin Laba
+                    </span>
+                    <span className="text-sm font-bold text-blue-700">
+                      {formatCurrency((formData.price || 0) - (formData.costPrice || 0))}
+                    </span>
+                  </div>
 
-                <div className="pt-4 flex gap-3">
-                  {isEditing && (
+                  <div className="pt-4 flex gap-3">
+                    {isEditing && (
+                      <button
+                        type="button"
+                        onClick={handleCancel}
+                        className="flex-1 py-2.5 px-5 text-sm font-medium text-slate-700 bg-white rounded-lg border border-slate-300 hover:bg-slate-50"
+                      >
+                        Batal
+                      </button>
+                    )}
                     <button
-                      type="button"
-                      onClick={handleCancel}
-                      className="flex-1 py-2.5 px-5 text-sm font-medium text-slate-700 bg-white rounded-lg border border-slate-300 hover:bg-slate-50"
+                      type="submit"
+                      className="flex-1 py-2.5 px-5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2"
                     >
-                      Batal
+                      <Package size={18} />
+                      {isEditing ? 'Update Produk' : 'Simpan Produk'}
                     </button>
-                  )}
-                  <button
-                    type="submit"
-                    className="flex-1 py-2.5 px-5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2"
-                  >
-                    <Package size={18} />
-                    {isEditing ? 'Update Produk' : 'Simpan Produk'}
-                  </button>
-                </div>
-              </form>
-            </Card>
+                  </div>
+                </form>
+              </div>
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Smart Restock Modal */}
