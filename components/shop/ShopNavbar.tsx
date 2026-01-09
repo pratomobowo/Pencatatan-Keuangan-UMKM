@@ -1,22 +1,18 @@
 'use client';
 
 import Link from 'next/link';
-import { Search, Bell, MapPin, ChevronDown } from 'lucide-react';
+import { Search, Bell } from 'lucide-react';
 
 export const ShopNavbar = () => {
     return (
         <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md shadow-sm w-full">
-            {/* Location & Notification */}
+            {/* Logo & Notification */}
             <div className="flex items-center justify-between p-4 pb-2">
-                <div className="flex flex-1 flex-col justify-center">
-                    <span className="text-xs font-medium text-stone-500">Dikirim ke:</span>
-                    <div className="flex items-center gap-1 cursor-pointer group">
-                        <MapPin className="text-orange-500 group-hover:text-teal-500 transition-colors" size={20} />
-                        <h2 className="text-stone-900 text-sm font-bold leading-tight truncate max-w-[240px]">
-                            Rumah (Jakarta Selatan)
-                        </h2>
-                        <ChevronDown className="text-stone-900" size={18} />
+                <div className="flex items-center gap-2">
+                    <div className="size-10 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center shadow-lg shadow-orange-200">
+                        <span className="text-white text-lg font-black">PA</span>
                     </div>
+                    <span className="text-stone-900 text-xl font-bold">Pasarantar</span>
                 </div>
                 <button className="flex size-10 items-center justify-center rounded-full bg-stone-50 hover:bg-orange-50 transition-colors relative">
                     <Bell className="text-stone-900" size={20} />
