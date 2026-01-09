@@ -105,7 +105,7 @@ export function ShopAuthProvider({ children }: { children: ReactNode }) {
             // Ignore errors
         }
         setCustomer(null);
-        router.push('/shop');
+        router.push('/');
     };
 
     const refreshCustomer = async () => {
