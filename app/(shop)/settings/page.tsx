@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ChevronLeft, User, Phone, Mail, Lock, Loader2, Save, LogOut } from 'lucide-react';
 import { useShopAuth } from '@/contexts/ShopAuthContext';
@@ -16,8 +16,19 @@ export default function SettingsPage() {
     const [profileData, setProfileData] = useState({
         name: customer?.name || '',
         email: customer?.email || '',
+        phone: customer?.phone || '',
     });
 
+    // Update state when customer data loads
+    useEffect(() => {
+        if (customer) {
+            setProfileData({
+                name: customer.name || '',
+                email: customer.email || '',
+                phone: customer.phone || '',
+            });
+        }
+    }, [customer]);
     // Password State
     const [passwordData, setPasswordData] = useState({
         currentPassword: '',
@@ -161,14 +172,16 @@ export default function SettingsPage() {
                         </div>
 
                         <div className="flex flex-col gap-1.5">
-                            <label className="text-xs font-bold text-gray-400 ml-1">Nomor HP (Tetap)</label>
-                            <div className="flex items-center border border-gray-100 bg-gray-50 rounded-xl px-4 cursor-not-allowed">
-                                <Phone size={18} className="text-gray-300 mr-2" />
+                            <label className="text-xs font-bold text-gray-400 ml-1">Nomor HP</label>
+                            <div className="flex items-center border border-gray-200 rounded-xl px-4 focus-within:border-orange-500 focus-within:ring-2 focus-within:ring-orange-50 transition-all">
+                                <Phone size={18} className="text-gray-400 mr-2" />
                                 <input
-                                    type="text"
-                                    className="flex-1 py-3 outline-none bg-transparent text-gray-400"
-                                    value={customer?.phone}
-                                    disabled
+                                    type="tel"
+                                    className="flex-1 py-3 outline-none bg-transparent"
+                                    value={profileData.phone}
+                                    onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
+                                    required
+                                    placeholder="0812xxxxxxxx"
                                 />
                             </div>
                         </div>

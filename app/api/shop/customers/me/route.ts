@@ -122,22 +122,45 @@ export async function PUT(request: NextRequest) {
         }
 
         const body = await request.json();
-        const { name, email } = body;
+        const { name, email, phone } = body;
+
+        // Find existing customer to get its current ID
+        const existingCustomer = await prisma.customer.findFirst({
+            where: {
+                OR: [
+                    { id: tokenData.userId },
+                    { email: tokenData.identifier }
+                ]
+            } as any
+        });
+
+        if (!existingCustomer) {
+            return NextResponse.json(
+                { error: 'Customer not found' },
+                { status: 404 }
+            );
+        }
+
+        // Validate phone uniqueness if it's changing
+        if (phone && phone !== existingCustomer.phone) {
+            const phoneExists = await prisma.customer.findUnique({
+                where: { phone }
+            });
+
+            if (phoneExists) {
+                return NextResponse.json(
+                    { error: 'Nomor HP sudah digunakan oleh akun lain.' },
+                    { status: 400 }
+                );
+            }
+        }
 
         const customer = await prisma.customer.update({
-            where: {
-                id: (await prisma.customer.findFirst({
-                    where: {
-                        OR: [
-                            { id: tokenData.userId },
-                            { email: tokenData.identifier }
-                        ]
-                    } as any
-                }))?.id
-            },
+            where: { id: existingCustomer.id },
             data: {
                 name: name || undefined,
                 email: email || undefined,
+                phone: phone || undefined,
             } as any,
             select: {
                 id: true,
