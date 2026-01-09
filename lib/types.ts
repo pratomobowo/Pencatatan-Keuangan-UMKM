@@ -94,6 +94,14 @@ export interface Product {
   variants?: ProductVariant[];
 }
 
+// Shop Product Type (Extended with display fields)
+export interface ShopProduct extends Product {
+  displayPrice: number;
+  originalPrice?: number | null;
+  discount?: number | null;
+  isPromoActive?: boolean;
+}
+
 // Cost Component Type (New)
 export interface CostComponent {
   id: string;

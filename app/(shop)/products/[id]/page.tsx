@@ -1,25 +1,17 @@
 'use client';
 
-import { useState, useEffect, use } from 'react';
+import { useState, useEffect, use, useMemo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowLeft, ShoppingBag, Heart, Truck, Shield, Thermometer, Check, Loader2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { ArrowLeft, ShoppingBag, Heart, Truck, Shield, Thermometer, Check, Loader2, ChevronDown } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
-
-interface Product {
-    id: string;
-    name: string;
-    description?: string;
-    price: number;
-    stock: number;
-    unit: string;
-    image?: string;
-    category?: string;
-}
+import { Product, ProductVariant } from '@/lib/types';
 
 const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&q=80';
 
 export default function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
+    const router = useRouter();
     const { id } = use(params);
     const [product, setProduct] = useState<Product | null>(null);
     const [loading, setLoading] = useState(true);
@@ -27,6 +19,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
     const [quantity, setQuantity] = useState(1);
     const [isFavorite, setIsFavorite] = useState(false);
     const [added, setAdded] = useState(false);
+    const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
     const { addItem } = useCart();
 
     useEffect(() => {
@@ -45,6 +38,12 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
             }
             const data = await response.json();
             setProduct(data);
+
+            // Set default variant if available
+            if (data.variants && data.variants.length > 0) {
+                const defaultVar = data.variants.find((v: ProductVariant) => v.isDefault) || data.variants[0];
+                setSelectedVariant(defaultVar);
+            }
         } catch (err: any) {
             console.error('Error fetching product:', err);
             setError(err.message || 'Gagal memuat produk');
@@ -53,6 +52,12 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
         }
     };
 
+    // Sort variants to have default first
+    const sortedVariants = useMemo(() => {
+        if (!product?.variants || product.variants.length === 0) return [];
+        return [...product.variants].sort((a, b) => (b.isDefault ? 1 : 0) - (a.isDefault ? 1 : 0));
+    }, [product?.variants]);
+
     const handleQuantityChange = (delta: number) => {
         setQuantity(Math.max(1, quantity + delta));
     };
@@ -60,11 +65,14 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
     const handleAddToCart = () => {
         if (!product) return;
 
+        const price = selectedVariant ? Number(selectedVariant.price) : product.price;
+        const unit = selectedVariant ? selectedVariant.unit : product.unit;
+
         addItem({
             id: product.id,
             name: product.name,
-            variant: product.unit,
-            price: product.price,
+            variant: unit,
+            price: price,
             image: product.image || DEFAULT_IMAGE,
         }, quantity);
         setAdded(true);
@@ -73,7 +81,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center py-20">
+            <div className="flex items-center justify-center py-20 min-h-screen bg-stone-50">
                 <Loader2 className="animate-spin text-orange-500" size={40} />
             </div>
         );
@@ -81,11 +89,11 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
 
     if (error || !product) {
         return (
-            <div className="flex flex-col items-center justify-center py-20 px-4">
+            <div className="flex flex-col items-center justify-center py-20 px-4 min-h-screen bg-stone-50">
                 <p className="text-red-500 mb-4">{error || 'Produk tidak ditemukan'}</p>
                 <Link
-                    href="/shop"
-                    className="px-4 py-2 bg-orange-500 text-white rounded-lg"
+                    href="/"
+                    className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
                 >
                     Kembali ke Beranda
                 </Link>
@@ -96,8 +104,12 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
     const productImage = product.image || DEFAULT_IMAGE;
     const isInStock = product.stock > 0;
 
+    // Determine display values based on selection
+    const currentPrice = selectedVariant ? Number(selectedVariant.price) : product.price;
+    const currentUnit = selectedVariant ? selectedVariant.unit : product.unit;
+
     return (
-        <>
+        <div className="min-h-screen bg-stone-50 pb-24">
             {/* Image Gallery */}
             <div className="relative w-full aspect-[4/3] bg-stone-100">
                 <Image
@@ -105,27 +117,28 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                     alt={product.name}
                     fill
                     className="object-cover"
+                    priority
                 />
 
                 {/* Favorite Button */}
                 <button
                     onClick={() => setIsFavorite(!isFavorite)}
-                    className="absolute top-4 right-4 size-10 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg transition-colors"
+                    className="absolute top-4 right-4 size-10 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg transition-colors hover:bg-white"
                 >
                     <Heart size={24} className={isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-400'} />
                 </button>
 
                 {/* Back Button */}
-                <Link
-                    href="/shop"
-                    className="absolute top-4 left-4 size-10 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg transition-colors"
+                <button
+                    onClick={() => router.back()}
+                    className="absolute top-4 left-4 size-10 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg transition-colors hover:bg-white"
                 >
                     <ArrowLeft size={24} className="text-gray-700" />
-                </Link>
+                </button>
             </div>
 
             {/* Product Info */}
-            <div className="px-5 pt-6 bg-white rounded-t-3xl -mt-6 relative z-10">
+            <div className="px-5 pt-6 bg-white rounded-t-3xl -mt-6 relative z-10 shadow-sm">
                 <div className="flex items-start justify-between gap-4">
                     <div className="w-full">
                         <div className="flex items-center gap-2 mb-2">
@@ -140,15 +153,36 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                             )}
                         </div>
                         <h1 className="text-stone-900 text-2xl font-bold leading-tight mb-1">{product.name}</h1>
-                        <p className="text-gray-500 text-sm">{product.unit}</p>
+                        <p className="text-gray-500 text-sm">per {currentUnit}</p>
                     </div>
                 </div>
 
+                {/* Variant Selector */}
+                {sortedVariants.length > 0 && (
+                    <div className="mt-4 mb-2">
+                        <label className="text-xs font-semibold text-stone-900 mb-2 block">Pilih Satuan:</label>
+                        <div className="flex flex-wrap gap-2">
+                            {sortedVariants.map((variant) => (
+                                <button
+                                    key={variant.id}
+                                    onClick={() => setSelectedVariant(variant)}
+                                    className={`px-3 py-2 rounded-lg text-sm font-medium border transition-all ${selectedVariant?.id === variant.id
+                                        ? 'bg-orange-50 border-orange-500 text-orange-700 ring-1 ring-orange-500'
+                                        : 'bg-white border-gray-200 text-gray-600 hover:border-orange-200'
+                                        }`}
+                                >
+                                    {variant.unit}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
                 <div className="mt-4 flex items-end gap-2 border-b border-orange-100 pb-6">
                     <h2 className="text-orange-500 text-3xl font-bold">
-                        Rp {product.price.toLocaleString('id-ID')}
+                        Rp {currentPrice.toLocaleString('id-ID')}
                     </h2>
-                    <span className="text-gray-400 mb-1.5 text-base font-medium">/ {product.unit}</span>
+                    <span className="text-gray-400 mb-1.5 text-base font-medium">/ {currentUnit}</span>
                 </div>
             </div>
 
@@ -179,10 +213,10 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                         onClick={handleAddToCart}
                         disabled={!isInStock}
                         className={`flex-1 h-12 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-orange-300/40 transition-all active:scale-[0.98] ${added
-                                ? 'bg-green-500'
-                                : isInStock
-                                    ? 'bg-orange-500 hover:bg-orange-600 active:bg-orange-700'
-                                    : 'bg-gray-400 cursor-not-allowed'
+                            ? 'bg-green-500'
+                            : isInStock
+                                ? 'bg-orange-500 hover:bg-orange-600 active:bg-orange-700'
+                                : 'bg-gray-400 cursor-not-allowed'
                             }`}
                     >
                         {added ? (
@@ -201,7 +235,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
             </div>
 
             {/* Delivery Info */}
-            <div className="px-5 mt-6 bg-white">
+            <div className="mt-6 mx-4">
                 <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4 flex gap-3 items-start">
                     <div className="bg-blue-200 rounded-full p-2 shrink-0 text-blue-600">
                         <Truck size={20} />
@@ -217,7 +251,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
 
             {/* Description */}
             {product.description && (
-                <div className="px-5 pt-6 pb-4 bg-white">
+                <div className="px-5 mt-4 pt-6 pb-4 bg-white rounded-2xl mx-4 shadow-sm">
                     <h3 className="text-stone-900 text-lg font-bold mb-3">Tentang Produk</h3>
                     <p className="text-gray-600 text-[15px] leading-7 whitespace-pre-line">
                         {product.description}
@@ -226,16 +260,16 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
             )}
 
             {/* Features */}
-            <div className="px-5 py-4 border-t border-orange-100 bg-white">
+            <div className="px-5 py-6 bg-transparent">
                 <div className="grid grid-cols-2 gap-4">
-                    <div className="flex items-center gap-3 bg-stone-50 p-3 rounded-xl border border-orange-50">
+                    <div className="flex items-center gap-3 bg-white p-3 rounded-xl border border-orange-50 shadow-sm">
                         <Shield className="text-green-600" size={24} />
                         <div>
                             <p className="text-xs font-bold text-stone-900">Dijamin Segar</p>
                             <p className="text-[10px] text-gray-500">Uang kembali 100%</p>
                         </div>
                     </div>
-                    <div className="flex items-center gap-3 bg-stone-50 p-3 rounded-xl border border-orange-50">
+                    <div className="flex items-center gap-3 bg-white p-3 rounded-xl border border-orange-50 shadow-sm">
                         <Thermometer className="text-blue-500" size={24} />
                         <div>
                             <p className="text-xs font-bold text-stone-900">Suhu Terjaga</p>
@@ -244,9 +278,6 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                     </div>
                 </div>
             </div>
-
-            {/* Bottom Padding for BottomNav */}
-            <div className="h-24 bg-white"></div>
-        </>
+        </div>
     );
 }

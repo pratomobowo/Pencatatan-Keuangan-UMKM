@@ -121,7 +121,7 @@ export default function OrdersPage() {
                         <Package size={64} className="text-gray-300 mb-4" />
                         <p className="text-gray-500 mb-2">Belum ada pesanan</p>
                         <Link
-                            href="/shop"
+                            href="/"
                             className="text-orange-500 font-bold"
                         >
                             Mulai Belanja

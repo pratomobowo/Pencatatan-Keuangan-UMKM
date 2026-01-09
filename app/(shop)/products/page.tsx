@@ -6,16 +6,7 @@ import Link from 'next/link';
 import { ArrowLeft, Search, Loader2, X } from 'lucide-react';
 import { ProductCard } from '@/components/shop/ProductCard';
 
-interface Product {
-    id: string;
-    name: string;
-    description?: string;
-    price: number;
-    stock: number;
-    unit: string;
-    image?: string;
-    category?: string;
-}
+import { Product, ShopProduct } from '@/lib/types';
 
 const categories = [
     { id: 'all', name: 'Semua' },
@@ -32,7 +23,7 @@ function ProductsContent() {
     const searchParams = useSearchParams();
     const categoryParam = searchParams.get('category');
 
-    const [products, setProducts] = useState<Product[]>([]);
+    const [products, setProducts] = useState<ShopProduct[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [selectedCategory, setSelectedCategory] = useState(categoryParam || 'all');
@@ -46,7 +37,7 @@ function ProductsContent() {
     const fetchProducts = async () => {
         try {
             setLoading(true);
-            let url = '/api/products?';
+            let url = '/api/shop/products?';
 
             if (selectedCategory && selectedCategory !== 'all') {
                 url += `category=${selectedCategory}&`;
@@ -77,7 +68,7 @@ function ProductsContent() {
             {/* Header */}
             <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md shadow-sm">
                 <div className="flex items-center px-4 py-3 justify-between">
-                    <Link href="/shop" className="flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-orange-50">
+                    <Link href="/" className="flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-orange-50">
                         <ArrowLeft size={24} />
                     </Link>
                     <h2 className="text-stone-900 text-lg font-bold flex-1 text-center">
@@ -165,8 +156,11 @@ function ProductsContent() {
                                     id={product.id}
                                     name={product.name}
                                     unit={product.unit}
-                                    price={product.price}
+                                    price={product.displayPrice}
+                                    originalPrice={product.originalPrice || undefined}
+                                    discount={product.discount || undefined}
                                     image={product.image || DEFAULT_IMAGE}
+                                    variants={product.variants}
                                 />
                             ))}
                         </div>

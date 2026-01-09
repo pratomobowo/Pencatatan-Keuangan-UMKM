@@ -6,21 +6,10 @@ import { CategoryIcon } from '@/components/shop/CategoryIcon';
 import { PromoSlider } from '@/components/shop/PromoSlider';
 import { Fish, Beef, Egg, Leaf, Waves, Loader2 } from 'lucide-react';
 import Link from 'next/link';
+import { Product, ShopProduct } from '@/lib/types';
 
-interface Product {
-    id: string;
-    name: string;
-    description?: string;
-    price: number;
-    displayPrice: number;
-    originalPrice?: number;
-    stock: number;
-    unit: string;
-    image?: string;
-    category?: string;
-    isPromoActive?: boolean;
-    discount?: number;
-}
+// Extended Product type for frontend display needs (if strictly necessary, otherwise use shared type)
+// The shared type already has everything we need plus variants
 
 const categories = [
     { name: 'Ikan Laut', icon: Fish, href: '/products?category=ikan-laut', color: 'text-blue-400' },
@@ -34,8 +23,8 @@ const categories = [
 const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=400&q=80';
 
 export default function ShopHomepage() {
-    const [products, setProducts] = useState<Product[]>([]);
-    const [promoProducts, setPromoProducts] = useState<Product[]>([]);
+    const [products, setProducts] = useState<ShopProduct[]>([]);
+    const [promoProducts, setPromoProducts] = useState<ShopProduct[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -134,10 +123,11 @@ export default function ShopHomepage() {
                                         name={product.name}
                                         unit={product.unit}
                                         price={product.displayPrice || product.price}
-                                        originalPrice={product.originalPrice || (product.isPromoActive ? undefined : Math.round(product.price * 1.2))}
-                                        discount={product.discount || (product.isPromoActive ? product.discount : 20)}
+                                        originalPrice={product.originalPrice || undefined}
+                                        discount={product.discount || undefined}
                                         image={product.image || DEFAULT_IMAGE}
                                         isGrid={true}
+                                        variants={product.variants}
                                     />
                                 </div>
                             ))}
@@ -172,6 +162,7 @@ export default function ShopHomepage() {
                                         price={product.price}
                                         image={product.image || DEFAULT_IMAGE}
                                         isGrid={true}
+                                        variants={product.variants}
                                     />
                                 ))}
                             </div>

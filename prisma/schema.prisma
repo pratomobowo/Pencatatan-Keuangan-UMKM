@@ -250,15 +250,15 @@ model ShopOrder {
   id            String   @id @default(uuid())
   orderNumber   String   @unique @default(cuid())
   
-  customerId    String
-  customer      ShopCustomer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  customerId    String?
+  customer      ShopCustomer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
   
   // Shipping
   addressLabel  String?
   addressName   String
   addressPhone  String
   addressFull   String
-  deliveryTime  String
+  deliveryTime  String?
   
   // Items
   items         ShopOrderItem[]

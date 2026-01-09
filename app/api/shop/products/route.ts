@@ -53,6 +53,18 @@ export async function GET(request: NextRequest) {
                 promoDiscount: true,
                 promoStartDate: true,
                 promoEndDate: true,
+                variants: {
+                    orderBy: { isDefault: 'desc' },
+                    select: {
+                        id: true,
+                        productId: true,
+                        unit: true,
+                        unitQty: true,
+                        price: true,
+                        costPrice: true,
+                        isDefault: true
+                    }
+                }
             },
             orderBy: { createdAt: 'desc' },
             take: limit ? parseInt(limit) : undefined,

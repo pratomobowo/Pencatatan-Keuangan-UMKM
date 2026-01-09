@@ -3,9 +3,11 @@
 import Link from 'next/link';
 import { Home, Grid, ShoppingCart, Receipt, User } from 'lucide-react';
 import { usePathname } from 'next/navigation';
+import { useCart } from '@/contexts/CartContext';
 
 export const BottomNav = () => {
     const pathname = usePathname();
+    const { itemCount } = useCart();
 
     const isActive = (path: string) => pathname === path;
 
@@ -18,7 +20,7 @@ export const BottomNav = () => {
                         }`}
                 >
                     <Home size={24} fill={isActive('/') ? 'currentColor' : 'none'} />
-                    <span className="text-[10px] font-bold">Beranda</span>
+                    <span className="text-[10px] font-semibold">Beranda</span>
                 </Link>
 
                 <Link
@@ -30,16 +32,19 @@ export const BottomNav = () => {
                     <span className="text-[10px] font-medium">Kategori</span>
                 </Link>
 
-                {/* Cart Button - Elevated */}
-                <div className="relative -top-6">
-                    <Link
-                        href="/cart"
-                        className="flex items-center justify-center size-14 rounded-full bg-orange-500 text-white shadow-lg shadow-orange-200 hover:scale-105 transition-transform border-4 border-white"
-                    >
-                        <ShoppingCart size={28} />
-                        <span className="absolute top-2 right-2 size-2.5 bg-red-600 rounded-full border border-orange-500"></span>
-                    </Link>
-                </div>
+                <Link
+                    href="/cart"
+                    className="flex flex-col items-center justify-center w-16 -mt-3 relative"
+                >
+                    <div className="size-12 rounded-full bg-orange-500 flex items-center justify-center text-white shadow-lg shadow-orange-200 relative">
+                        <ShoppingCart size={24} />
+                        {itemCount > 0 && (
+                            <span className="absolute -top-1 -right-1 min-w-[18px] h-4.5 bg-red-600 rounded-full border border-white flex items-center justify-center px-1 text-[9px] font-bold text-white shadow-sm">
+                                {itemCount}
+                            </span>
+                        )}
+                    </div>
+                </Link>
 
                 <Link
                     href="/orders"

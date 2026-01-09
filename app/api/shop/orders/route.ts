@@ -88,13 +88,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
     try {
         const tokenData = await getCustomerFromToken(request);
-
-        if (!tokenData) {
-            return NextResponse.json(
-                { error: 'Unauthorized' },
-                { status: 401 }
-            );
-        }
+        // Guest mode is allowed, so we don't return 401 if tokenData is null
 
         const body = await request.json();
         const {
@@ -103,7 +97,6 @@ export async function POST(request: NextRequest) {
             addressName,
             addressPhone,
             addressFull,
-            deliveryTime,
             paymentMethod,
             notes,
         } = body;
@@ -127,12 +120,11 @@ export async function POST(request: NextRequest) {
         // Create order with items
         const order = await prisma.shopOrder.create({
             data: {
-                customerId: tokenData.customerId,
+                customerId: tokenData?.customerId as any,
                 addressLabel: addressLabel || null,
                 addressName,
                 addressPhone,
                 addressFull,
-                deliveryTime,
                 subtotal,
                 shippingFee,
                 serviceFee,
@@ -150,7 +142,7 @@ export async function POST(request: NextRequest) {
                         total: item.price * item.quantity,
                     })),
                 },
-            },
+            } as any,
             include: {
                 items: true,
             },

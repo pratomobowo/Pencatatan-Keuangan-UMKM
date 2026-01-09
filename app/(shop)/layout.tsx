@@ -9,18 +9,14 @@ export default function ShopLayout({
     children: React.ReactNode;
 }) {
     return (
-        <ShopAuthProvider>
-            <CartProvider>
-                <div className="min-h-screen bg-gray-100 flex justify-center">
-                    <div className="relative w-full max-w-md h-screen overflow-y-auto bg-stone-50 shadow-2xl">
-                        <ShopNavbar />
-                        <main className="flex flex-col gap-6 w-full pb-24">
-                            {children}
-                        </main>
-                        <BottomNav />
-                    </div>
-                </div>
-            </CartProvider>
-        </ShopAuthProvider>
+        <div className="min-h-screen bg-gray-100 flex justify-center">
+            <div className="relative w-full max-w-md h-screen overflow-y-auto bg-stone-50 shadow-2xl">
+                <ShopNavbar />
+                <main className="flex flex-col gap-6 w-full pb-24">
+                    {children}
+                </main>
+                <BottomNav />
+            </div>
+        </div>
     );
 }
