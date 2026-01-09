@@ -107,21 +107,27 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
       });
     }
     // Reset form
-    setFormData({ id: '', name: '', unit: 'kg', price: 0, costPrice: 0, stock: 0 });
+    setFormData({ id: '', name: '', description: '', unit: 'kg', price: 0, costPrice: 0, stock: 0, image: '', category: '', isPromo: false, promoPrice: 0, promoDiscount: 0 });
   };
 
   const handleEdit = (product: Product) => {
     setFormData({
       ...product,
+      description: product.description || '',
       costPrice: product.costPrice || 0,
-      stock: product.stock || 0
+      stock: product.stock || 0,
+      image: product.image || '',
+      category: product.category || '',
+      isPromo: product.isPromo || false,
+      promoPrice: product.promoPrice || 0,
+      promoDiscount: product.promoDiscount || 0,
     });
     setIsEditing(true);
   };
 
   const handleCancel = () => {
     setIsEditing(false);
-    setFormData({ id: '', name: '', unit: 'kg', price: 0, costPrice: 0, stock: 0 });
+    setFormData({ id: '', name: '', description: '', unit: 'kg', price: 0, costPrice: 0, stock: 0, image: '', category: '', isPromo: false, promoPrice: 0, promoDiscount: 0 });
   };
 
   // Handle image upload
@@ -457,8 +463,8 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
                   <div
                     onClick={() => imageInputRef.current?.click()}
                     className={`relative border-2 border-dashed rounded-lg cursor-pointer transition-colors ${formData.image
-                        ? 'border-green-300 bg-green-50'
-                        : 'border-slate-300 hover:border-blue-400 bg-slate-50'
+                      ? 'border-green-300 bg-green-50'
+                      : 'border-slate-300 hover:border-blue-400 bg-slate-50'
                       } ${isUploading ? 'opacity-50 pointer-events-none' : ''}`}
                   >
                     {formData.image ? (
