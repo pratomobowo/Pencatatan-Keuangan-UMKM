@@ -7,60 +7,90 @@ const JWT_SECRET = new TextEncoder().encode(
     process.env.JWT_SECRET || 'shop-customer-secret-key-change-in-production'
 );
 
-// POST /api/shop/auth/login - Login shop customer
+// POST /api/shop/auth/login - Unified login for customer & admin
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
-        const { phone, password } = body;
+        const { phone, email, password } = body;
 
-        // Validate required fields
-        if (!phone || !password) {
+        // Validate
+        if ((!phone && !email) || !password) {
             return NextResponse.json(
-                { error: 'Nomor HP dan password harus diisi' },
+                { error: 'Email/HP dan password harus diisi' },
                 { status: 400 }
             );
         }
 
-        // Find customer by phone
-        const customer = await prisma.shopCustomer.findUnique({
-            where: { phone },
-        });
+        let userType: 'admin' | 'customer' = 'customer';
+        let userId: string;
+        let userName: string;
+        let userIdentifier: string;
+        let hashedPassword: string;
 
-        if (!customer) {
-            return NextResponse.json(
-                { error: 'Nomor HP atau password salah' },
-                { status: 401 }
-            );
+        // Try to find admin user first (by email)
+        if (email) {
+            const adminUser = await prisma.user.findUnique({
+                where: { email },
+            });
+
+            if (adminUser) {
+                userType = 'admin';
+                userId = adminUser.id;
+                userName = adminUser.name;
+                userIdentifier = adminUser.email;
+                hashedPassword = adminUser.password;
+            }
+        }
+
+        // If not found as admin, try as shop customer (by phone)
+        if (userType === 'customer') {
+            const identifier = phone || email;
+            const customer = await prisma.shopCustomer.findUnique({
+                where: { phone: identifier },
+            });
+
+            if (!customer) {
+                return NextResponse.json(
+                    { error: 'Akun tidak ditemukan' },
+                    { status: 401 }
+                );
+            }
+
+            userId = customer.id;
+            userName = customer.name;
+            userIdentifier = customer.phone;
+            hashedPassword = customer.password;
         }
 
         // Verify password
-        const isValid = await bcrypt.compare(password, customer.password);
+        const isValid = await bcrypt.compare(password, hashedPassword!);
 
         if (!isValid) {
             return NextResponse.json(
-                { error: 'Nomor HP atau password salah' },
+                { error: 'Password salah' },
                 { status: 401 }
             );
         }
 
         // Generate JWT token
         const token = await new SignJWT({
-            customerId: customer.id,
-            phone: customer.phone
+            userId: userId!,
+            identifier: userIdentifier!,
+            type: userType,
         })
             .setProtectedHeader({ alg: 'HS256' })
             .setExpirationTime('7d')
             .sign(JWT_SECRET);
 
-        // Create response with cookie
+        // Create response
         const response = NextResponse.json({
             message: 'Login berhasil',
-            customer: {
-                id: customer.id,
-                name: customer.name,
-                phone: customer.phone,
-                email: customer.email,
+            user: {
+                id: userId!,
+                name: userName!,
+                type: userType,
             },
+            redirectTo: userType === 'admin' ? '/admin' : '/shop/account',
         });
 
         // Set HTTP-only cookie

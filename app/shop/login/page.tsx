@@ -4,15 +4,15 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Eye, EyeOff, Loader2 } from 'lucide-react';
-import { useShopAuth } from '@/contexts/ShopAuthContext';
 
 export default function LoginPage() {
     const router = useRouter();
-    const { login } = useShopAuth();
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [loginMode, setLoginMode] = useState<'phone' | 'email'>('phone');
     const [formData, setFormData] = useState({
         phone: '',
+        email: '',
         password: '',
     });
     const [error, setError] = useState('');
@@ -22,50 +22,110 @@ export default function LoginPage() {
         setError('');
         setIsLoading(true);
 
-        const result = await login(formData.phone, formData.password);
+        try {
+            const response = await fetch('/api/shop/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    phone: loginMode === 'phone' ? formData.phone : undefined,
+                    email: loginMode === 'email' ? formData.email : undefined,
+                    password: formData.password,
+                }),
+            });
 
-        if (result.success) {
-            router.push('/shop/account');
-        } else {
-            setError(result.error || 'Gagal login');
+            const data = await response.json();
+
+            if (!response.ok) {
+                setError(data.error || 'Gagal login');
+                return;
+            }
+
+            // Redirect based on user type
+            router.push(data.redirectTo);
+        } catch (err) {
+            setError('Gagal login');
+        } finally {
+            setIsLoading(false);
         }
-
-        setIsLoading(false);
     };
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-orange-500 to-orange-600 flex flex-col">
             {/* Header */}
             <header className="flex items-center px-4 py-3">
-                <Link href="/shop/account" className="flex size-10 items-center justify-center rounded-full bg-white/20 text-white hover:bg-white/30 transition-colors">
+                <Link href="/shop" className="flex size-10 items-center justify-center rounded-full bg-white/20 text-white hover:bg-white/30 transition-colors">
                     <ArrowLeft size={24} />
                 </Link>
             </header>
 
             {/* Logo & Title */}
-            <div className="px-6 pt-8 pb-12 text-center">
+            <div className="px-6 pt-4 pb-8 text-center">
+                <div className="size-16 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center mx-auto mb-4 shadow-lg">
+                    <span className="text-white text-2xl font-black">PA</span>
+                </div>
                 <h1 className="text-3xl font-bold text-white mb-2">Selamat Datang!</h1>
-                <p className="text-white/80">Masuk untuk lanjut belanja</p>
+                <p className="text-white/80">Masuk ke akun Anda</p>
             </div>
 
             {/* Form Card */}
             <div className="flex-1 bg-white rounded-t-3xl px-6 pt-8 pb-12">
+                {/* Login Mode Tabs */}
+                <div className="flex gap-2 mb-6 bg-stone-100 rounded-xl p-1">
+                    <button
+                        type="button"
+                        onClick={() => setLoginMode('phone')}
+                        className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition-all ${loginMode === 'phone'
+                                ? 'bg-white text-orange-600 shadow-sm'
+                                : 'text-gray-500'
+                            }`}
+                    >
+                        Nomor HP
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setLoginMode('email')}
+                        className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition-all ${loginMode === 'email'
+                                ? 'bg-white text-orange-600 shadow-sm'
+                                : 'text-gray-500'
+                            }`}
+                    >
+                        Email (Admin)
+                    </button>
+                </div>
+
                 <form onSubmit={handleSubmit} className="flex flex-col gap-5">
                     {/* Phone Input */}
-                    <div className="flex flex-col gap-2">
-                        <label className="text-sm font-medium text-gray-700">Nomor HP</label>
-                        <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden focus-within:border-orange-500 focus-within:ring-2 focus-within:ring-orange-100 transition-all">
-                            <span className="px-4 py-3 bg-gray-50 text-gray-500 border-r border-gray-200">+62</span>
+                    {loginMode === 'phone' && (
+                        <div className="flex flex-col gap-2">
+                            <label className="text-sm font-medium text-gray-700">Nomor HP</label>
+                            <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden focus-within:border-orange-500 focus-within:ring-2 focus-within:ring-orange-100 transition-all">
+                                <span className="px-4 py-3 bg-gray-50 text-gray-500 border-r border-gray-200">+62</span>
+                                <input
+                                    type="tel"
+                                    placeholder="812-3456-7890"
+                                    value={formData.phone}
+                                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                    className="flex-1 px-4 py-3 outline-none"
+                                    required
+                                />
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Email Input */}
+                    {loginMode === 'email' && (
+                        <div className="flex flex-col gap-2">
+                            <label className="text-sm font-medium text-gray-700">Email</label>
                             <input
-                                type="tel"
-                                placeholder="812-3456-7890"
-                                value={formData.phone}
-                                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                                className="flex-1 px-4 py-3 outline-none"
+                                type="email"
+                                placeholder="admin@example.com"
+                                value={formData.email}
+                                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                className="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100 transition-all"
                                 required
                             />
                         </div>
-                    </div>
+                    )}
 
                     {/* Password Input */}
                     <div className="flex flex-col gap-2">
