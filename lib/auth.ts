@@ -85,7 +85,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                                 email: user.email!,
                                 name: user.name || '',
                                 role: 'user',
-                            },
+                            } as any, // Type assertion needed until Prisma types refresh
                         });
                         token.id = newUser.id;
                         token.role = newUser.role;
