@@ -158,6 +158,10 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
       alert('Gagal mengupload gambar');
     } finally {
       setIsUploading(false);
+      // Reset file input to allow re-selecting same file
+      if (imageInputRef.current) {
+        imageInputRef.current.value = '';
+      }
     }
   };
 
