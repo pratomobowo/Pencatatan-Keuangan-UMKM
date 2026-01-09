@@ -105,27 +105,26 @@ export default function ShopHomepage() {
                         </Link>
                     </div>
                     {/* Slide container - shows 2 cards + peek of 3rd */}
-                    <div className="flex overflow-x-auto hide-scrollbar px-4 pb-2 gap-3 snap-x snap-mandatory">
-                        {products.slice(0, 8).map((product, index) => (
-                            <div
-                                key={product.id}
-                                className="snap-start shrink-0"
-                                style={{ width: 'calc((100% - 32px - 12px) / 2.15)' }}
-                            >
-                                <ProductCard
-                                    id={product.id}
-                                    name={product.name}
-                                    unit={product.unit}
-                                    price={product.price}
-                                    originalPrice={Math.round(product.price * 1.2)}
-                                    discount={20}
-                                    image={product.image || DEFAULT_IMAGE}
-                                    isGrid={true}
-                                />
-                            </div>
-                        ))}
-                        {/* Right padding spacer */}
-                        <div className="shrink-0 w-4"></div>
+                    <div className="overflow-x-auto hide-scrollbar snap-x snap-mandatory scroll-pl-4">
+                        <div className="flex gap-3 pb-2 w-max px-4">
+                            {products.slice(0, 8).map((product) => (
+                                <div
+                                    key={product.id}
+                                    className="snap-start shrink-0 w-[calc((100vw-32px-12px)/2.15)] max-w-[180px]"
+                                >
+                                    <ProductCard
+                                        id={product.id}
+                                        name={product.name}
+                                        unit={product.unit}
+                                        price={product.price}
+                                        originalPrice={Math.round(product.price * 1.2)}
+                                        discount={20}
+                                        image={product.image || DEFAULT_IMAGE}
+                                        isGrid={true}
+                                    />
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </div>
             )}
@@ -139,26 +138,6 @@ export default function ShopHomepage() {
             ) : (
                 <>
                     {/* All Products */}
-                    <div className="flex flex-col gap-3">
-                        <div className="flex items-center justify-between px-4">
-                            <h2 className="text-stone-900 text-lg font-bold">Produk Segar 🥬</h2>
-                            <Link href="/products" className="text-sm font-semibold text-orange-500 hover:text-orange-600 transition-colors">
-                                Lihat Semua
-                            </Link>
-                        </div>
-                        <div className="flex overflow-x-auto hide-scrollbar px-4 pb-2 gap-4">
-                            {products.slice(0, 6).map((product) => (
-                                <ProductCard
-                                    key={product.id}
-                                    id={product.id}
-                                    name={product.name}
-                                    unit={product.unit}
-                                    price={product.price}
-                                    image={product.image || DEFAULT_IMAGE}
-                                />
-                            ))}
-                        </div>
-                    </div>
 
                     {/* Featured Grid */}
                     {products.length > 3 && (
