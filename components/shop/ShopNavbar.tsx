@@ -66,7 +66,16 @@ export const ShopNavbar = () => {
         return () => clearTimeout(timer);
     }, [searchQuery]);
 
-    if (pathname !== '/') return null;
+    // List of pages with specialized headers that should hide the main navbar
+    const hasSpecialHeader = [
+        '/cart', '/checkout', '/orders', '/account', '/login', '/register',
+        '/addresses', '/favorites', '/notifications', '/settings', '/help', '/payments',
+        '/products' // List page has its own search/header
+    ];
+
+    const isProductDetail = pathname.startsWith('/products/') && pathname !== '/products';
+
+    if (hasSpecialHeader.includes(pathname) && !isProductDetail) return null;
 
     return (
         <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md shadow-sm w-full">
