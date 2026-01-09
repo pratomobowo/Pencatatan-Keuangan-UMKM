@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
                 where: { email },
             });
 
-            if (adminUser) {
+            if (adminUser && adminUser.password) {
                 userType = 'admin';
                 userId = adminUser.id;
                 userName = adminUser.name;
