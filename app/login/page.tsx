@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useShopAuth } from '@/contexts/ShopAuthContext';
+import { signIn } from 'next-auth/react';
 
 export default function LoginPage() {
     const router = useRouter();
@@ -187,6 +188,7 @@ export default function LoginPage() {
                             {/* Social Login */}
                             <button
                                 type="button"
+                                onClick={() => signIn('google', { callbackUrl: '/' })}
                                 className="w-full border border-gray-200 hover:bg-gray-50 text-gray-700 font-medium py-4 rounded-xl transition-all flex items-center justify-center gap-3"
                             >
                                 <svg className="size-5" viewBox="0 0 24 24">

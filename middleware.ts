@@ -47,9 +47,22 @@ export async function middleware(request: NextRequest) {
         }
     }
 
-    // For other routes (checkout, orders, account, addresses)
-    // These are protected by shop JWT auth checked in API routes/pages themselves
-    // Let them through - the pages will redirect to /login if not authenticated
+    // For shop protected routes
+    const shopProtectedRoutes = ['/account'];
+    const isShopProtectedRoute = shopProtectedRoutes.some(route =>
+        pathname === route || pathname.startsWith(route + '/')
+    );
+
+    if (isShopProtectedRoute) {
+        const shopToken = request.cookies.get('shop-token');
+        if (!shopToken) {
+            const loginUrl = new URL('/login', request.url);
+            // Optional: Add callbackUrl parameter
+            // loginUrl.searchParams.set('callbackUrl', pathname);
+            return NextResponse.redirect(loginUrl);
+        }
+    }
+
     return NextResponse.next();
 }
 
