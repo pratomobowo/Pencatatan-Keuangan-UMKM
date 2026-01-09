@@ -12,10 +12,14 @@ interface Product {
     name: string;
     description?: string;
     price: number;
+    displayPrice: number;
+    originalPrice?: number;
     stock: number;
     unit: string;
     image?: string;
     category?: string;
+    isPromoActive?: boolean;
+    discount?: number;
 }
 
 const categories = [
@@ -31,6 +35,7 @@ const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1542838132-92c53300491e
 
 export default function ShopHomepage() {
     const [products, setProducts] = useState<Product[]>([]);
+    const [promoProducts, setPromoProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -41,10 +46,21 @@ export default function ShopHomepage() {
     const fetchProducts = async () => {
         try {
             setLoading(true);
-            const response = await fetch('/api/products');
-            if (!response.ok) throw new Error('Failed to fetch products');
-            const data = await response.json();
-            setProducts(data);
+            // Fetch all products and promo products in parallel
+            const [allRes, promoRes] = await Promise.all([
+                fetch('/api/shop/products'),
+                fetch('/api/shop/products?promo=true'),
+            ]);
+
+            if (!allRes.ok) throw new Error('Failed to fetch products');
+
+            const allData = await allRes.json();
+            setProducts(allData);
+
+            if (promoRes.ok) {
+                const promoData = await promoRes.json();
+                setPromoProducts(promoData);
+            }
         } catch (err) {
             console.error('Error fetching products:', err);
             setError('Gagal memuat produk');
@@ -96,18 +112,19 @@ export default function ShopHomepage() {
             </div>
 
             {/* Produk Promo - Slide Style */}
-            {products.length > 0 && (
+            {(promoProducts.length > 0 || products.length > 0) && (
                 <div className="flex flex-col gap-3">
                     <div className="flex items-center justify-between px-4">
                         <h2 className="text-stone-900 text-lg font-bold">🔥 Produk Promo</h2>
-                        <Link href="/products" className="text-sm font-semibold text-orange-500 hover:text-orange-600 transition-colors">
+                        <Link href="/products?promo=true" className="text-sm font-semibold text-orange-500 hover:text-orange-600 transition-colors">
                             Lihat Semua
                         </Link>
                     </div>
                     {/* Slide container - shows 2 cards + peek of 3rd */}
                     <div className="overflow-x-auto hide-scrollbar snap-x snap-mandatory scroll-pl-4">
                         <div className="flex gap-3 pb-2 w-max px-4">
-                            {products.slice(0, 8).map((product) => (
+                            {/* Use promo products if available, otherwise show regular products with fake promo */}
+                            {(promoProducts.length > 0 ? promoProducts : products).slice(0, 8).map((product) => (
                                 <div
                                     key={product.id}
                                     className="snap-start shrink-0 w-[calc((100vw-32px-12px)/2.15)] max-w-[180px]"
@@ -116,9 +133,9 @@ export default function ShopHomepage() {
                                         id={product.id}
                                         name={product.name}
                                         unit={product.unit}
-                                        price={product.price}
-                                        originalPrice={Math.round(product.price * 1.2)}
-                                        discount={20}
+                                        price={product.displayPrice || product.price}
+                                        originalPrice={product.originalPrice || (product.isPromoActive ? undefined : Math.round(product.price * 1.2))}
+                                        discount={product.discount || (product.isPromoActive ? product.discount : 20)}
                                         image={product.image || DEFAULT_IMAGE}
                                         isGrid={true}
                                     />

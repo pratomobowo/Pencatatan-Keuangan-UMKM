@@ -43,6 +43,13 @@ model Product {
   category    String?  // Product category for shop
   isActive    Boolean  @default(true) // Show in shop
   
+  // Promo fields
+  isPromo        Boolean   @default(false)  // Is product on promo
+  promoPrice     Decimal?  @db.Decimal(10, 2) // Discounted price
+  promoDiscount  Int?      // Discount percentage (e.g. 20 for 20%)
+  promoStartDate DateTime? // Promo start date
+  promoEndDate   DateTime? // Promo end date
+  
   orderItems  OrderItem[]
   
   createdAt   DateTime @default(now())
@@ -52,6 +59,7 @@ model Product {
   @@index([name])
   @@index([category])
   @@index([isActive])
+  @@index([isPromo])
 }
 
 // ============================================

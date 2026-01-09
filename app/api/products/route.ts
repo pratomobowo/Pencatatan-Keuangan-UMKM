@@ -21,7 +21,10 @@ export async function GET() {
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
-        const { sku, name, description, price, costPrice, stock, unit, image, category, isActive } = body;
+        const {
+            sku, name, description, price, costPrice, stock, unit, image, category, isActive,
+            isPromo, promoPrice, promoDiscount, promoStartDate, promoEndDate
+        } = body;
 
         // Auto-generate SKU if not provided
         const productSku = sku || `SKU-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
@@ -38,6 +41,11 @@ export async function POST(request: NextRequest) {
                 image: image || null,
                 category: category || null,
                 isActive: isActive !== undefined ? isActive : true,
+                isPromo: isPromo || false,
+                promoPrice: promoPrice || null,
+                promoDiscount: promoDiscount || null,
+                promoStartDate: promoStartDate ? new Date(promoStartDate) : null,
+                promoEndDate: promoEndDate ? new Date(promoEndDate) : null,
             },
         });
 

@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
         const category = searchParams.get('category');
         const search = searchParams.get('search');
         const limit = searchParams.get('limit');
-        const featured = searchParams.get('featured');
+        const promo = searchParams.get('promo'); // Filter for promo products
 
         // Build where clause
         const where: any = {
@@ -27,6 +27,16 @@ export async function GET(request: NextRequest) {
             ];
         }
 
+        // Filter promo products
+        if (promo === 'true') {
+            where.isPromo = true;
+            // Check promo is still valid (not expired)
+            where.OR = [
+                { promoEndDate: null },
+                { promoEndDate: { gte: new Date() } }
+            ];
+        }
+
         const products = await prisma.product.findMany({
             where,
             select: {
@@ -38,16 +48,33 @@ export async function GET(request: NextRequest) {
                 unit: true,
                 image: true,
                 category: true,
+                isPromo: true,
+                promoPrice: true,
+                promoDiscount: true,
+                promoStartDate: true,
+                promoEndDate: true,
             },
             orderBy: { createdAt: 'desc' },
             take: limit ? parseInt(limit) : undefined,
         });
 
-        // Transform price from Decimal to number
-        const transformedProducts = products.map(p => ({
-            ...p,
-            price: Number(p.price),
-        }));
+        // Transform prices from Decimal to number and calculate display price
+        const transformedProducts = products.map(p => {
+            const now = new Date();
+            const isPromoActive = p.isPromo &&
+                (!p.promoStartDate || new Date(p.promoStartDate) <= now) &&
+                (!p.promoEndDate || new Date(p.promoEndDate) >= now);
+
+            return {
+                ...p,
+                price: Number(p.price),
+                originalPrice: isPromoActive ? Number(p.price) : null,
+                displayPrice: isPromoActive && p.promoPrice ? Number(p.promoPrice) : Number(p.price),
+                promoPrice: p.promoPrice ? Number(p.promoPrice) : null,
+                discount: isPromoActive ? p.promoDiscount : null,
+                isPromoActive,
+            };
+        });
 
         return NextResponse.json(transformedProducts);
     } catch (error) {
