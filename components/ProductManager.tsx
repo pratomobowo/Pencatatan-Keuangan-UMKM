@@ -26,6 +26,7 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
   const [isEditing, setIsEditing] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
+  const [promoFilter, setPromoFilter] = useState<string>('');
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 10;
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -274,11 +275,14 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
     reader.readAsBinaryString(file);
   };
 
-  // Filter products by search and category
+  // Filter products by search, category, and promo
   const filteredProducts = products.filter(p => {
     const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = !categoryFilter || p.category === categoryFilter;
-    return matchesSearch && matchesCategory;
+    const matchesPromo = !promoFilter ||
+      (promoFilter === 'promo' && p.isPromo) ||
+      (promoFilter === 'regular' && !p.isPromo);
+    return matchesSearch && matchesCategory && matchesPromo;
   });
 
   // Pagination
@@ -291,7 +295,7 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
   // Reset to page 1 when filter changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, categoryFilter]);
+  }, [searchTerm, categoryFilter, promoFilter]);
 
   // Get unique categories from products
   const categories = Array.from(new Set(products.map(p => p.category).filter(Boolean))) as string[];
@@ -357,6 +361,15 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
                   <option value="daging-sapi">Daging Sapi</option>
                   <option value="bumbu">Bumbu</option>
                 </select>
+                <select
+                  value={promoFilter}
+                  onChange={(e) => setPromoFilter(e.target.value)}
+                  className="px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500 min-w-[120px]"
+                >
+                  <option value="">Semua Status</option>
+                  <option value="promo">🔥 Promo</option>
+                  <option value="regular">Regular</option>
+                </select>
               </div>
 
               {/* Info: Showing X of Y products */}
@@ -401,7 +414,14 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
                       return (
                         <tr key={p.id} className="bg-white border-b hover:bg-slate-50">
                           <td className="px-4 py-3">
-                            <div className="font-medium text-slate-900">{p.name}</div>
+                            <div className="flex items-center gap-2">
+                              <div className="font-medium text-slate-900">{p.name}</div>
+                              {p.isPromo && (
+                                <span className="px-1.5 py-0.5 text-[10px] font-bold bg-orange-100 text-orange-600 rounded">
+                                  🔥 PROMO
+                                </span>
+                              )}
+                            </div>
                             <div className="text-xs text-slate-500">per {p.unit}</div>
                           </td>
                           <td className="px-4 py-3 text-center">
@@ -491,8 +511,8 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
                         <button
                           onClick={() => setCurrentPage(page)}
                           className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors ${currentPage === page
-                              ? 'bg-blue-600 text-white'
-                              : 'text-slate-600 hover:bg-slate-100'
+                            ? 'bg-blue-600 text-white'
+                            : 'text-slate-600 hover:bg-slate-100'
                             }`}
                         >
                           {page}
