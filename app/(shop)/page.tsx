@@ -105,7 +105,7 @@ export default function ShopHomepage() {
                         </Link>
                     </div>
                     {/* Slide container - shows 2 cards + peek of 3rd */}
-                    <div className="flex overflow-x-auto hide-scrollbar pl-4 pb-2 gap-3 snap-x snap-mandatory">
+                    <div className="flex overflow-x-auto hide-scrollbar px-4 pb-2 gap-3 snap-x snap-mandatory">
                         {products.slice(0, 8).map((product, index) => (
                             <div
                                 key={product.id}
