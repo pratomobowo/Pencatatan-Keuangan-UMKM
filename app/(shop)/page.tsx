@@ -6,18 +6,10 @@ import { CategoryIcon } from '@/components/shop/CategoryIcon';
 import { PromoSlider } from '@/components/shop/PromoSlider';
 import { Fish, Beef, Egg, Leaf, Waves, Loader2 } from 'lucide-react';
 import Link from 'next/link';
-import { Product, ShopProduct } from '@/lib/types';
+import { Product, ShopProduct, Category } from '@/lib/types';
 
 // Extended Product type for frontend display needs (if strictly necessary, otherwise use shared type)
 // The shared type already has everything we need plus variants
-
-const categories = [
-    { name: 'Ikan Laut', icon: Fish, href: '/products?category=ikan-laut', color: 'text-blue-400' },
-    { name: 'Seafood', icon: Waves, href: '/products?category=seafood', color: 'text-orange-500' },
-    { name: 'Ayam & Telur', icon: Egg, href: '/products?category=ayam', color: 'text-yellow-500' },
-    { name: 'Daging Sapi', icon: Beef, href: '/products?category=daging-sapi', color: 'text-red-400' },
-    { name: 'Bumbu', icon: Leaf, href: '/products?category=bumbu', color: 'text-orange-500' },
-];
 
 // Default image when product has no image
 const DEFAULT_IMAGE = '/images/coming-soon.jpg';
@@ -25,6 +17,7 @@ const DEFAULT_IMAGE = '/images/coming-soon.jpg';
 export default function ShopHomepage() {
     const [products, setProducts] = useState<ShopProduct[]>([]);
     const [promoProducts, setPromoProducts] = useState<ShopProduct[]>([]);
+    const [categories, setCategories] = useState<Category[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -36,9 +29,10 @@ export default function ShopHomepage() {
         try {
             setLoading(true);
             // Fetch all products and promo products in parallel
-            const [allRes, promoRes] = await Promise.all([
+            const [allRes, promoRes, catRes] = await Promise.all([
                 fetch('/api/shop/products'),
                 fetch('/api/shop/products?promo=true'),
+                fetch('/api/shop/categories'),
             ]);
 
             if (!allRes.ok) throw new Error('Failed to fetch products');
@@ -49,6 +43,11 @@ export default function ShopHomepage() {
             if (promoRes.ok) {
                 const promoData = await promoRes.json();
                 setPromoProducts(promoData);
+            }
+
+            if (catRes.ok) {
+                const catData = await catRes.json();
+                setCategories(catData);
             }
         } catch (err) {
             console.error('Error fetching products:', err);
@@ -90,11 +89,11 @@ export default function ShopHomepage() {
                 <div className="grid grid-cols-4 sm:grid-cols-5 gap-3">
                     {categories.map((category) => (
                         <CategoryIcon
-                            key={category.name}
+                            key={category.id}
                             name={category.name}
-                            icon={category.icon}
-                            href={category.href}
-                            color={category.color}
+                            image={category.image}
+                            href={`/products?category=${category.slug}`}
+                            color={category.color || 'text-orange-500'}
                         />
                     ))}
                 </div>

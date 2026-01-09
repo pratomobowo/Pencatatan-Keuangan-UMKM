@@ -6,10 +6,20 @@ export async function POST(request: NextRequest) {
     try {
         const formData = await request.formData();
         const file = formData.get('file') as File;
+        const folder = (formData.get('folder') as string) || 'products';
 
         if (!file) {
             return NextResponse.json(
                 { error: 'No file uploaded' },
+                { status: 400 }
+            );
+        }
+
+        // Validate folder to prevent path traversal
+        const validFolders = ['products', 'banners', 'categories', 'general'];
+        if (!validFolders.includes(folder)) {
+            return NextResponse.json(
+                { error: 'Invalid upload folder' },
                 { status: 400 }
             );
         }
@@ -38,10 +48,12 @@ export async function POST(request: NextRequest) {
 
         const timestamp = Date.now();
         const ext = file.name.split('.').pop() || 'jpg';
-        const filename = `product-${timestamp}.${ext}`;
+        // Prefix based on folder
+        const prefix = folder === 'banners' ? 'banner' : 'product';
+        const filename = `${prefix}-${timestamp}.${ext}`;
 
         // Ensure uploads directory exists
-        const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'products');
+        const uploadDir = path.join(process.cwd(), 'public', 'uploads', folder);
         await mkdir(uploadDir, { recursive: true });
 
         // Write file
@@ -49,7 +61,7 @@ export async function POST(request: NextRequest) {
         await writeFile(filePath, buffer);
 
         // Return public URL
-        const publicUrl = `/uploads/products/${filename}`;
+        const publicUrl = `/uploads/${folder}/${filename}`;
 
         return NextResponse.json({
             url: publicUrl,

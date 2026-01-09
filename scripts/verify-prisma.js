@@ -32,6 +32,13 @@ async function main() {
     } else {
         console.error('❌ prisma.notification MISSING');
     }
+
+    // Check PromoBanner
+    if (prisma.promoBanner) {
+        console.log('✅ prisma.promoBanner exists');
+    } else {
+        console.error('❌ prisma.promoBanner MISSING');
+    }
 }
 
 main()

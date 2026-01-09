@@ -18,3 +18,5 @@ export const prisma =
     });
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
+
+// Force client refresh - restored cache

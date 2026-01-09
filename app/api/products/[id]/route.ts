@@ -50,7 +50,10 @@ export async function PUT(
     try {
         const { id } = await params;
         const body = await request.json();
-        const { variants, ...productData } = body;
+        const { variants, category, ...productData } = body;
+
+        // Remove 'category' relation field if it's sent as a string/null from old frontend
+        // it should be categoryId and categoryName now.
 
         // If name is changed, update slug
         if (productData.name) {

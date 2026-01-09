@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Product, TransactionType, ProductVariant } from '@/lib/types'; // Import TransactionType
+import { Product, TransactionType, ProductVariant, Category } from '@/lib/types'; // Import Category
+import { categoriesAPI } from '@/lib/api'; // Import categoriesAPI
 import { Card } from './ui/Card';
 import { Plus, Edit2, Trash2, Package, Search, Download, Upload, FileSpreadsheet, TrendingUp, ShoppingBasket, X, ImageIcon, Loader2, ChevronLeft, ChevronRight, Filter } from 'lucide-react';
 import * as XLSX from 'xlsx';
@@ -33,6 +34,7 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [dbCategories, setDbCategories] = useState<Category[]>([]);
 
   // State for Restock Modal
   const [restockProduct, setRestockProduct] = useState<Product | null>(null);
@@ -50,12 +52,25 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
     costPrice: 0,
     stock: 0,
     image: '',
-    category: '',
+    categoryName: '',
+    categoryId: '',
     isPromo: false,
     promoPrice: 0,
     promoDiscount: 0,
     variants: [],
   });
+
+  useEffect(() => {
+    const fetchDbCategories = async () => {
+      try {
+        const data = await categoriesAPI.getAll();
+        setDbCategories(data);
+      } catch (error) {
+        console.error('Failed to fetch categories into ProductManager:', error);
+      }
+    };
+    fetchDbCategories();
+  }, []);
 
 
 
@@ -113,7 +128,7 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
       });
     }
     // Reset form and close modal
-    setFormData({ id: '', name: '', description: '', unit: 'kg', price: 0, costPrice: 0, stock: 0, image: '', category: '', isPromo: false, promoPrice: 0, promoDiscount: 0, variants: [] });
+    setFormData({ id: '', name: '', description: '', unit: 'kg', price: 0, costPrice: 0, stock: 0, image: '', categoryName: '', isPromo: false, promoPrice: 0, promoDiscount: 0, variants: [] });
     setShowFormModal(false);
     setIsEditing(false);
   };
@@ -125,7 +140,8 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
       costPrice: product.costPrice || 0,
       stock: product.stock || 0,
       image: product.image || '',
-      category: product.category || '',
+      categoryName: product.categoryName || '',
+      categoryId: product.categoryId || '',
       isPromo: product.isPromo || false,
       promoPrice: product.promoPrice || 0,
       promoDiscount: product.promoDiscount || 0,
@@ -138,7 +154,7 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
   const handleCancel = () => {
     setIsEditing(false);
     setShowFormModal(false);
-    setFormData({ id: '', name: '', description: '', unit: 'kg', price: 0, costPrice: 0, stock: 0, image: '', category: '', isPromo: false, promoPrice: 0, promoDiscount: 0, variants: [] });
+    setFormData({ id: '', name: '', description: '', unit: 'kg', price: 0, costPrice: 0, stock: 0, image: '', categoryName: '', isPromo: false, promoPrice: 0, promoDiscount: 0, variants: [] });
   };
 
   // Variant management handlers
@@ -333,7 +349,7 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
   // Filter products by search, category, and promo
   const filteredProducts = products.filter(p => {
     const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = !categoryFilter || p.category === categoryFilter;
+    const matchesCategory = !categoryFilter || p.categoryName === categoryFilter;
     const matchesPromo = !promoFilter ||
       (promoFilter === 'promo' && p.isPromo) ||
       (promoFilter === 'regular' && !p.isPromo);
@@ -353,7 +369,7 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
   }, [searchTerm, categoryFilter, promoFilter]);
 
   // Get unique categories from products
-  const categories = Array.from(new Set(products.map(p => p.category).filter(Boolean))) as string[];
+  const categories = Array.from(new Set(products.map(p => p.categoryName).filter(Boolean))) as string[];
 
   return (
     <>
@@ -683,16 +699,26 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
                   <div>
                     <label className="block text-sm text-slate-700 mb-1">Kategori</label>
                     <select
-                      value={formData.category || ''}
-                      onChange={e => setFormData({ ...formData, category: e.target.value })}
+                      value={formData.categoryId || formData.categoryName || ''}
+                      onChange={e => {
+                        const selectedId = e.target.value;
+                        const cat = dbCategories.find(c => c.id === selectedId);
+                        setFormData({
+                          ...formData,
+                          categoryId: selectedId,
+                          categoryName: cat ? cat.name : selectedId
+                        });
+                      }}
                       className="w-full p-2.5 bg-white border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
                     >
                       <option value="">Pilih Kategori</option>
-                      <option value="ikan-laut">Ikan Laut</option>
-                      <option value="seafood">Seafood</option>
-                      <option value="ayam">Ayam & Telur</option>
-                      <option value="daging-sapi">Daging Sapi</option>
-                      <option value="bumbu">Bumbu</option>
+                      {dbCategories.map(c => (
+                        <option key={c.id} value={c.id}>{c.name}</option>
+                      ))}
+                      {/* Legacy support */}
+                      {formData.categoryName && !dbCategories.find(c => c.name === formData.categoryName || c.id === formData.categoryId) && (
+                        <option value={String(formData.categoryName)}>{String(formData.categoryName)}</option>
+                      )}
                     </select>
                   </div>
 

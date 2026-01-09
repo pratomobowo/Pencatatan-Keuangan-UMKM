@@ -84,7 +84,9 @@ model Product {
   stock       Int      @default(0)
   unit        String
   image       String?  // URL to product image
-  category    String?  // Product category for shop
+  categoryName String?  // Keep original string name for legacy/simple use
+  categoryId   String?
+  category     Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   isActive    Boolean  @default(true) // Show in shop
   
   // Promo fields
@@ -104,9 +106,28 @@ model Product {
   
   @@index([sku])
   @@index([name])
-  @@index([category])
+  @@index([categoryName])
+  @@index([categoryId])
   @@index([isActive])
   @@index([isPromo])
+}
+
+model Category {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  slug      String   @unique
+  image     String?  // For icon/image
+  color     String?  // Tailwind color class like 'text-blue-400'
+  order     Int      @default(0)
+  isActive  Boolean  @default(true)
+  
+  products  Product[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([order])
+  @@index([isActive])
 }
 
 // Product Variants for multiple unit pricing
@@ -348,6 +369,7 @@ model Notification {
   @@index([createdAt])
 }
 
+
 model ShopConfig {
   id          String   @id @default("global")
   
@@ -358,4 +380,22 @@ model ShopConfig {
   contactInfo  String   @default("{}") // JSON: {whatsapp, email, address}
   
   updatedAt   DateTime @updatedAt
+}
+
+model PromoBanner {
+  id          String   @id @default(uuid())
+  title       String
+  subtitle    String?
+  badge       String?
+  image       String   // URL or path
+  buttonText  String   @default("Belanja Sekarang")
+  link        String   @default("/products")
+  order       Int      @default(0)
+  isActive    Boolean  @default(true)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([isActive])
+  @@index([order])
 }

@@ -1,5 +1,5 @@
 // API utility functions for frontend
-import { Product, Customer, Order, Transaction, CostComponent, User, ShopOrder, ShopCustomer, ShopOrderStatus } from '@/lib/types';
+import { Product, Customer, Order, Transaction, CostComponent, User, ShopOrder, ShopCustomer, ShopOrderStatus, PromoBanner, Category, CategoryForm } from '@/lib/types';
 
 const API_BASE = '/api';
 
@@ -148,4 +148,40 @@ export const adminShopConfigAPI = {
         method: 'POST',
         body: JSON.stringify(data),
     }),
+};
+
+// Banners API
+export const bannersAPI = {
+    getAll: () => fetchAPI<PromoBanner[]>('/admin/banners'),
+    create: (data: Omit<PromoBanner, 'id'>) => fetchAPI<PromoBanner>('/admin/banners', {
+        method: 'POST',
+        body: JSON.stringify(data),
+    }),
+    update: (id: string, data: Partial<PromoBanner>) => fetchAPI<PromoBanner>(`/admin/banners/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(data),
+    }),
+    delete: (id: string) => fetchAPI<{ success: boolean }>(`/admin/banners/${id}`, {
+        method: 'DELETE',
+    }),
+    // Public shop API
+    getPublic: () => fetchAPI<PromoBanner[]>('/shop/banners'),
+};
+
+// Categories API
+export const categoriesAPI = {
+    getAll: () => fetchAPI<Category[]>('/admin/categories'),
+    create: (data: CategoryForm) => fetchAPI<Category>('/admin/categories', {
+        method: 'POST',
+        body: JSON.stringify(data),
+    }),
+    update: (id: string, data: Partial<CategoryForm>) => fetchAPI<Category>(`/admin/categories/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(data),
+    }),
+    delete: (id: string) => fetchAPI<{ success: boolean }>(`/admin/categories/${id}`, {
+        method: 'DELETE',
+    }),
+    // Public shop API
+    getPublic: () => fetchAPI<Category[]>('/shop/categories'),
 };

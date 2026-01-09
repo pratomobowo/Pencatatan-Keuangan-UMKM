@@ -100,9 +100,9 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                                 }`}>
                                 {isInStock ? `Stok: ${product.stock}` : 'Stok Habis'}
                             </span>
-                            {product.category && (
+                            {product.categoryName && (
                                 <span className="px-2 py-1 rounded-md text-[10px] font-medium bg-gray-100 text-gray-600">
-                                    {product.category}
+                                    {product.categoryName}
                                 </span>
                             )}
                         </div>

@@ -22,7 +22,7 @@ export interface FinancialSummary {
   netProfit: number; // Income - Expense (ignoring capital)
 }
 
-export type ViewState = 'DASHBOARD' | 'TRANSACTIONS' | 'ORDERS' | 'SHOP_ORDERS' | 'PRODUCTS' | 'ANALYSIS' | 'CUSTOMERS' | 'SHOP_CUSTOMERS' | 'REPORTS' | 'HPP_CALCULATOR' | 'USER_MANAGEMENT' | 'PROFILE' | 'SHOP_SETTINGS';
+export type ViewState = 'DASHBOARD' | 'TRANSACTIONS' | 'ORDERS' | 'SHOP_ORDERS' | 'PRODUCTS' | 'ANALYSIS' | 'CUSTOMERS' | 'SHOP_CUSTOMERS' | 'REPORTS' | 'HPP_CALCULATOR' | 'USER_MANAGEMENT' | 'PROFILE' | 'SHOP_SETTINGS' | 'BANNER_MANAGEMENT' | 'CATEGORY_MANAGEMENT';
 
 export interface User {
   id: string;
@@ -83,7 +83,8 @@ export interface Product {
   costPrice: number; // Base cost price (HPP)
   stock: number; // Current inventory quantity
   image?: string; // Product image URL
-  category?: string; // Product category
+  categoryName?: string; // Original category name
+  categoryId?: string; // ID of the linked category
   isActive?: boolean; // Show in shop
   // Promo fields
   isPromo?: boolean;
@@ -192,4 +193,39 @@ export interface ShopOrderItem extends OrderItem {
 // We allow for some extended fields if necessary, but primarily it's Order
 export interface ShopOrder extends Order {
   items: ShopOrderItem[];
+}
+
+export interface PromoBanner {
+  id: string;
+  title: string;
+  subtitle?: string | null;
+  badge?: string | null;
+  image: string;
+  buttonText: string;
+  link: string;
+  order: number;
+  isActive: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  image?: string | null;
+  color?: string | null;
+  order: number;
+  isActive: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface CategoryForm {
+  name: string;
+  slug: string;
+  image?: string | null;
+  color?: string | null;
+  order: number;
+  isActive: boolean;
 }

@@ -109,7 +109,7 @@ async function main() {
                 costPrice: product.costPrice,
                 stock: product.stock,
                 unit: product.unit,
-                category: product.category,
+                categoryName: product.category,
                 isActive: true,
             },
             create: {
@@ -119,7 +119,7 @@ async function main() {
                 costPrice: product.costPrice,
                 stock: product.stock,
                 unit: product.unit,
-                category: product.category,
+                categoryName: product.category,
                 isActive: true,
             },
         });

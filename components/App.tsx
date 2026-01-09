@@ -13,7 +13,9 @@ import { HPPCalculator } from '@/components/HPPCalculator';
 import { UserManager } from '@/components/UserManager';
 import { Profile } from '@/components/Profile';
 import { ShopSettingsManager } from '@/components/ShopSettingsManager';
-import { LayoutDashboard, List, BrainCircuit, ShoppingCart, Package, Users as UsersIcon, Download, PieChart, Calculator, LogOut, UserCog, User as UserIcon, Settings } from 'lucide-react';
+import { LayoutDashboard, List, BrainCircuit, ShoppingCart, Package, Users as UsersIcon, Image as ImageIcon, Download, PieChart, Calculator, LogOut, UserCog, User as UserIcon, Settings, Tags } from 'lucide-react';
+import { BannerManager } from '@/components/BannerManager';
+import { CategoryManager } from '@/components/CategoryManager';
 import { productsAPI, customersAPI, ordersAPI, transactionsAPI, costComponentsAPI, adminShopOrdersAPI, adminShopCustomersAPI } from '@/lib/api';
 import { ShopOrder, ShopCustomer, ShopOrderStatus } from '@/lib/types';
 import { useSession, signOut } from 'next-auth/react';
@@ -430,6 +432,26 @@ const App: React.FC = () => {
                             <>
                                 <div className="text-xs font-medium text-slate-400 px-4 mb-2 mt-4 uppercase tracking-wider">Admin</div>
                                 <button
+                                    onClick={() => setView('BANNER_MANAGEMENT')}
+                                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${view === 'BANNER_MANAGEMENT'
+                                        ? 'bg-blue-600 text-white shadow-md'
+                                        : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600'
+                                        }`}
+                                >
+                                    <ImageIcon size={20} />
+                                    <span>Banner Promo</span>
+                                </button>
+                                <button
+                                    onClick={() => setView('CATEGORY_MANAGEMENT')}
+                                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${view === 'CATEGORY_MANAGEMENT'
+                                        ? 'bg-blue-600 text-white shadow-md'
+                                        : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600'
+                                        }`}
+                                >
+                                    <Tags size={20} />
+                                    <span>Kategori Produk</span>
+                                </button>
+                                <button
                                     onClick={() => setView('USER_MANAGEMENT')}
                                     className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${view === 'USER_MANAGEMENT'
                                         ? 'bg-blue-600 text-white shadow-md'
@@ -504,6 +526,8 @@ const App: React.FC = () => {
                             {view === 'USER_MANAGEMENT' && 'User Management'}
                             {view === 'PROFILE' && 'Profile'}
                             {view === 'SHOP_SETTINGS' && 'Store Settings'}
+                            {view === 'BANNER_MANAGEMENT' && 'Manajemen Banner Promo'}
+                            {view === 'CATEGORY_MANAGEMENT' && 'Manajemen Kategori Produk'}
                         </h2>
                         <p className="text-slate-500 text-sm mt-1">
                             {view === 'DASHBOARD' && 'Pantau arus kas penjualan protein dan biaya operasional.'}
@@ -517,6 +541,8 @@ const App: React.FC = () => {
                             {view === 'USER_MANAGEMENT' && 'Manage system users, roles, and permissions.'}
                             {view === 'PROFILE' && 'Update your account information and change password.'}
                             {view === 'SHOP_SETTINGS' && 'Update FAQ, jam operasional, dan info pembayaran toko.'}
+                            {view === 'BANNER_MANAGEMENT' && 'Atur visual dan teks banner yang tampil di halaman depan toko.'}
+                            {view === 'CATEGORY_MANAGEMENT' && 'Atur kategori produk untuk mempermudah navigasi di toko online.'}
                         </p>
                     </div>
                 </header>
@@ -568,6 +594,14 @@ const App: React.FC = () => {
 
                 {view === 'SHOP_SETTINGS' && (
                     <ShopSettingsManager />
+                )}
+
+                {view === 'BANNER_MANAGEMENT' && isAdmin && (
+                    <BannerManager />
+                )}
+
+                {view === 'CATEGORY_MANAGEMENT' && isAdmin && (
+                    <CategoryManager />
                 )}
 
                 {view === 'USER_MANAGEMENT' && isAdmin && (

@@ -28,7 +28,8 @@ export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
         const {
-            sku, name, description, price, costPrice, stock, unit, image, category, isActive,
+            sku, name, description, price, costPrice, stock, unit, image,
+            categoryName, categoryId, isActive,
             isPromo, promoPrice, promoDiscount, promoStartDate, promoEndDate,
             variants // Optional array of variants
         } = body;
@@ -62,7 +63,8 @@ export async function POST(request: NextRequest) {
                 stock: stock || 0,
                 unit,
                 image: image || null,
-                category: category || null,
+                categoryName: categoryName || null,
+                categoryId: categoryId || null,
                 isActive: isActive !== undefined ? isActive : true,
                 isPromo: isPromo || false,
                 promoPrice: promoPrice || null,

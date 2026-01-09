@@ -17,7 +17,10 @@ export async function GET(request: NextRequest) {
         };
 
         if (category) {
-            where.category = category;
+            where.OR = [
+                { categoryName: category },
+                { category: { slug: category } }
+            ];
         }
 
         if (search) {
@@ -31,29 +34,30 @@ export async function GET(request: NextRequest) {
         if (promo === 'true') {
             where.isPromo = true;
             // Check promo is still valid (not expired)
-            where.OR = [
-                { promoEndDate: null },
-                { promoEndDate: { gte: new Date() } }
-            ];
+            const promoValidCondition = {
+                OR: [
+                    { promoEndDate: null },
+                    { promoEndDate: { gte: new Date() } }
+                ]
+            };
+
+            if (where.OR) {
+                // If we already have an OR (from category filter), we need to AND it with promo condition
+                // Prisma handles this naturally if we use AND
+                where.AND = [
+                    { OR: where.OR },
+                    promoValidCondition
+                ];
+                delete where.OR;
+            } else {
+                where.OR = promoValidCondition.OR;
+            }
         }
 
         const products = await prisma.product.findMany({
             where,
-            select: {
-                id: true,
-                name: true,
-                slug: true,
-                description: true,
-                price: true,
-                stock: true,
-                unit: true,
-                image: true,
+            include: {
                 category: true,
-                isPromo: true,
-                promoPrice: true,
-                promoDiscount: true,
-                promoStartDate: true,
-                promoEndDate: true,
                 variants: {
                     orderBy: { isDefault: 'desc' },
                     select: {
@@ -81,6 +85,8 @@ export async function GET(request: NextRequest) {
             return {
                 ...p,
                 price: Number(p.price),
+                categoryName: p.categoryName, // Explicitly map if needed, though it's already in p
+                category: p.category,
                 originalPrice: isPromoActive ? Number(p.price) : null,
                 displayPrice: isPromoActive && p.promoPrice ? Number(p.promoPrice) : Number(p.price),
                 promoPrice: p.promoPrice ? Number(p.promoPrice) : null,
@@ -90,10 +96,11 @@ export async function GET(request: NextRequest) {
         });
 
         return NextResponse.json(transformedProducts);
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error fetching shop products:', error);
+        console.error('Error stack:', error.stack);
         return NextResponse.json(
-            { error: 'Failed to fetch products' },
+            { error: 'Failed to fetch products: ' + (error.message || 'Unknown error') },
             { status: 500 }
         );
     }

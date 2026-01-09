@@ -20,8 +20,16 @@ export async function GET(
                 stock: true,
                 unit: true,
                 image: true,
-                category: true,
-                isActive: true,
+                categoryName: true,
+                category: {
+                    select: {
+                        id: true,
+                        name: true,
+                        slug: true,
+                        image: true,
+                        color: true
+                    }
+                },
             },
         });
 
