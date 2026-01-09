@@ -131,7 +131,7 @@ export default function ShopHomepage() {
                             <div className="flex items-center justify-between">
                                 <h2 className="text-stone-900 text-lg font-bold">Pilihan Bunda ❤️</h2>
                             </div>
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-2 gap-3">
                                 {products.slice(0, 4).map((product) => (
                                     <ProductCard
                                         key={product.id}
@@ -140,6 +140,7 @@ export default function ShopHomepage() {
                                         unit={product.unit}
                                         price={product.price}
                                         image={product.image || DEFAULT_IMAGE}
+                                        isGrid={true}
                                     />
                                 ))}
                             </div>
