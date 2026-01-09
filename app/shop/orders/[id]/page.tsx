@@ -3,7 +3,9 @@
 import { useState, useEffect, use } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowLeft, Package, Truck, CheckCircle, Clock, MapPin, Phone, Copy, Check } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { ArrowLeft, Package, Truck, CheckCircle, Clock, MapPin, Phone, Copy, Check, Loader2 } from 'lucide-react';
+import { useShopAuth } from '@/contexts/ShopAuthContext';
 
 type OrderStatus = 'pending' | 'confirmed' | 'preparing' | 'shipping' | 'delivered' | 'cancelled';
 
@@ -15,6 +17,7 @@ interface OrderDetail {
     items: { name: string; quantity: number; price: number; image: string }[];
     subtotal: number;
     shippingFee: number;
+    serviceFee?: number;
     total: number;
     address: {
         name: string;
@@ -25,28 +28,6 @@ interface OrderDetail {
     paymentMethod: string;
 }
 
-// Mock order - replace with API
-const mockOrder: OrderDetail = {
-    id: '1',
-    orderNumber: 'ORD-2024-001',
-    date: '8 Jan 2024, 14:30',
-    status: 'shipping',
-    items: [
-        { name: 'Salmon Fillet Segar', quantity: 1, price: 85000, image: 'https://images.unsplash.com/photo-1599084993091-1cb5c0721cc6?w=200&q=80' },
-        { name: 'Udang Vaname Segar', quantity: 2, price: 44000, image: 'https://images.unsplash.com/photo-1565680018434-b513d5e5fd47?w=200&q=80' },
-    ],
-    subtotal: 173000,
-    shippingFee: 15000,
-    total: 188000,
-    address: {
-        name: 'Rumah',
-        phone: '0812-3456-7890',
-        address: 'Jl. Melati No. 12, Jakarta Selatan',
-    },
-    deliveryTime: 'Besok, 06:00 - 08:00',
-    paymentMethod: 'COD (Bayar di Tempat)',
-};
-
 const statusSteps: { status: OrderStatus; label: string; icon: React.ElementType }[] = [
     { status: 'confirmed', label: 'Pesanan Dikonfirmasi', icon: CheckCircle },
     { status: 'preparing', label: 'Sedang Disiapkan', icon: Package },
@@ -55,22 +36,83 @@ const statusSteps: { status: OrderStatus; label: string; icon: React.ElementType
 ];
 
 const getStatusIndex = (status: OrderStatus) => {
+    if (status === 'pending') return -1;
+    if (status === 'cancelled') return -2;
     const index = statusSteps.findIndex(s => s.status === status);
     return index >= 0 ? index : 0;
 };
 
 export default function OrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params);
-    const [order] = useState<OrderDetail>(mockOrder);
+    const router = useRouter();
+    const { isAuthenticated, isLoading: authLoading } = useShopAuth();
+
+    const [order, setOrder] = useState<OrderDetail | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
     const [copied, setCopied] = useState(false);
 
-    const currentStep = getStatusIndex(order.status);
+    useEffect(() => {
+        if (!authLoading && !isAuthenticated) {
+            router.push('/shop/login');
+            return;
+        }
+
+        if (isAuthenticated) {
+            fetchOrder();
+        }
+    }, [isAuthenticated, authLoading, id]);
+
+    const fetchOrder = async () => {
+        try {
+            setLoading(true);
+            const response = await fetch(`/api/shop/orders/${id}`);
+            if (!response.ok) {
+                if (response.status === 404) {
+                    setError('Pesanan tidak ditemukan');
+                } else {
+                    throw new Error('Failed to fetch order');
+                }
+                return;
+            }
+            const data = await response.json();
+            setOrder(data);
+        } catch (err) {
+            console.error('Error fetching order:', err);
+            setError('Gagal memuat pesanan');
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const copyOrderNumber = () => {
-        navigator.clipboard.writeText(order.orderNumber);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
+        if (order) {
+            navigator.clipboard.writeText(order.orderNumber);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        }
     };
+
+    if (authLoading || loading) {
+        return (
+            <div className="flex items-center justify-center py-20">
+                <Loader2 className="animate-spin text-orange-500" size={40} />
+            </div>
+        );
+    }
+
+    if (error || !order) {
+        return (
+            <div className="flex flex-col items-center justify-center py-20">
+                <p className="text-red-500 mb-4">{error || 'Pesanan tidak ditemukan'}</p>
+                <Link href="/shop/orders" className="text-orange-500 font-bold">
+                    Kembali ke Pesanan
+                </Link>
+            </div>
+        );
+    }
+
+    const currentStep = getStatusIndex(order.status);
 
     return (
         <>
@@ -104,37 +146,46 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                 </div>
 
                 {/* Order Tracking */}
-                <div className="bg-white rounded-2xl shadow-sm border border-orange-100 p-4">
-                    <h3 className="text-base font-bold text-stone-900 mb-4">Status Pesanan</h3>
-                    <div className="flex flex-col gap-4">
-                        {statusSteps.map((step, index) => {
-                            const isCompleted = index <= currentStep;
-                            const isCurrent = index === currentStep;
-                            const StepIcon = step.icon;
+                {order.status !== 'cancelled' && (
+                    <div className="bg-white rounded-2xl shadow-sm border border-orange-100 p-4">
+                        <h3 className="text-base font-bold text-stone-900 mb-4">Status Pesanan</h3>
+                        <div className="flex flex-col gap-4">
+                            {statusSteps.map((step, index) => {
+                                const isCompleted = index <= currentStep;
+                                const isCurrent = index === currentStep;
+                                const StepIcon = step.icon;
 
-                            return (
-                                <div key={step.status} className="flex items-center gap-4">
-                                    <div className={`relative flex items-center justify-center size-10 rounded-full shrink-0 ${isCompleted ? 'bg-green-500' : 'bg-gray-200'
-                                        }`}>
-                                        <StepIcon size={20} className={isCompleted ? 'text-white' : 'text-gray-400'} />
-                                        {index < statusSteps.length - 1 && (
-                                            <div className={`absolute top-10 left-1/2 w-0.5 h-6 -translate-x-1/2 ${isCompleted && index < currentStep ? 'bg-green-500' : 'bg-gray-200'
-                                                }`}></div>
-                                        )}
+                                return (
+                                    <div key={step.status} className="flex items-center gap-4">
+                                        <div className={`relative flex items-center justify-center size-10 rounded-full shrink-0 ${isCompleted ? 'bg-green-500' : 'bg-gray-200'
+                                            }`}>
+                                            <StepIcon size={20} className={isCompleted ? 'text-white' : 'text-gray-400'} />
+                                            {index < statusSteps.length - 1 && (
+                                                <div className={`absolute top-10 left-1/2 w-0.5 h-6 -translate-x-1/2 ${isCompleted && index < currentStep ? 'bg-green-500' : 'bg-gray-200'
+                                                    }`}></div>
+                                            )}
+                                        </div>
+                                        <div className="flex-1">
+                                            <p className={`font-medium ${isCompleted ? 'text-stone-900' : 'text-gray-400'}`}>
+                                                {step.label}
+                                            </p>
+                                            {isCurrent && (
+                                                <p className="text-sm text-green-600 font-medium mt-0.5">Saat ini</p>
+                                            )}
+                                        </div>
                                     </div>
-                                    <div className="flex-1">
-                                        <p className={`font-medium ${isCompleted ? 'text-stone-900' : 'text-gray-400'}`}>
-                                            {step.label}
-                                        </p>
-                                        {isCurrent && (
-                                            <p className="text-sm text-green-600 font-medium mt-0.5">Saat ini</p>
-                                        )}
-                                    </div>
-                                </div>
-                            );
-                        })}
+                                );
+                            })}
+                        </div>
                     </div>
-                </div>
+                )}
+
+                {/* Cancelled Status */}
+                {order.status === 'cancelled' && (
+                    <div className="bg-red-50 border border-red-200 rounded-2xl p-4">
+                        <p className="text-red-600 font-bold">Pesanan Dibatalkan</p>
+                    </div>
+                )}
 
                 {/* Delivery Address */}
                 <div className="bg-white rounded-2xl shadow-sm border border-orange-100 p-4">
@@ -188,6 +239,12 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                             <span className="text-gray-500">Ongkos Kirim</span>
                             <span className="text-stone-900">Rp {order.shippingFee.toLocaleString('id-ID')}</span>
                         </div>
+                        {order.serviceFee && (
+                            <div className="flex justify-between text-sm">
+                                <span className="text-gray-500">Biaya Layanan</span>
+                                <span className="text-stone-900">Rp {order.serviceFee.toLocaleString('id-ID')}</span>
+                            </div>
+                        )}
                         <div className="border-t border-dashed border-gray-200 my-2"></div>
                         <div className="flex justify-between">
                             <span className="font-bold text-stone-900">Total</span>
@@ -201,9 +258,11 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                 </div>
 
                 {/* Action Button */}
-                <button className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 rounded-xl shadow-lg shadow-orange-200 transition-all">
-                    Hubungi Kurir
-                </button>
+                {order.status === 'shipping' && (
+                    <button className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 rounded-xl shadow-lg shadow-orange-200 transition-all">
+                        Hubungi Kurir
+                    </button>
+                )}
             </main>
         </>
     );

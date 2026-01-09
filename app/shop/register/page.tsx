@@ -4,9 +4,11 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Eye, EyeOff, Loader2, Check } from 'lucide-react';
+import { useShopAuth } from '@/contexts/ShopAuthContext';
 
 export default function RegisterPage() {
     const router = useRouter();
+    const { register } = useShopAuth();
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [formData, setFormData] = useState({
@@ -32,13 +34,27 @@ export default function RegisterPage() {
             return;
         }
 
+        if (formData.password.length < 8) {
+            setError('Password minimal 8 karakter');
+            return;
+        }
+
         setIsLoading(true);
 
-        // Simulate registration - replace with actual auth
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        const result = await register({
+            name: formData.name,
+            phone: formData.phone,
+            password: formData.password,
+        });
 
-        // Redirect to login
-        router.push('/shop/login');
+        if (result.success) {
+            // Redirect to login with success message
+            router.push('/shop/login');
+        } else {
+            setError(result.error || 'Gagal registrasi');
+        }
+
+        setIsLoading(false);
     };
 
     return (
@@ -144,7 +160,7 @@ export default function RegisterPage() {
 
                     {/* Error Message */}
                     {error && (
-                        <p className="text-red-500 text-sm text-center">{error}</p>
+                        <p className="text-red-500 text-sm text-center bg-red-50 p-3 rounded-lg">{error}</p>
                     )}
 
                     {/* Submit Button */}

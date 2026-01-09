@@ -1,8 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Plus, MapPin, Edit2, Trash2, Check, Home, Building2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { ArrowLeft, Plus, MapPin, Edit2, Trash2, Check, Home, Building2, Loader2 } from 'lucide-react';
+import { useShopAuth } from '@/contexts/ShopAuthContext';
 
 interface Address {
     id: string;
@@ -14,32 +16,15 @@ interface Address {
     type: 'home' | 'office';
 }
 
-// Mock addresses - replace with API
-const mockAddresses: Address[] = [
-    {
-        id: '1',
-        label: 'Rumah',
-        name: 'Budi Santoso',
-        phone: '0812-3456-7890',
-        address: 'Jl. Melati No. 12, RT 05/RW 02, Cilandak, Jakarta Selatan, 12430',
-        isDefault: true,
-        type: 'home',
-    },
-    {
-        id: '2',
-        label: 'Kantor',
-        name: 'Budi Santoso',
-        phone: '0812-3456-7890',
-        address: 'Gedung Graha, Lt. 5, Jl. Sudirman Kav. 28, Jakarta Pusat, 10210',
-        isDefault: false,
-        type: 'office',
-    },
-];
-
 export default function AddressesPage() {
-    const [addresses, setAddresses] = useState<Address[]>(mockAddresses);
+    const router = useRouter();
+    const { isAuthenticated, isLoading: authLoading } = useShopAuth();
+
+    const [addresses, setAddresses] = useState<Address[]>([]);
+    const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
+    const [saving, setSaving] = useState(false);
     const [formData, setFormData] = useState({
         label: '',
         name: '',
@@ -48,15 +33,62 @@ export default function AddressesPage() {
         type: 'home' as 'home' | 'office',
     });
 
-    const handleSetDefault = (id: string) => {
-        setAddresses(addresses.map(addr => ({
-            ...addr,
-            isDefault: addr.id === id,
-        })));
+    useEffect(() => {
+        if (!authLoading && !isAuthenticated) {
+            router.push('/shop/login');
+            return;
+        }
+
+        if (isAuthenticated) {
+            fetchAddresses();
+        }
+    }, [isAuthenticated, authLoading]);
+
+    const fetchAddresses = async () => {
+        try {
+            setLoading(true);
+            const response = await fetch('/api/shop/customers/me/addresses');
+            if (response.ok) {
+                const data = await response.json();
+                setAddresses(data);
+            }
+        } catch (err) {
+            console.error('Error fetching addresses:', err);
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const handleDelete = (id: string) => {
-        setAddresses(addresses.filter(addr => addr.id !== id));
+    const handleSetDefault = async (id: string) => {
+        try {
+            const response = await fetch(`/api/shop/customers/me/addresses/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ isDefault: true }),
+            });
+
+            if (response.ok) {
+                fetchAddresses();
+            }
+        } catch (err) {
+            console.error('Error setting default:', err);
+        }
+    };
+
+    const handleDelete = async (id: string) => {
+        if (!confirm('Hapus alamat ini?')) return;
+
+        try {
+            const response = await fetch(`/api/shop/customers/me/addresses/${id}`, {
+                method: 'DELETE',
+            });
+
+            if (response.ok) {
+                setAddresses(addresses.filter(addr => addr.id !== id));
+            }
+        } catch (err) {
+            console.error('Error deleting address:', err);
+        }
     };
 
     const handleEdit = (addr: Address) => {
@@ -71,30 +103,52 @@ export default function AddressesPage() {
         setShowForm(true);
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setSaving(true);
 
-        if (editingId) {
-            // Update existing
-            setAddresses(addresses.map(addr =>
-                addr.id === editingId
-                    ? { ...addr, ...formData }
-                    : addr
-            ));
-        } else {
-            // Add new
-            const newAddress: Address = {
-                id: Date.now().toString(),
-                ...formData,
-                isDefault: addresses.length === 0,
-            };
-            setAddresses([...addresses, newAddress]);
+        try {
+            if (editingId) {
+                // Update existing
+                const response = await fetch(`/api/shop/customers/me/addresses/${editingId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData),
+                });
+
+                if (response.ok) {
+                    fetchAddresses();
+                }
+            } else {
+                // Add new
+                const response = await fetch('/api/shop/customers/me/addresses', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData),
+                });
+
+                if (response.ok) {
+                    fetchAddresses();
+                }
+            }
+
+            setShowForm(false);
+            setEditingId(null);
+            setFormData({ label: '', name: '', phone: '', address: '', type: 'home' });
+        } catch (err) {
+            console.error('Error saving address:', err);
+        } finally {
+            setSaving(false);
         }
-
-        setShowForm(false);
-        setEditingId(null);
-        setFormData({ label: '', name: '', phone: '', address: '', type: 'home' });
     };
+
+    if (authLoading || loading) {
+        return (
+            <div className="flex items-center justify-center py-20">
+                <Loader2 className="animate-spin text-orange-500" size={40} />
+            </div>
+        );
+    }
 
     return (
         <>
@@ -266,9 +320,17 @@ export default function AddressesPage() {
 
                             <button
                                 type="submit"
-                                className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 rounded-xl shadow-lg shadow-orange-200 transition-all"
+                                disabled={saving}
+                                className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 rounded-xl shadow-lg shadow-orange-200 transition-all disabled:opacity-70 flex items-center justify-center gap-2"
                             >
-                                {editingId ? 'Simpan Perubahan' : 'Tambah Alamat'}
+                                {saving ? (
+                                    <>
+                                        <Loader2 size={20} className="animate-spin" />
+                                        Menyimpan...
+                                    </>
+                                ) : (
+                                    editingId ? 'Simpan Perubahan' : 'Tambah Alamat'
+                                )}
                             </button>
                         </form>
                     </div>

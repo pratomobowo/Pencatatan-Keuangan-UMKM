@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, MapPin, Banknote, Building2, ShieldCheck, ArrowRight, Loader2 } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
+import { useShopAuth } from '@/contexts/ShopAuthContext';
 
 const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=400&q=80';
 const SHIPPING_FEE = 15000;
@@ -22,33 +23,120 @@ const paymentMethods = [
     { id: 'transfer', label: 'Transfer Bank', description: 'BCA, Mandiri, BNI, BRI', icon: Building2, color: 'bg-blue-100 text-blue-600' },
 ];
 
+interface Address {
+    id: string;
+    label: string;
+    name: string;
+    phone: string;
+    address: string;
+}
+
 export default function CheckoutPage() {
     const router = useRouter();
     const { items, subtotal, clearCart } = useCart();
+    const { isAuthenticated, isLoading: authLoading } = useShopAuth();
+
     const [selectedDelivery, setSelectedDelivery] = useState('morning');
     const [selectedPayment, setSelectedPayment] = useState('cod');
     const [isProcessing, setIsProcessing] = useState(false);
     const [orderPlaced, setOrderPlaced] = useState(false);
+    const [orderNumber, setOrderNumber] = useState('');
+    const [error, setError] = useState('');
+
+    // Address state
+    const [addresses, setAddresses] = useState<Address[]>([]);
+    const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
+    const [loadingAddresses, setLoadingAddresses] = useState(true);
 
     const total = subtotal + (items.length > 0 ? SHIPPING_FEE + SERVICE_FEE : 0);
 
+    // Check auth and load addresses
+    useEffect(() => {
+        if (!authLoading && !isAuthenticated) {
+            router.push('/shop/login');
+            return;
+        }
+
+        if (isAuthenticated) {
+            fetchAddresses();
+        }
+    }, [isAuthenticated, authLoading]);
+
+    const fetchAddresses = async () => {
+        try {
+            const response = await fetch('/api/shop/customers/me/addresses');
+            if (response.ok) {
+                const data = await response.json();
+                setAddresses(data);
+                // Select default or first address
+                const defaultAddr = data.find((a: Address & { isDefault?: boolean }) => a.isDefault) || data[0];
+                if (defaultAddr) setSelectedAddress(defaultAddr);
+            }
+        } catch (err) {
+            console.error('Error fetching addresses:', err);
+        } finally {
+            setLoadingAddresses(false);
+        }
+    };
+
     const handlePlaceOrder = async () => {
         if (items.length === 0) return;
+        if (!selectedAddress) {
+            setError('Pilih alamat pengiriman');
+            return;
+        }
 
         setIsProcessing(true);
+        setError('');
 
-        // Simulate order processing
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        try {
+            const deliveryLabel = deliveryTimes.find(d => d.id === selectedDelivery);
 
-        // Here you would normally:
-        // 1. Submit order to API
-        // 2. Clear cart
-        // 3. Navigate to order confirmation
+            const response = await fetch('/api/shop/orders', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    items: items.map(item => ({
+                        productId: item.id,
+                        name: item.name,
+                        image: item.image,
+                        variant: item.variant,
+                        quantity: item.quantity,
+                        price: item.price,
+                    })),
+                    addressLabel: selectedAddress.label,
+                    addressName: selectedAddress.name,
+                    addressPhone: selectedAddress.phone,
+                    addressFull: selectedAddress.address,
+                    deliveryTime: `${deliveryLabel?.label}, ${deliveryLabel?.time}`,
+                    paymentMethod: selectedPayment,
+                }),
+            });
 
-        clearCart();
-        setOrderPlaced(true);
-        setIsProcessing(false);
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Gagal membuat pesanan');
+            }
+
+            clearCart();
+            setOrderNumber(data.order.orderNumber);
+            setOrderPlaced(true);
+        } catch (err: any) {
+            setError(err.message || 'Gagal membuat pesanan');
+        } finally {
+            setIsProcessing(false);
+        }
     };
+
+    // Loading state
+    if (authLoading || loadingAddresses) {
+        return (
+            <div className="flex items-center justify-center py-20">
+                <Loader2 className="animate-spin text-orange-500" size={40} />
+            </div>
+        );
+    }
 
     // Order success state
     if (orderPlaced) {
@@ -58,13 +146,22 @@ export default function CheckoutPage() {
                     <ShieldCheck size={40} className="text-green-600" />
                 </div>
                 <h2 className="text-2xl font-bold text-stone-900 mb-2">Pesanan Berhasil!</h2>
-                <p className="text-gray-600 mb-6">Terima kasih, pesanan Anda sedang diproses.</p>
-                <Link
-                    href="/shop"
-                    className="px-6 py-3 bg-orange-500 text-white font-bold rounded-xl"
-                >
-                    Kembali ke Beranda
-                </Link>
+                <p className="text-gray-600 mb-2">Terima kasih, pesanan Anda sedang diproses.</p>
+                <p className="text-sm text-gray-500 mb-6">No. Pesanan: {orderNumber}</p>
+                <div className="flex gap-3">
+                    <Link
+                        href="/shop/orders"
+                        className="px-6 py-3 bg-orange-500 text-white font-bold rounded-xl"
+                    >
+                        Lihat Pesanan
+                    </Link>
+                    <Link
+                        href="/shop"
+                        className="px-6 py-3 border border-orange-500 text-orange-500 font-bold rounded-xl"
+                    >
+                        Kembali
+                    </Link>
+                </div>
             </div>
         );
     }
@@ -98,23 +195,37 @@ export default function CheckoutPage() {
                 {/* Shipping Address */}
                 <section>
                     <h3 className="text-stone-900 text-lg font-bold mb-3 px-1">Alamat Pengiriman</h3>
-                    <div className="flex gap-4 bg-white p-4 rounded-2xl shadow-sm border border-orange-100">
-                        <div className="flex items-start justify-center rounded-xl bg-orange-100 text-orange-600 shrink-0 size-10 mt-1">
-                            <MapPin size={20} className="mt-2.5" />
-                        </div>
-                        <div className="flex flex-1 flex-col">
-                            <div className="flex justify-between items-start">
-                                <p className="text-stone-900 text-base font-bold">Rumah</p>
-                                <button className="text-orange-600 text-sm font-semibold px-2 py-1 rounded hover:bg-orange-50 transition-colors">
-                                    Ubah
-                                </button>
+                    {addresses.length === 0 ? (
+                        <Link
+                            href="/shop/addresses"
+                            className="flex gap-4 bg-white p-4 rounded-2xl shadow-sm border border-orange-100 items-center"
+                        >
+                            <div className="flex items-center justify-center rounded-xl bg-orange-100 text-orange-600 shrink-0 size-10">
+                                <MapPin size={20} />
                             </div>
-                            <p className="text-gray-500 text-sm mt-1 leading-relaxed">
-                                Jl. Melati No. 12, Jakarta Selatan
-                            </p>
-                            <p className="text-gray-500 text-sm mt-1">0812-3456-7890</p>
+                            <div className="flex-1">
+                                <p className="text-orange-600 font-medium">Tambah Alamat</p>
+                                <p className="text-gray-500 text-sm">Belum ada alamat pengiriman</p>
+                            </div>
+                        </Link>
+                    ) : (
+                        <div className="flex gap-4 bg-white p-4 rounded-2xl shadow-sm border border-orange-100">
+                            <div className="flex items-start justify-center rounded-xl bg-orange-100 text-orange-600 shrink-0 size-10 mt-1">
+                                <MapPin size={20} className="mt-2.5" />
+                            </div>
+                            <div className="flex flex-1 flex-col">
+                                <div className="flex justify-between items-start">
+                                    <p className="text-stone-900 text-base font-bold">{selectedAddress?.label}</p>
+                                    <Link href="/shop/addresses" className="text-orange-600 text-sm font-semibold px-2 py-1 rounded hover:bg-orange-50 transition-colors">
+                                        Ubah
+                                    </Link>
+                                </div>
+                                <p className="text-gray-500 text-sm mt-1">{selectedAddress?.name}</p>
+                                <p className="text-gray-500 text-sm mt-1 leading-relaxed">{selectedAddress?.address}</p>
+                                <p className="text-gray-500 text-sm mt-1">{selectedAddress?.phone}</p>
+                            </div>
                         </div>
-                    </div>
+                    )}
                 </section>
 
                 {/* Delivery Time */}
@@ -238,6 +349,11 @@ export default function CheckoutPage() {
                         </div>
                     </div>
                 </section>
+
+                {/* Error */}
+                {error && (
+                    <p className="text-red-500 text-sm text-center bg-red-50 p-3 rounded-lg">{error}</p>
+                )}
             </main>
 
             {/* Bottom Bar */}
@@ -249,7 +365,7 @@ export default function CheckoutPage() {
                     </div>
                     <button
                         onClick={handlePlaceOrder}
-                        disabled={isProcessing}
+                        disabled={isProcessing || addresses.length === 0}
                         className="flex-1 bg-orange-500 hover:bg-orange-600 active:scale-[0.98] text-white font-bold rounded-xl h-12 flex items-center justify-center gap-2 shadow-lg shadow-orange-200 transition-all disabled:opacity-70"
                     >
                         {isProcessing ? (

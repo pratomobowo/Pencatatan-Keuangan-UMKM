@@ -4,9 +4,11 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { useShopAuth } from '@/contexts/ShopAuthContext';
 
 export default function LoginPage() {
     const router = useRouter();
+    const { login } = useShopAuth();
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [formData, setFormData] = useState({
@@ -20,11 +22,15 @@ export default function LoginPage() {
         setError('');
         setIsLoading(true);
 
-        // Simulate login - replace with actual auth
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        const result = await login(formData.phone, formData.password);
 
-        // For demo, just redirect to account
-        router.push('/shop/account');
+        if (result.success) {
+            router.push('/shop/account');
+        } else {
+            setError(result.error || 'Gagal login');
+        }
+
+        setIsLoading(false);
     };
 
     return (
@@ -92,7 +98,7 @@ export default function LoginPage() {
 
                     {/* Error Message */}
                     {error && (
-                        <p className="text-red-500 text-sm text-center">{error}</p>
+                        <p className="text-red-500 text-sm text-center bg-red-50 p-3 rounded-lg">{error}</p>
                     )}
 
                     {/* Submit Button */}

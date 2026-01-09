@@ -1,11 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowLeft, Package, Clock, CheckCircle, XCircle, ChevronRight } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { ArrowLeft, Package, Clock, CheckCircle, XCircle, ChevronRight, Loader2, Truck } from 'lucide-react';
+import { useShopAuth } from '@/contexts/ShopAuthContext';
 
-type OrderStatus = 'pending' | 'processing' | 'completed' | 'cancelled';
+type OrderStatus = 'pending' | 'confirmed' | 'preparing' | 'shipping' | 'delivered' | 'cancelled';
 
 interface Order {
     id: string;
@@ -16,50 +18,62 @@ interface Order {
     total: number;
 }
 
-// Mock orders - will be replaced with API
-const mockOrders: Order[] = [
-    {
-        id: '1',
-        orderNumber: 'ORD-2024-001',
-        date: '8 Jan 2024',
-        status: 'processing',
-        items: [
-            { name: 'Salmon Fillet', quantity: 1, image: 'https://images.unsplash.com/photo-1599084993091-1cb5c0721cc6?w=200&q=80' },
-            { name: 'Udang Vaname', quantity: 2, image: 'https://images.unsplash.com/photo-1565680018434-b513d5e5fd47?w=200&q=80' },
-        ],
-        total: 214000,
-    },
-    {
-        id: '2',
-        orderNumber: 'ORD-2024-002',
-        date: '5 Jan 2024',
-        status: 'completed',
-        items: [
-            { name: 'Daging Rendang', quantity: 1, image: 'https://images.unsplash.com/photo-1603048297172-c92544798d5a?w=200&q=80' },
-        ],
-        total: 135000,
-    },
-];
-
 const statusConfig: Record<OrderStatus, { label: string; color: string; icon: React.ElementType }> = {
     pending: { label: 'Menunggu', color: 'bg-yellow-100 text-yellow-700', icon: Clock },
-    processing: { label: 'Diproses', color: 'bg-blue-100 text-blue-700', icon: Package },
-    completed: { label: 'Selesai', color: 'bg-green-100 text-green-700', icon: CheckCircle },
+    confirmed: { label: 'Dikonfirmasi', color: 'bg-blue-100 text-blue-700', icon: CheckCircle },
+    preparing: { label: 'Disiapkan', color: 'bg-purple-100 text-purple-700', icon: Package },
+    shipping: { label: 'Dikirim', color: 'bg-cyan-100 text-cyan-700', icon: Truck },
+    delivered: { label: 'Selesai', color: 'bg-green-100 text-green-700', icon: CheckCircle },
     cancelled: { label: 'Dibatalkan', color: 'bg-red-100 text-red-700', icon: XCircle },
 };
 
 const tabs = [
     { id: 'all', name: 'Semua' },
     { id: 'processing', name: 'Diproses' },
-    { id: 'completed', name: 'Selesai' },
+    { id: 'delivered', name: 'Selesai' },
 ];
 
 export default function OrdersPage() {
+    const router = useRouter();
+    const { isAuthenticated, isLoading: authLoading } = useShopAuth();
     const [activeTab, setActiveTab] = useState('all');
+    const [orders, setOrders] = useState<Order[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
 
-    const filteredOrders = activeTab === 'all'
-        ? mockOrders
-        : mockOrders.filter(o => o.status === activeTab);
+    useEffect(() => {
+        if (!authLoading && !isAuthenticated) {
+            router.push('/shop/login');
+            return;
+        }
+
+        if (isAuthenticated) {
+            fetchOrders();
+        }
+    }, [isAuthenticated, authLoading, activeTab]);
+
+    const fetchOrders = async () => {
+        try {
+            setLoading(true);
+            const response = await fetch(`/api/shop/orders?status=${activeTab}`);
+            if (!response.ok) throw new Error('Failed to fetch orders');
+            const data = await response.json();
+            setOrders(data);
+        } catch (err) {
+            console.error('Error fetching orders:', err);
+            setError('Gagal memuat pesanan');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (authLoading) {
+        return (
+            <div className="flex items-center justify-center py-20">
+                <Loader2 className="animate-spin text-orange-500" size={40} />
+            </div>
+        );
+    }
 
     return (
         <>
@@ -91,7 +105,18 @@ export default function OrdersPage() {
 
             {/* Orders List */}
             <main className="p-4 pb-24 flex flex-col gap-4">
-                {filteredOrders.length === 0 ? (
+                {loading ? (
+                    <div className="flex items-center justify-center py-20">
+                        <Loader2 className="animate-spin text-orange-500" size={40} />
+                    </div>
+                ) : error ? (
+                    <div className="flex flex-col items-center justify-center py-20">
+                        <p className="text-red-500 mb-4">{error}</p>
+                        <button onClick={fetchOrders} className="text-orange-500 font-bold">
+                            Coba Lagi
+                        </button>
+                    </div>
+                ) : orders.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-20 text-center">
                         <Package size={64} className="text-gray-300 mb-4" />
                         <p className="text-gray-500 mb-2">Belum ada pesanan</p>
@@ -103,8 +128,10 @@ export default function OrdersPage() {
                         </Link>
                     </div>
                 ) : (
-                    filteredOrders.map((order) => {
-                        const StatusIcon = statusConfig[order.status].icon;
+                    orders.map((order) => {
+                        const StatusIcon = statusConfig[order.status]?.icon || Clock;
+                        const statusStyle = statusConfig[order.status] || statusConfig.pending;
+
                         return (
                             <Link
                                 key={order.id}
@@ -117,9 +144,9 @@ export default function OrdersPage() {
                                         <p className="text-sm font-bold text-stone-900">{order.orderNumber}</p>
                                         <p className="text-xs text-gray-500 mt-0.5">{order.date}</p>
                                     </div>
-                                    <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${statusConfig[order.status].color}`}>
+                                    <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${statusStyle.color}`}>
                                         <StatusIcon size={14} />
-                                        {statusConfig[order.status].label}
+                                        {statusStyle.label}
                                     </div>
                                 </div>
 
@@ -138,7 +165,7 @@ export default function OrdersPage() {
                                         ))}
                                     </div>
                                     <div className="flex-1">
-                                        <p className="text-sm text-gray-600">
+                                        <p className="text-sm text-gray-600 line-clamp-1">
                                             {order.items.map(i => i.name).join(', ')}
                                         </p>
                                         <p className="text-xs text-gray-400 mt-0.5">
