@@ -1,31 +1,43 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { jwtVerify } from 'jose';
+import { auth } from '@/lib/auth';
 
 const JWT_SECRET = new TextEncoder().encode(
     process.env.JWT_SECRET || 'shop-customer-secret-key-change-in-production'
 );
 
-// Helper to get customer from token
-async function getCustomerFromToken(request: NextRequest) {
+// Helper to get customer identity from token or NextAuth session
+async function getCustomerIdentity(request: NextRequest) {
+    // 1. Try custom shop-token first (priority for direct shop login)
     const token = request.cookies.get('shop-token')?.value;
 
-    if (!token) {
-        return null;
+    if (token) {
+        try {
+            const { payload } = await jwtVerify(token, JWT_SECRET);
+            return payload as { userId: string; identifier: string; type: string };
+        } catch {
+            // Fall through to NextAuth check
+        }
     }
 
-    try {
-        const { payload } = await jwtVerify(token, JWT_SECRET);
-        return payload as { userId: string; identifier: string; type: string };
-    } catch {
-        return null;
+    // 2. Try NextAuth session (for Google/Credentials login)
+    const session = await auth();
+    if (session?.user?.email) {
+        return {
+            userId: (session.user as any).id,
+            identifier: session.user.email,
+            type: 'next-auth'
+        };
     }
+
+    return null;
 }
 
 // GET /api/shop/orders - List customer orders
 export async function GET(request: NextRequest) {
     try {
-        const tokenData = await getCustomerFromToken(request);
+        const tokenData = await getCustomerIdentity(request);
 
         if (!tokenData) {
             return NextResponse.json(
@@ -34,10 +46,27 @@ export async function GET(request: NextRequest) {
             );
         }
 
+        // Find customer record to get the correct customerId for orders
+        const customer = await prisma.customer.findFirst({
+            where: {
+                OR: [
+                    { id: tokenData.userId },
+                    { email: tokenData.identifier }
+                ]
+            } as any
+        });
+
+        if (!customer) {
+            return NextResponse.json(
+                { error: 'Customer not found' },
+                { status: 404 }
+            );
+        }
+
         const { searchParams } = new URL(request.url);
         const status = searchParams.get('status');
 
-        const where: any = { customerId: tokenData.userId };
+        const where: any = { customerId: customer.id };
         if (status && status !== 'all') {
             where.status = status.toUpperCase();
         }
@@ -54,10 +83,10 @@ export async function GET(request: NextRequest) {
                 },
             },
             orderBy: { createdAt: 'desc' },
-        });
+        } as any);
 
         // Transform for frontend
-        const transformed = orders.map(order => ({
+        const transformed = orders.map((order: any) => ({
             id: order.id,
             orderNumber: order.orderNumber,
             date: order.createdAt.toLocaleDateString('id-ID', {
@@ -66,7 +95,7 @@ export async function GET(request: NextRequest) {
                 year: 'numeric',
             }),
             status: order.status.toLowerCase(),
-            items: order.items.map(item => ({
+            items: order.items.map((item: any) => ({
                 name: item.productName,
                 quantity: item.qty,
                 image: item.productImage || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=200&q=80',
@@ -87,8 +116,22 @@ export async function GET(request: NextRequest) {
 // POST /api/shop/orders - Create new order (checkout)
 export async function POST(request: NextRequest) {
     try {
-        const tokenData = await getCustomerFromToken(request);
+        const tokenData = await getCustomerIdentity(request);
         // Guest mode is allowed, so we don't return 401 if tokenData is null
+
+        // Find customer record if identity exists
+        let customerId = null;
+        if (tokenData) {
+            const customer = await prisma.customer.findFirst({
+                where: {
+                    OR: [
+                        { id: tokenData.userId },
+                        { email: tokenData.identifier }
+                    ]
+                } as any
+            });
+            customerId = customer?.id || null;
+        }
 
         const body = await request.json();
         const {
@@ -120,7 +163,7 @@ export async function POST(request: NextRequest) {
         // Create order with items
         const order = await prisma.order.create({
             data: {
-                customerId: tokenData?.userId || null,
+                customerId: customerId,
                 // Map Address fields to new Order model
                 recipientName: addressName,
                 recipientPhone: addressPhone,

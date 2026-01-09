@@ -104,7 +104,7 @@ export default function ShopHomepage() {
             {(promoProducts.length > 0 || products.length > 0) && (
                 <div className="flex flex-col gap-3">
                     <div className="flex items-center justify-between px-4">
-                        <h2 className="text-stone-900 text-lg font-bold">🔥 Produk Promo</h2>
+                        <h2 className="text-stone-900 text-lg font-bold">Produk Promo</h2>
                         <Link href="/products?promo=true" className="text-sm font-semibold text-orange-500 hover:text-orange-600 transition-colors">
                             Lihat Semua
                         </Link>
@@ -151,7 +151,7 @@ export default function ShopHomepage() {
                     {products.length > 3 && (
                         <div className="flex flex-col gap-3 px-4 pb-8">
                             <div className="flex items-center justify-between">
-                                <h2 className="text-stone-900 text-lg font-bold">Pilihan Bunda ❤️</h2>
+                                <h2 className="text-stone-900 text-lg font-bold">Pilihan Bunda</h2>
                             </div>
                             <div className="grid grid-cols-2 gap-3">
                                 {products.slice(0, 4).map((product) => (

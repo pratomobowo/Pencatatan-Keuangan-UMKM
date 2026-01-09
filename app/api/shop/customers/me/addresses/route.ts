@@ -1,31 +1,43 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { jwtVerify } from 'jose';
+import { auth } from '@/lib/auth';
 
 const JWT_SECRET = new TextEncoder().encode(
     process.env.JWT_SECRET || 'shop-customer-secret-key-change-in-production'
 );
 
-// Helper to get customer from token
-async function getCustomerFromToken(request: NextRequest) {
+// Helper to get customer identity from token or NextAuth session
+async function getCustomerIdentity(request: NextRequest) {
+    // 1. Try custom shop-token first (priority for direct shop login)
     const token = request.cookies.get('shop-token')?.value;
 
-    if (!token) {
-        return null;
+    if (token) {
+        try {
+            const { payload } = await jwtVerify(token, JWT_SECRET);
+            return payload as { userId: string; identifier: string; type: string };
+        } catch {
+            // Fall through to NextAuth check
+        }
     }
 
-    try {
-        const { payload } = await jwtVerify(token, JWT_SECRET);
-        return payload as { userId: string; identifier: string; type: string };
-    } catch {
-        return null;
+    // 2. Try NextAuth session (for Google/Credentials login)
+    const session = await auth();
+    if (session?.user?.email) {
+        return {
+            userId: (session.user as any).id,
+            identifier: session.user.email,
+            type: 'next-auth'
+        };
     }
+
+    return null;
 }
 
 // GET /api/shop/customers/me/addresses - List customer addresses
 export async function GET(request: NextRequest) {
     try {
-        const tokenData = await getCustomerFromToken(request);
+        const tokenData = await getCustomerIdentity(request);
 
         if (!tokenData) {
             return NextResponse.json(
@@ -34,8 +46,25 @@ export async function GET(request: NextRequest) {
             );
         }
 
-        const addresses = await prisma.address.findMany({
-            where: { customerId: tokenData.userId },
+        // Find customer record to get the correct customerId for addresses
+        const customer = await prisma.customer.findFirst({
+            where: {
+                OR: [
+                    { id: tokenData.userId },
+                    { email: tokenData.identifier }
+                ]
+            } as any
+        });
+
+        if (!customer) {
+            return NextResponse.json(
+                { error: 'Customer not found' },
+                { status: 404 }
+            );
+        }
+
+        const addresses = await (prisma as any).address.findMany({
+            where: { customerId: customer.id },
             orderBy: [
                 { isDefault: 'desc' },
                 { createdAt: 'desc' },
@@ -55,7 +84,7 @@ export async function GET(request: NextRequest) {
 // POST /api/shop/customers/me/addresses - Add new address
 export async function POST(request: NextRequest) {
     try {
-        const tokenData = await getCustomerFromToken(request);
+        const tokenData = await getCustomerIdentity(request);
 
         if (!tokenData) {
             return NextResponse.json(
@@ -64,25 +93,42 @@ export async function POST(request: NextRequest) {
             );
         }
 
+        // Find customer record to get the correct customerId for addresses
+        const customer = await prisma.customer.findFirst({
+            where: {
+                OR: [
+                    { id: tokenData.userId },
+                    { email: tokenData.identifier }
+                ]
+            } as any
+        });
+
+        if (!customer) {
+            return NextResponse.json(
+                { error: 'Customer not found' },
+                { status: 404 }
+            );
+        }
+
         const body = await request.json();
         const { label, name, phone, address, type, isDefault } = body;
 
         // If this is default, unset other defaults
         if (isDefault) {
-            await prisma.address.updateMany({
-                where: { customerId: tokenData.userId },
+            await (prisma as any).address.updateMany({
+                where: { customerId: customer.id },
                 data: { isDefault: false },
             });
         }
 
         // Check if first address (make it default)
-        const addressCount = await prisma.address.count({
-            where: { customerId: tokenData.userId },
+        const addressCount = await (prisma as any).address.count({
+            where: { customerId: customer.id },
         });
 
-        const newAddress = await prisma.address.create({
+        const newAddress = await (prisma as any).address.create({
             data: {
-                customerId: tokenData.userId,
+                customerId: customer.id,
                 label,
                 name,
                 phone,

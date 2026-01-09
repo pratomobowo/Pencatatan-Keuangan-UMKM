@@ -22,9 +22,14 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Password baru minimal 8 karakter' }, { status: 400 });
         }
 
-        const customer = await prisma.customer.findUnique({
-            where: { id: tokenData.userId }
-        });
+        const customer = await prisma.customer.findFirst({
+            where: {
+                OR: [
+                    { id: tokenData.userId },
+                    { email: tokenData.identifier }
+                ]
+            } as any
+        }) as any;
 
         if (!customer) {
             return NextResponse.json({ error: 'Customer not found' }, { status: 404 });
@@ -45,8 +50,8 @@ export async function POST(request: NextRequest) {
         const hashedPassword = await bcrypt.hash(newPassword, 10);
 
         // Update password
-        await prisma.customer.update({
-            where: { id: tokenData.userId },
+        await (prisma as any).customer.update({
+            where: { id: customer.id },
             data: { password: hashedPassword }
         });
 
