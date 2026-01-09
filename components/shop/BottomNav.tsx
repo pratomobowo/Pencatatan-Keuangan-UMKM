@@ -34,7 +34,7 @@ export const BottomNav = () => {
 
                 <Link
                     href="/cart"
-                    className="flex flex-col items-center justify-center w-16 -mt-3 relative"
+                    className="flex flex-col items-center justify-center w-16 relative"
                 >
                     <div className="size-12 rounded-full bg-orange-500 flex items-center justify-center text-white shadow-lg shadow-orange-200 relative">
                         <ShoppingCart size={24} />
