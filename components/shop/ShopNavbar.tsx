@@ -5,8 +5,10 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Search, Bell, X, Loader2, Trash2 } from 'lucide-react';
 import { useNotifications } from '@/contexts/NotificationContext';
+import { usePathname } from 'next/navigation';
 
 export const ShopNavbar = () => {
+    const pathname = usePathname();
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState<any[]>([]);
     const [isSearching, setIsSearching] = useState(false);
@@ -63,6 +65,8 @@ export const ShopNavbar = () => {
 
         return () => clearTimeout(timer);
     }, [searchQuery]);
+
+    if (pathname !== '/') return null;
 
     return (
         <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md shadow-sm w-full">

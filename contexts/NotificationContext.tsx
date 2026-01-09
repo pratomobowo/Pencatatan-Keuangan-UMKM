@@ -131,11 +131,11 @@ const ToastContainer: React.FC<{ toasts: ToastItem[], removeToast: (id: string) 
     if (toasts.length === 0) return null;
 
     return (
-        <div className="fixed bottom-24 left-0 z-[100] flex flex-col gap-2 w-full max-w-md px-4 pointer-events-none">
+        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[100] flex flex-col gap-2 w-full max-w-sm px-4">
             {toasts.map(toast => (
                 <div
                     key={toast.id}
-                    className="animate-slide-in-left bg-stone-900 border border-stone-800 text-white px-4 py-3 rounded-r-2xl shadow-2xl flex items-center justify-between gap-3 pointer-events-auto"
+                    className="animate-fade-in bg-stone-900 border border-stone-800 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center justify-between gap-3"
                 >
                     <div className="flex items-center gap-2">
                         {toast.type === 'success' && <div className="size-2 rounded-full bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.6)]"></div>}

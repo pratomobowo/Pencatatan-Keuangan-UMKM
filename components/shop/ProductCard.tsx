@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { Plus, Check, ChevronDown } from 'lucide-react';
+import { Plus, Check } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useState, useMemo } from 'react';
 import { ProductVariant } from '@/lib/types';
@@ -35,16 +35,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     const { addItem } = useCart();
     const [added, setAdded] = useState(false);
 
-    // Sort variants to have default first, or use provided order
-    const sortedVariants = useMemo(() => {
-        if (!variants || variants.length === 0) return [];
-        return [...variants].sort((a, b) => (b.isDefault ? 1 : 0) - (a.isDefault ? 1 : 0));
+    // Find the cheapest variant
+    const selectedVariant = useMemo(() => {
+        if (!variants || variants.length === 0) return null;
+        return [...variants].sort((a, b) => Number(a.price) - Number(b.price))[0];
     }, [variants]);
-
-    // Initialize with default variant if exists, otherwise use props
-    const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(
-        sortedVariants.length > 0 ? sortedVariants[0] : null
-    );
 
     // Current display values
     const currentPrice = selectedVariant ? Number(selectedVariant.price) : defaultPrice;
@@ -92,27 +87,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                     <h3 className="text-sm font-semibold text-stone-900 line-clamp-2 min-h-[40px]">{name}</h3>
                 </Link>
 
-                {/* Variant Selector or Static Unit */}
-                {sortedVariants.length > 1 ? (
-                    <div className="relative mt-1">
-                        <select
-                            value={selectedVariant?.id}
-                            onChange={(e) => {
-                                const v = sortedVariants.find(v => v.id === e.target.value);
-                                if (v) setSelectedVariant(v);
-                            }}
-                            className="w-full text-xs p-1 pr-6 bg-slate-50 border border-slate-200 rounded appearance-none cursor-pointer focus:outline-none focus:border-orange-300 text-slate-600 font-medium"
-                            onClick={(e) => e.stopPropagation()}
-                        >
-                            {sortedVariants.map(v => (
-                                <option key={v.id} value={v.id}>{v.unit}</option>
-                            ))}
-                        </select>
-                        <ChevronDown className="absolute right-1.5 top-1.5 text-slate-400 pointer-events-none" size={12} />
-                    </div>
-                ) : (
-                    <p className="text-xs text-stone-500">{currentUnit}</p>
-                )}
+                {/* Display Unit */}
+                <p className="text-xs text-stone-500">{currentUnit}</p>
 
                 {/* Price */}
                 <div className="flex flex-col mt-auto pt-2">

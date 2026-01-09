@@ -29,23 +29,6 @@ export default function CartPage() {
                 <h2 className="text-stone-900 text-lg font-semibold flex-1 text-center pr-10">Keranjang Belanja</h2>
             </div>
 
-            {/* Shipping Address */}
-            <div className="mt-4 mx-4">
-                <div className="flex items-center gap-4 bg-white rounded-xl p-4 shadow-sm border border-orange-50">
-                    <div className="flex items-center gap-4 flex-1">
-                        <div className="text-orange-600 flex items-center justify-center rounded-full bg-orange-100 shrink-0 size-10">
-                            <MapPin size={20} />
-                        </div>
-                        <div className="flex flex-col justify-center">
-                            <p className="text-stone-900 text-sm font-semibold line-clamp-1">Alamat Pengiriman</p>
-                            <p className="text-gray-500 text-xs line-clamp-1">Jl. Melati No. 12, Jakarta Selatan</p>
-                        </div>
-                    </div>
-                    <div className="shrink-0 text-gray-400">
-                        <ChevronRight size={24} />
-                    </div>
-                </div>
-            </div>
 
             {/* Cart Items Header */}
             <div className="px-4 pb-2 pt-6 flex justify-between items-end">
