@@ -1,31 +1,43 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { jwtVerify } from 'jose';
+import { auth } from '@/lib/auth';
 
 const JWT_SECRET = new TextEncoder().encode(
     process.env.JWT_SECRET || 'shop-customer-secret-key-change-in-production'
 );
 
-// Helper to get customer from token
-async function getCustomerFromToken(request: NextRequest) {
+// Helper to get customer identity from token or NextAuth session
+async function getCustomerIdentity(request: NextRequest) {
+    // 1. Try custom shop-token first (priority for direct shop login)
     const token = request.cookies.get('shop-token')?.value;
 
-    if (!token) {
-        return null;
+    if (token) {
+        try {
+            const { payload } = await jwtVerify(token, JWT_SECRET);
+            return payload as { userId: string; identifier: string; type: string };
+        } catch {
+            // Fall through to NextAuth check
+        }
     }
 
-    try {
-        const { payload } = await jwtVerify(token, JWT_SECRET);
-        return payload as { userId: string; identifier: string; type: string };
-    } catch {
-        return null;
+    // 2. Try NextAuth session (for Google/Credentials login)
+    const session = await auth();
+    if (session?.user?.email) {
+        return {
+            userId: (session.user as any).id,
+            identifier: session.user.email,
+            type: 'next-auth'
+        };
     }
+
+    return null;
 }
 
 // GET /api/shop/customers/me - Get current customer profile
 export async function GET(request: NextRequest) {
     try {
-        const tokenData = await getCustomerFromToken(request);
+        const tokenData = await getCustomerIdentity(request);
 
         if (!tokenData) {
             return NextResponse.json(
@@ -34,8 +46,14 @@ export async function GET(request: NextRequest) {
             );
         }
 
-        const customer = await prisma.customer.findUnique({
-            where: { id: tokenData.userId },
+        // Find customer by ID (if from shop-token) or email (if from NextAuth)
+        let customer = await prisma.customer.findFirst({
+            where: {
+                OR: [
+                    { id: tokenData.userId },
+                    { email: tokenData.identifier }
+                ]
+            } as any,
             select: {
                 id: true,
                 name: true,
@@ -45,11 +63,34 @@ export async function GET(request: NextRequest) {
                 _count: {
                     select: {
                         orders: true,
-                        addresses: true,
                     },
                 },
-            },
+            } as any,
         });
+
+        // If from NextAuth and customer record doesn't exist, auto-create it
+        if (!customer && tokenData.type === 'next-auth') {
+            const session = await auth();
+            customer = await prisma.customer.create({
+                data: {
+                    name: session?.user?.name || 'Customer',
+                    email: tokenData.identifier,
+                    phone: '0000000000', // Placeholder
+                } as any,
+                select: {
+                    id: true,
+                    name: true,
+                    phone: true,
+                    email: true,
+                    createdAt: true,
+                    _count: {
+                        select: {
+                            orders: true,
+                        },
+                    },
+                } as any
+            });
+        }
 
         if (!customer) {
             return NextResponse.json(
@@ -71,7 +112,7 @@ export async function GET(request: NextRequest) {
 // PUT /api/shop/customers/me - Update customer profile
 export async function PUT(request: NextRequest) {
     try {
-        const tokenData = await getCustomerFromToken(request);
+        const tokenData = await getCustomerIdentity(request);
 
         if (!tokenData) {
             return NextResponse.json(
@@ -84,17 +125,26 @@ export async function PUT(request: NextRequest) {
         const { name, email } = body;
 
         const customer = await prisma.customer.update({
-            where: { id: tokenData.userId },
+            where: {
+                id: (await prisma.customer.findFirst({
+                    where: {
+                        OR: [
+                            { id: tokenData.userId },
+                            { email: tokenData.identifier }
+                        ]
+                    } as any
+                }))?.id
+            },
             data: {
                 name: name || undefined,
                 email: email || undefined,
-            },
+            } as any,
             select: {
                 id: true,
                 name: true,
                 phone: true,
                 email: true,
-            },
+            } as any,
         });
 
         return NextResponse.json(customer);

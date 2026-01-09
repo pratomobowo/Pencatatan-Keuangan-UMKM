@@ -55,7 +55,10 @@ export async function middleware(request: NextRequest) {
 
     if (isShopProtectedRoute) {
         const shopToken = request.cookies.get('shop-token');
-        if (!shopToken) {
+        const session = await auth();
+        const isAuthenticated = !!shopToken || !!session?.user;
+
+        if (!isAuthenticated) {
             const loginUrl = new URL('/login', request.url);
             // Optional: Add callbackUrl parameter
             // loginUrl.searchParams.set('callbackUrl', pathname);

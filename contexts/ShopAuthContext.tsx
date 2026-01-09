@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSession, signOut } from 'next-auth/react';
 
 interface Customer {
     id: string;
@@ -23,13 +24,14 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function ShopAuthProvider({ children }: { children: ReactNode }) {
+    const { status } = useSession();
     const [customer, setCustomer] = useState<Customer | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const router = useRouter();
 
     useEffect(() => {
         checkAuth();
-    }, []);
+    }, [status]);
 
     const checkAuth = async () => {
         try {
@@ -65,9 +67,7 @@ export function ShopAuthProvider({ children }: { children: ReactNode }) {
                 return { success: false, error: data.error };
             }
 
-            // Refresh customer data to get full profile
             await refreshCustomer();
-
             return { success: true, redirectTo: data.redirectTo };
         } catch (error) {
             return { success: false, error: 'Gagal login' };
@@ -96,7 +96,11 @@ export function ShopAuthProvider({ children }: { children: ReactNode }) {
 
     const logout = async () => {
         try {
+            // 1. Clear shop-specific login
             await fetch('/api/shop/auth/logout', { method: 'POST' });
+
+            // 2. Clear NextAuth session (Google, etc.)
+            await signOut({ redirect: false });
         } catch {
             // Ignore errors
         }
