@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Product, TransactionType } from '@/lib/types'; // Import TransactionType
 import { Card } from './ui/Card';
-import { Plus, Edit2, Trash2, Package, Search, Download, Upload, FileSpreadsheet, TrendingUp, ShoppingBasket, X } from 'lucide-react';
+import { Plus, Edit2, Trash2, Package, Search, Download, Upload, FileSpreadsheet, TrendingUp, ShoppingBasket, X, ImageIcon, Loader2 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 
 interface ProductManagerProps {
@@ -26,6 +26,8 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
   const [isEditing, setIsEditing] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   // State for Restock Modal
   const [restockProduct, setRestockProduct] = useState<Product | null>(null);
@@ -120,6 +122,37 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
   const handleCancel = () => {
     setIsEditing(false);
     setFormData({ id: '', name: '', unit: 'kg', price: 0, costPrice: 0, stock: 0 });
+  };
+
+  // Handle image upload
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    try {
+      const formDataUpload = new FormData();
+      formDataUpload.append('file', file);
+
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formDataUpload,
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        alert(error.error || 'Gagal mengupload gambar');
+        return;
+      }
+
+      const data = await response.json();
+      setFormData(prev => ({ ...prev, image: data.url }));
+    } catch (error) {
+      console.error('Upload error:', error);
+      alert('Gagal mengupload gambar');
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   // --- Handlers for Import/Export ---
@@ -411,16 +444,46 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
                   />
                 </div>
 
-                {/* URL Gambar */}
+                {/* Gambar Produk */}
                 <div>
-                  <label className="block text-sm text-slate-700 mb-1">URL Gambar Produk</label>
+                  <label className="block text-sm text-slate-700 mb-1">Gambar Produk</label>
                   <input
-                    type="text"
-                    placeholder="https://example.com/gambar-produk.jpg"
-                    value={formData.image || ''}
-                    onChange={e => setFormData({ ...formData, image: e.target.value })}
-                    className="w-full p-2.5 bg-white border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
+                    type="file"
+                    ref={imageInputRef}
+                    accept="image/png,image/jpeg,image/jpg,image/webp"
+                    onChange={handleImageUpload}
+                    className="hidden"
                   />
+                  <div
+                    onClick={() => imageInputRef.current?.click()}
+                    className={`relative border-2 border-dashed rounded-lg cursor-pointer transition-colors ${formData.image
+                        ? 'border-green-300 bg-green-50'
+                        : 'border-slate-300 hover:border-blue-400 bg-slate-50'
+                      } ${isUploading ? 'opacity-50 pointer-events-none' : ''}`}
+                  >
+                    {formData.image ? (
+                      <div className="p-2">
+                        <img
+                          src={formData.image}
+                          alt="Preview"
+                          className="w-full h-32 object-cover rounded-lg"
+                        />
+                        <p className="text-xs text-green-600 mt-1 text-center">Klik untuk ganti gambar</p>
+                      </div>
+                    ) : (
+                      <div className="p-4 text-center">
+                        {isUploading ? (
+                          <Loader2 className="w-8 h-8 mx-auto text-blue-500 animate-spin" />
+                        ) : (
+                          <ImageIcon className="w-8 h-8 mx-auto text-slate-400" />
+                        )}
+                        <p className="text-sm text-slate-500 mt-2">
+                          {isUploading ? 'Mengupload...' : 'Klik untuk upload gambar'}
+                        </p>
+                        <p className="text-xs text-slate-400 mt-1">PNG, JPG, WebP (maks. 5MB)</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* Kategori */}
