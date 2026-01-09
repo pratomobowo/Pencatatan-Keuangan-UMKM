@@ -69,14 +69,22 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
     callbacks: {
         async jwt({ token, user }) {
+            // Only used for credentials provider
             if (user) {
                 token.id = user.id;
                 token.role = (user as any).role;
             }
             return token;
         },
-        async session({ session, token }) {
-            if (session.user) {
+        async session({ session, user, token }) {
+            // With database strategy, user is passed directly
+            // With JWT strategy, we use token
+            if (user) {
+                // Database strategy (OAuth)
+                (session.user as any).id = user.id;
+                (session.user as any).role = (user as any).role || 'user';
+            } else if (token) {
+                // JWT strategy (Credentials)
                 (session.user as any).id = token.id;
                 (session.user as any).role = token.role;
             }
