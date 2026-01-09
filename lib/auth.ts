@@ -37,6 +37,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                     return null;
                 }
 
+                if (!user.password) {
+                    console.log('❌ User has no password (probably OAuth user)');
+                    return null;
+                }
+
                 const isPasswordValid = await bcrypt.compare(
                     credentials.password as string,
                     user.password

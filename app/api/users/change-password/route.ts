@@ -43,6 +43,14 @@ export async function PUT(request: NextRequest) {
             );
         }
 
+        // Check if user has a password set (OAuth users might not)
+        if (!user.password) {
+            return NextResponse.json(
+                { error: 'Cannot change password. You might be logged in via Google.' },
+                { status: 400 }
+            );
+        }
+
         // Verify old password
         const isPasswordValid = await bcrypt.compare(oldPassword, user.password);
 
