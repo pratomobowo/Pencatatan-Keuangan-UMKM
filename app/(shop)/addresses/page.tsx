@@ -35,7 +35,7 @@ export default function AddressesPage() {
 
     useEffect(() => {
         if (!authLoading && !isAuthenticated) {
-            router.push('/shop/login');
+            router.push('/login');
             return;
         }
 
@@ -155,7 +155,7 @@ export default function AddressesPage() {
             {/* Header */}
             <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md shadow-sm">
                 <div className="flex items-center px-4 py-3 justify-between">
-                    <Link href="/shop/account" className="flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-orange-50">
+                    <Link href="/account" className="flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-orange-50">
                         <ArrowLeft size={24} />
                     </Link>
                     <h2 className="text-stone-900 text-lg font-bold flex-1 text-center">Alamat Pengiriman</h2>
@@ -267,8 +267,8 @@ export default function AddressesPage() {
                                     type="button"
                                     onClick={() => setFormData({ ...formData, type: 'home' })}
                                     className={`flex-1 py-3 rounded-xl border-2 font-medium transition-all ${formData.type === 'home'
-                                            ? 'border-orange-500 bg-orange-50 text-orange-600'
-                                            : 'border-gray-200 text-gray-500'
+                                        ? 'border-orange-500 bg-orange-50 text-orange-600'
+                                        : 'border-gray-200 text-gray-500'
                                         }`}
                                 >
                                     🏠 Rumah
@@ -277,8 +277,8 @@ export default function AddressesPage() {
                                     type="button"
                                     onClick={() => setFormData({ ...formData, type: 'office' })}
                                     className={`flex-1 py-3 rounded-xl border-2 font-medium transition-all ${formData.type === 'office'
-                                            ? 'border-orange-500 bg-orange-50 text-orange-600'
-                                            : 'border-gray-200 text-gray-500'
+                                        ? 'border-orange-500 bg-orange-50 text-orange-600'
+                                        : 'border-gray-200 text-gray-500'
                                         }`}
                                 >
                                     🏢 Kantor

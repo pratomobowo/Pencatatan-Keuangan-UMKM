@@ -43,7 +43,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     };
 
     return (
-        <Link href={`/shop/products/${id}`} className="flex flex-col min-w-[160px] w-[160px] bg-white rounded-xl overflow-hidden border border-orange-50 shadow-sm relative group">
+        <Link href={`/products/${id}`} className="flex flex-col min-w-[160px] w-[160px] bg-white rounded-xl overflow-hidden border border-orange-50 shadow-sm relative group">
             {/* Discount Badge */}
             {discount && (
                 <div className="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-sm z-10">

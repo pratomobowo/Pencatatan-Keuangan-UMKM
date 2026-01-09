@@ -49,7 +49,7 @@ export default function RegisterPage() {
 
         if (result.success) {
             // Redirect to login with success message
-            router.push('/shop/login');
+            router.push('/login');
         } else {
             setError(result.error || 'Gagal registrasi');
         }
@@ -61,7 +61,7 @@ export default function RegisterPage() {
         <div className="min-h-screen bg-gradient-to-br from-orange-500 to-orange-600 flex flex-col">
             {/* Header */}
             <header className="flex items-center px-4 py-3">
-                <Link href="/shop/account" className="flex size-10 items-center justify-center rounded-full bg-white/20 text-white hover:bg-white/30 transition-colors">
+                <Link href="/account" className="flex size-10 items-center justify-center rounded-full bg-white/20 text-white hover:bg-white/30 transition-colors">
                     <ArrowLeft size={24} />
                 </Link>
             </header>
@@ -182,7 +182,7 @@ export default function RegisterPage() {
                     {/* Login Link */}
                     <p className="text-center text-gray-600 mt-4">
                         Sudah punya akun?{' '}
-                        <Link href="/shop/login" className="text-orange-500 font-bold hover:text-orange-600">
+                        <Link href="/login" className="text-orange-500 font-bold hover:text-orange-600">
                             Masuk
                         </Link>
                     </p>

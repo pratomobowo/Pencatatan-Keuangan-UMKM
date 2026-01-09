@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
                 name: userName!,
                 type: userType,
             },
-            redirectTo: userType === 'admin' ? '/admin' : '/shop/account',
+            redirectTo: userType === 'admin' ? '/admin' : '/account',
         });
 
         // Set HTTP-only cookie

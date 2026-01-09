@@ -36,7 +36,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
     const fetchProduct = async () => {
         try {
             setLoading(true);
-            const response = await fetch(`/api/shop/products/${id}`);
+            const response = await fetch(`/api/products/${id}`);
             if (!response.ok) {
                 if (response.status === 404) {
                     throw new Error('Produk tidak ditemukan');

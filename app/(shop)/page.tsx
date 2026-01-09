@@ -19,11 +19,11 @@ interface Product {
 }
 
 const categories = [
-    { name: 'Ikan Laut', icon: Fish, href: '/shop/products?category=ikan-laut', color: 'text-blue-400' },
-    { name: 'Seafood', icon: Waves, href: '/shop/products?category=seafood', color: 'text-orange-500' },
-    { name: 'Ayam & Telur', icon: Egg, href: '/shop/products?category=ayam', color: 'text-yellow-500' },
-    { name: 'Daging Sapi', icon: Beef, href: '/shop/products?category=daging-sapi', color: 'text-red-400' },
-    { name: 'Bumbu', icon: Leaf, href: '/shop/products?category=bumbu', color: 'text-teal-400' },
+    { name: 'Ikan Laut', icon: Fish, href: '/products?category=ikan-laut', color: 'text-blue-400' },
+    { name: 'Seafood', icon: Waves, href: '/products?category=seafood', color: 'text-orange-500' },
+    { name: 'Ayam & Telur', icon: Egg, href: '/products?category=ayam', color: 'text-yellow-500' },
+    { name: 'Daging Sapi', icon: Beef, href: '/products?category=daging-sapi', color: 'text-red-400' },
+    { name: 'Bumbu', icon: Leaf, href: '/products?category=bumbu', color: 'text-teal-400' },
 ];
 
 // Default image when product has no image
@@ -41,7 +41,7 @@ export default function ShopHomepage() {
     const fetchProducts = async () => {
         try {
             setLoading(true);
-            const response = await fetch('/api/shop/products');
+            const response = await fetch('/api/products');
             if (!response.ok) throw new Error('Failed to fetch products');
             const data = await response.json();
             setProducts(data);
@@ -107,7 +107,7 @@ export default function ShopHomepage() {
                     <div className="flex flex-col gap-3">
                         <div className="flex items-center justify-between px-4">
                             <h2 className="text-stone-900 text-lg font-bold">Produk Segar 🥬</h2>
-                            <Link href="/shop/products" className="text-sm font-semibold text-orange-500 hover:text-orange-600 transition-colors">
+                            <Link href="/products" className="text-sm font-semibold text-orange-500 hover:text-orange-600 transition-colors">
                                 Lihat Semua
                             </Link>
                         </div>

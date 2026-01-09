@@ -156,7 +156,7 @@ export default function CartPage() {
                         <span className="text-xl font-bold text-stone-900">Rp {total.toLocaleString('id-ID')}</span>
                     </div>
                     <Link
-                        href="/shop/checkout"
+                        href="/checkout"
                         className="flex-1 bg-orange-500 hover:bg-orange-600 active:scale-[0.98] transition-all h-12 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-orange-300/30"
                     >
                         <span className="text-white font-bold text-base">Lanjut Checkout</span>

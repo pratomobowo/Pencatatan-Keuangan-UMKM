@@ -1,129 +1,211 @@
 'use client';
 
-import { signIn } from 'next-auth/react';
 import { useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { LogIn, Mail, Lock, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Eye, EyeOff, Loader2 } from 'lucide-react';
 
 export default function LoginPage() {
     const router = useRouter();
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [loginMode, setLoginMode] = useState<'phone' | 'email'>('phone');
+    const [formData, setFormData] = useState({
+        phone: '',
+        email: '',
+        password: '',
+    });
     const [error, setError] = useState('');
-    const [loading, setLoading] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
-        setLoading(true);
+        setIsLoading(true);
 
         try {
-            const result = await signIn('credentials', {
-                email,
-                password,
-                redirect: false,
+            const response = await fetch('/api/shop/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    phone: loginMode === 'phone' ? formData.phone : undefined,
+                    email: loginMode === 'email' ? formData.email : undefined,
+                    password: formData.password,
+                }),
             });
 
-            if (result?.error) {
-                setError('Email atau password salah');
-            } else {
-                router.push('/');
-                router.refresh();
+            const data = await response.json();
+
+            if (!response.ok) {
+                setError(data.error || 'Gagal login');
+                return;
             }
-        } catch (error) {
-            setError('Terjadi kesalahan. Silakan coba lagi.');
+
+            // Redirect based on user type
+            router.push(data.redirectTo);
+        } catch (err) {
+            setError('Gagal login');
         } finally {
-            setLoading(false);
+            setIsLoading(false);
         }
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-50 flex items-center justify-center p-4">
-            <div className="w-full max-w-md">
-                {/* Logo & Title */}
-                <div className="text-center mb-8">
-                    <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-2xl shadow-lg mb-4">
-                        <span className="text-white font-bold text-2xl">PA</span>
-                    </div>
-                    <h1 className="text-3xl font-bold text-slate-900 mb-2">Pasarantar Finance</h1>
-                    <p className="text-slate-600">Sistem Manajemen Keuangan & Stok</p>
+        <div className="min-h-screen bg-gradient-to-br from-orange-500 to-orange-600 flex flex-col">
+            {/* Header */}
+            <header className="flex items-center px-4 py-3">
+                <Link href="/shop" className="flex size-10 items-center justify-center rounded-full bg-white/20 text-white hover:bg-white/30 transition-colors">
+                    <ArrowLeft size={24} />
+                </Link>
+            </header>
+
+            {/* Logo & Title */}
+            <div className="px-6 pt-4 pb-8 text-center">
+                <div className="size-16 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center mx-auto mb-4 shadow-lg">
+                    <span className="text-white text-2xl font-black">PA</span>
+                </div>
+                <h1 className="text-3xl font-bold text-white mb-2">Selamat Datang!</h1>
+                <p className="text-white/80">Masuk ke akun Anda</p>
+            </div>
+
+            {/* Form Card */}
+            <div className="flex-1 bg-white rounded-t-3xl px-6 pt-8 pb-12">
+                {/* Login Mode Tabs */}
+                <div className="flex gap-2 mb-6 bg-stone-100 rounded-xl p-1">
+                    <button
+                        type="button"
+                        onClick={() => setLoginMode('phone')}
+                        className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition-all ${loginMode === 'phone'
+                            ? 'bg-white text-orange-600 shadow-sm'
+                            : 'text-gray-500'
+                            }`}
+                    >
+                        Nomor HP
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setLoginMode('email')}
+                        className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition-all ${loginMode === 'email'
+                            ? 'bg-white text-orange-600 shadow-sm'
+                            : 'text-gray-500'
+                            }`}
+                    >
+                        Email (Admin)
+                    </button>
                 </div>
 
-                {/* Login Card */}
-                <div className="bg-white rounded-2xl shadow-xl border border-slate-200 p-8">
-                    <div className="mb-6">
-                        <h2 className="text-2xl font-semibold text-slate-900 mb-2">Selamat Datang</h2>
-                        <p className="text-slate-600 text-sm">Silakan login untuk melanjutkan</p>
-                    </div>
-
-                    {error && (
-                        <div className="mb-6 p-4 bg-rose-50 border border-rose-200 rounded-lg flex items-start gap-3">
-                            <AlertCircle className="w-5 h-5 text-rose-600 flex-shrink-0 mt-0.5" />
-                            <p className="text-sm text-rose-800">{error}</p>
+                <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+                    {/* Phone Input */}
+                    {loginMode === 'phone' && (
+                        <div className="flex flex-col gap-2">
+                            <label className="text-sm font-medium text-gray-700">Nomor HP</label>
+                            <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden focus-within:border-orange-500 focus-within:ring-2 focus-within:ring-orange-100 transition-all">
+                                <span className="px-4 py-3 bg-gray-50 text-gray-500 border-r border-gray-200">+62</span>
+                                <input
+                                    type="tel"
+                                    placeholder="812-3456-7890"
+                                    value={formData.phone}
+                                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                    className="flex-1 px-4 py-3 outline-none"
+                                    required
+                                />
+                            </div>
                         </div>
                     )}
 
-                    <form onSubmit={handleSubmit} className="space-y-5">
-                        <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-2">
-                                Email
-                            </label>
-                            <div className="relative">
-                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                                <input
-                                    type="email"
-                                    required
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                                    placeholder="nama@email.com"
-                                    disabled={loading}
-                                />
-                            </div>
+                    {/* Email Input */}
+                    {loginMode === 'email' && (
+                        <div className="flex flex-col gap-2">
+                            <label className="text-sm font-medium text-gray-700">Email</label>
+                            <input
+                                type="email"
+                                placeholder="admin@example.com"
+                                value={formData.email}
+                                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                className="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100 transition-all"
+                                required
+                            />
                         </div>
+                    )}
 
-                        <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-2">
-                                Password
-                            </label>
-                            <div className="relative">
-                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                                <input
-                                    type="password"
-                                    required
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                                    placeholder="••••••••"
-                                    disabled={loading}
-                                />
-                            </div>
+                    {/* Password Input */}
+                    <div className="flex flex-col gap-2">
+                        <label className="text-sm font-medium text-gray-700">Password</label>
+                        <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden focus-within:border-orange-500 focus-within:ring-2 focus-within:ring-orange-100 transition-all">
+                            <input
+                                type={showPassword ? 'text' : 'password'}
+                                placeholder="Masukkan password"
+                                value={formData.password}
+                                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                className="flex-1 px-4 py-3 outline-none"
+                                required
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="px-4 text-gray-400 hover:text-gray-600"
+                            >
+                                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                            </button>
                         </div>
+                    </div>
 
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-lg shadow-blue-200 flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            {loading ? (
-                                <>
-                                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                                    <span>Memproses...</span>
-                                </>
-                            ) : (
-                                <>
-                                    <LogIn size={20} />
-                                    <span>Login</span>
-                                </>
-                            )}
-                        </button>
-                    </form>
-                </div>
+                    {/* Forgot Password */}
+                    <div className="text-right">
+                        <Link href="/forgot-password" className="text-sm text-orange-500 font-medium hover:text-orange-600">
+                            Lupa password?
+                        </Link>
+                    </div>
 
-                {/* Footer */}
-                <p className="text-center text-sm text-slate-500 mt-6">
-                    © 2024 Pasarantar Finance v2.0
-                </p>
+                    {/* Error Message */}
+                    {error && (
+                        <p className="text-red-500 text-sm text-center bg-red-50 p-3 rounded-lg">{error}</p>
+                    )}
+
+                    {/* Submit Button */}
+                    <button
+                        type="submit"
+                        disabled={isLoading}
+                        className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 rounded-xl shadow-lg shadow-orange-200 transition-all disabled:opacity-70 flex items-center justify-center gap-2"
+                    >
+                        {isLoading ? (
+                            <>
+                                <Loader2 size={20} className="animate-spin" />
+                                Memproses...
+                            </>
+                        ) : (
+                            'Masuk'
+                        )}
+                    </button>
+
+                    {/* Divider */}
+                    <div className="flex items-center gap-4 my-4">
+                        <div className="flex-1 h-px bg-gray-200"></div>
+                        <span className="text-sm text-gray-400">atau</span>
+                        <div className="flex-1 h-px bg-gray-200"></div>
+                    </div>
+
+                    {/* Social Login */}
+                    <button
+                        type="button"
+                        className="w-full border border-gray-200 hover:bg-gray-50 text-gray-700 font-medium py-4 rounded-xl transition-all flex items-center justify-center gap-3"
+                    >
+                        <svg className="size-5" viewBox="0 0 24 24">
+                            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+                        </svg>
+                        Masuk dengan Google
+                    </button>
+
+                    {/* Register Link */}
+                    <p className="text-center text-gray-600 mt-6">
+                        Belum punya akun?{' '}
+                        <Link href="/register" className="text-orange-500 font-bold hover:text-orange-600">
+                            Daftar
+                        </Link>
+                    </p>
+                </form>
             </div>
         </div>
     );

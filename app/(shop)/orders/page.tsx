@@ -43,7 +43,7 @@ export default function OrdersPage() {
 
     useEffect(() => {
         if (!authLoading && !isAuthenticated) {
-            router.push('/shop/login');
+            router.push('/login');
             return;
         }
 
@@ -80,7 +80,7 @@ export default function OrdersPage() {
             {/* Header */}
             <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md shadow-sm">
                 <div className="flex items-center px-4 py-3 justify-between">
-                    <Link href="/shop/account" className="flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-orange-50">
+                    <Link href="/account" className="flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-orange-50">
                         <ArrowLeft size={24} />
                     </Link>
                     <h2 className="text-stone-900 text-lg font-bold flex-1 text-center pr-10">Pesanan Saya</h2>
@@ -93,8 +93,8 @@ export default function OrdersPage() {
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
                             className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${activeTab === tab.id
-                                    ? 'bg-orange-500 text-white'
-                                    : 'bg-stone-100 text-gray-600 hover:bg-stone-200'
+                                ? 'bg-orange-500 text-white'
+                                : 'bg-stone-100 text-gray-600 hover:bg-stone-200'
                                 }`}
                         >
                             {tab.name}
@@ -135,7 +135,7 @@ export default function OrdersPage() {
                         return (
                             <Link
                                 key={order.id}
-                                href={`/shop/orders/${order.id}`}
+                                href={`/orders/${order.id}`}
                                 className="bg-white rounded-2xl shadow-sm border border-orange-50 overflow-hidden hover:border-orange-200 transition-colors"
                             >
                                 {/* Order Header */}

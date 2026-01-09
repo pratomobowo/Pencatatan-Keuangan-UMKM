@@ -13,17 +13,17 @@ export const BottomNav = () => {
         <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-50">
             <div className="flex items-center justify-around h-16 relative max-w-md mx-auto">
                 <Link
-                    href="/shop"
-                    className={`flex flex-col items-center justify-center gap-1 w-16 transition-colors ${isActive('/shop') ? 'text-orange-500' : 'text-stone-400 hover:text-orange-500'
+                    href="/"
+                    className={`flex flex-col items-center justify-center gap-1 w-16 transition-colors ${isActive('/') ? 'text-orange-500' : 'text-stone-400 hover:text-orange-500'
                         }`}
                 >
-                    <Home size={24} fill={isActive('/shop') ? 'currentColor' : 'none'} />
+                    <Home size={24} fill={isActive('/') ? 'currentColor' : 'none'} />
                     <span className="text-[10px] font-bold">Beranda</span>
                 </Link>
 
                 <Link
-                    href="/shop/products"
-                    className={`flex flex-col items-center justify-center gap-1 w-16 transition-colors ${isActive('/shop/products') ? 'text-orange-500' : 'text-stone-400 hover:text-orange-500'
+                    href="/products"
+                    className={`flex flex-col items-center justify-center gap-1 w-16 transition-colors ${isActive('/products') ? 'text-orange-500' : 'text-stone-400 hover:text-orange-500'
                         }`}
                 >
                     <Grid size={24} />
@@ -33,7 +33,7 @@ export const BottomNav = () => {
                 {/* Cart Button - Elevated */}
                 <div className="relative -top-6">
                     <Link
-                        href="/shop/cart"
+                        href="/cart"
                         className="flex items-center justify-center size-14 rounded-full bg-orange-500 text-white shadow-lg shadow-orange-200 hover:scale-105 transition-transform border-4 border-white"
                     >
                         <ShoppingCart size={28} />
@@ -42,8 +42,8 @@ export const BottomNav = () => {
                 </div>
 
                 <Link
-                    href="/shop/orders"
-                    className={`flex flex-col items-center justify-center gap-1 w-16 transition-colors ${isActive('/shop/orders') ? 'text-orange-500' : 'text-stone-400 hover:text-orange-500'
+                    href="/orders"
+                    className={`flex flex-col items-center justify-center gap-1 w-16 transition-colors ${isActive('/orders') ? 'text-orange-500' : 'text-stone-400 hover:text-orange-500'
                         }`}
                 >
                     <Receipt size={24} />
@@ -51,8 +51,8 @@ export const BottomNav = () => {
                 </Link>
 
                 <Link
-                    href="/shop/account"
-                    className={`flex flex-col items-center justify-center gap-1 w-16 transition-colors ${isActive('/shop/account') ? 'text-orange-500' : 'text-stone-400 hover:text-orange-500'
+                    href="/account"
+                    className={`flex flex-col items-center justify-center gap-1 w-16 transition-colors ${isActive('/account') ? 'text-orange-500' : 'text-stone-400 hover:text-orange-500'
                         }`}
                 >
                     <User size={24} />

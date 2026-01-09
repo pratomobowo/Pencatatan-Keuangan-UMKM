@@ -23,24 +23,24 @@ const menuItems = [
     {
         section: 'Pesanan',
         items: [
-            { icon: Package, label: 'Pesanan Saya', href: '/shop/orders' },
-            { icon: ShoppingBag, label: 'Beli Lagi', href: '/shop/products' },
+            { icon: Package, label: 'Pesanan Saya', href: '/orders' },
+            { icon: ShoppingBag, label: 'Beli Lagi', href: '/products' },
         ]
     },
     {
         section: 'Akun',
         items: [
-            { icon: MapPin, label: 'Alamat Pengiriman', href: '/shop/addresses' },
-            { icon: CreditCard, label: 'Metode Pembayaran', href: '/shop/payments' },
-            { icon: Heart, label: 'Favorit', href: '/shop/favorites' },
-            { icon: Bell, label: 'Notifikasi', href: '/shop/notifications' },
+            { icon: MapPin, label: 'Alamat Pengiriman', href: '/addresses' },
+            { icon: CreditCard, label: 'Metode Pembayaran', href: '/payments' },
+            { icon: Heart, label: 'Favorit', href: '/favorites' },
+            { icon: Bell, label: 'Notifikasi', href: '/notifications' },
         ]
     },
     {
         section: 'Lainnya',
         items: [
-            { icon: Settings, label: 'Pengaturan', href: '/shop/settings' },
-            { icon: HelpCircle, label: 'Bantuan', href: '/shop/help' },
+            { icon: Settings, label: 'Pengaturan', href: '/settings' },
+            { icon: HelpCircle, label: 'Bantuan', href: '/help' },
         ]
     },
 ];
@@ -81,13 +81,13 @@ export default function AccountPage() {
                     {/* Login/Register Buttons */}
                     <div className="flex gap-3 mt-6">
                         <Link
-                            href="/shop/login"
+                            href="/login"
                             className="flex-1 bg-white text-orange-600 font-bold py-3 rounded-xl text-center shadow-lg hover:bg-orange-50 transition-colors"
                         >
                             Masuk
                         </Link>
                         <Link
-                            href="/shop/register"
+                            href="/register"
                             className="flex-1 bg-white/20 backdrop-blur text-white font-bold py-3 rounded-xl text-center border border-white/30 hover:bg-white/30 transition-colors"
                         >
                             Daftar
@@ -171,7 +171,7 @@ export default function AccountPage() {
             {/* Stats Cards */}
             <div className="px-4 -mt-6">
                 <div className="bg-white rounded-2xl shadow-lg p-4 flex justify-around border border-orange-100">
-                    <Link href="/shop/orders" className="flex flex-col items-center">
+                    <Link href="/orders" className="flex flex-col items-center">
                         <span className="text-2xl font-bold text-stone-900">-</span>
                         <span className="text-xs text-gray-500 mt-1">Pesanan</span>
                     </Link>

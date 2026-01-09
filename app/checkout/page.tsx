@@ -53,7 +53,7 @@ export default function CheckoutPage() {
     // Check auth and load addresses
     useEffect(() => {
         if (!authLoading && !isAuthenticated) {
-            router.push('/shop/login');
+            router.push('/login');
             return;
         }
 
@@ -150,13 +150,13 @@ export default function CheckoutPage() {
                 <p className="text-sm text-gray-500 mb-6">No. Pesanan: {orderNumber}</p>
                 <div className="flex gap-3">
                     <Link
-                        href="/shop/orders"
+                        href="/orders"
                         className="px-6 py-3 bg-orange-500 text-white font-bold rounded-xl"
                     >
                         Lihat Pesanan
                     </Link>
                     <Link
-                        href="/shop"
+                        href="/"
                         className="px-6 py-3 border border-orange-500 text-orange-500 font-bold rounded-xl"
                     >
                         Kembali
@@ -172,7 +172,7 @@ export default function CheckoutPage() {
             <div className="flex flex-col items-center justify-center min-h-[60vh] px-4 text-center">
                 <p className="text-gray-500 mb-4">Keranjang belanja kosong</p>
                 <Link
-                    href="/shop"
+                    href="/"
                     className="px-6 py-3 bg-orange-500 text-white font-bold rounded-xl"
                 >
                     Belanja Sekarang
@@ -185,7 +185,7 @@ export default function CheckoutPage() {
         <>
             {/* Header */}
             <header className="sticky top-0 z-50 flex items-center bg-white/90 backdrop-blur-md px-4 py-3 shadow-sm justify-between">
-                <Link href="/shop/cart" className="flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-orange-50">
+                <Link href="/cart" className="flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-orange-50">
                     <ArrowLeft size={24} />
                 </Link>
                 <h2 className="text-stone-900 text-lg font-bold flex-1 text-center pr-10">Checkout</h2>
@@ -197,7 +197,7 @@ export default function CheckoutPage() {
                     <h3 className="text-stone-900 text-lg font-bold mb-3 px-1">Alamat Pengiriman</h3>
                     {addresses.length === 0 ? (
                         <Link
-                            href="/shop/addresses"
+                            href="/addresses"
                             className="flex gap-4 bg-white p-4 rounded-2xl shadow-sm border border-orange-100 items-center"
                         >
                             <div className="flex items-center justify-center rounded-xl bg-orange-100 text-orange-600 shrink-0 size-10">
@@ -216,7 +216,7 @@ export default function CheckoutPage() {
                             <div className="flex flex-1 flex-col">
                                 <div className="flex justify-between items-start">
                                     <p className="text-stone-900 text-base font-bold">{selectedAddress?.label}</p>
-                                    <Link href="/shop/addresses" className="text-orange-600 text-sm font-semibold px-2 py-1 rounded hover:bg-orange-50 transition-colors">
+                                    <Link href="/addresses" className="text-orange-600 text-sm font-semibold px-2 py-1 rounded hover:bg-orange-50 transition-colors">
                                         Ubah
                                     </Link>
                                 </div>
@@ -242,8 +242,8 @@ export default function CheckoutPage() {
                                     className="peer sr-only"
                                 />
                                 <div className={`flex flex-col items-center justify-center gap-1 rounded-xl border-2 px-4 py-3 transition-all ${selectedDelivery === option.id
-                                        ? 'border-orange-500 bg-orange-500 text-white'
-                                        : 'border-gray-200 bg-white text-gray-500'
+                                    ? 'border-orange-500 bg-orange-500 text-white'
+                                    : 'border-gray-200 bg-white text-gray-500'
                                     }`}>
                                     <span className="text-xs font-semibold uppercase tracking-wider opacity-70">{option.label}</span>
                                     <span className="text-sm font-bold">{option.time}</span>
@@ -296,8 +296,8 @@ export default function CheckoutPage() {
                                     className="peer sr-only"
                                 />
                                 <div className={`flex items-center gap-4 bg-white p-4 rounded-2xl border-2 transition-all shadow-sm ${selectedPayment === method.id
-                                        ? 'border-orange-500 bg-orange-50'
-                                        : 'border-transparent'
+                                    ? 'border-orange-500 bg-orange-50'
+                                    : 'border-transparent'
                                     }`}>
                                     <div className={`flex items-center justify-center rounded-full shrink-0 size-10 ${method.color}`}>
                                         <method.icon size={24} />
@@ -307,8 +307,8 @@ export default function CheckoutPage() {
                                         <p className="text-gray-500 text-sm">{method.description}</p>
                                     </div>
                                     <div className={`size-5 rounded-full border-2 flex items-center justify-center transition-colors ${selectedPayment === method.id
-                                            ? 'border-orange-500 bg-orange-500'
-                                            : 'border-gray-300'
+                                        ? 'border-orange-500 bg-orange-500'
+                                        : 'border-gray-300'
                                         }`}>
                                         {selectedPayment === method.id && (
                                             <div className="size-2 rounded-full bg-white"></div>

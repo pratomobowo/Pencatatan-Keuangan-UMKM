@@ -54,7 +54,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
 
     useEffect(() => {
         if (!authLoading && !isAuthenticated) {
-            router.push('/shop/login');
+            router.push('/login');
             return;
         }
 
@@ -105,7 +105,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
         return (
             <div className="flex flex-col items-center justify-center py-20">
                 <p className="text-red-500 mb-4">{error || 'Pesanan tidak ditemukan'}</p>
-                <Link href="/shop/orders" className="text-orange-500 font-bold">
+                <Link href="/orders" className="text-orange-500 font-bold">
                     Kembali ke Pesanan
                 </Link>
             </div>
@@ -119,7 +119,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
             {/* Header */}
             <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md shadow-sm">
                 <div className="flex items-center px-4 py-3 justify-between">
-                    <Link href="/shop/orders" className="flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-orange-50">
+                    <Link href="/orders" className="flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-orange-50">
                         <ArrowLeft size={24} />
                     </Link>
                     <h2 className="text-stone-900 text-lg font-bold flex-1 text-center pr-10">Detail Pesanan</h2>

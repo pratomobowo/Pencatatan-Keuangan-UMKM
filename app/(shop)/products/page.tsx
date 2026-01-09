@@ -46,7 +46,7 @@ function ProductsContent() {
     const fetchProducts = async () => {
         try {
             setLoading(true);
-            let url = '/api/shop/products?';
+            let url = '/api/products?';
 
             if (selectedCategory && selectedCategory !== 'all') {
                 url += `category=${selectedCategory}&`;
