@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { slugify } from '@/lib/utils';
 
 // GET /api/products - Get all products with variants
 export async function GET() {
@@ -35,10 +36,26 @@ export async function POST(request: NextRequest) {
         // Auto-generate SKU if not provided
         const productSku = sku || `SKU-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
 
+        // Generate slug
+        let baseSlug = slugify(name);
+        let finalSlug = baseSlug;
+        let counter = 1;
+
+        // Ensure slug uniqueness
+        while (true) {
+            const existing = await prisma.product.findUnique({
+                where: { slug: finalSlug }
+            });
+            if (!existing) break;
+            finalSlug = `${baseSlug}-${counter}`;
+            counter++;
+        }
+
         const product = await prisma.product.create({
             data: {
                 sku: productSku,
                 name,
+                slug: finalSlug,
                 description: description || null,
                 price,
                 costPrice,

@@ -154,6 +154,7 @@ function ProductsContent() {
                                 <ProductCard
                                     key={product.id}
                                     id={product.id}
+                                    slug={product.slug}
                                     name={product.name}
                                     unit={product.unit}
                                     price={product.displayPrice || product.price}

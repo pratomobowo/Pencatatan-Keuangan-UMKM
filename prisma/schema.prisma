@@ -34,6 +34,7 @@ model Product {
   id          String   @id @default(uuid())
   sku         String   @unique
   name        String
+  slug        String?  @unique
   description String?
   price       Decimal  @db.Decimal(10, 2)
   costPrice   Decimal  @db.Decimal(10, 2)
@@ -339,4 +340,16 @@ model ShopNotification {
   
   @@index([customerId])
   @@index([createdAt])
+}
+
+model ShopConfig {
+  id          String   @id @default("global")
+  
+  // JSON strings for complex structures
+  faq         String   @default("[]") // JSON: [{question, answer}]
+  paymentMethods String @default("[]") // JSON: [{name, details, icon}]
+  operationalHours String @default("{}") // JSON: {monday: {open, close}, ...}
+  contactInfo  String   @default("{}") // JSON: {whatsapp, email, address}
+  
+  updatedAt   DateTime @updatedAt
 }

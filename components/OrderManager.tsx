@@ -1,17 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { Order, OrderItem, Product, Customer } from '@/lib/types';
+import { Order, OrderItem, Product, Customer, ShopOrder, ShopOrderStatus } from '@/lib/types';
 import { Card } from './ui/Card';
-import { Plus, Trash2, Printer, CheckCircle, Clock, XCircle, ShoppingBag, ArrowLeft, Users, MessageCircle, Share2 } from 'lucide-react';
+import { Plus, Trash2, Printer, CheckCircle, Clock, XCircle, ShoppingBag, ArrowLeft, Users, MessageCircle, MapPin, Phone, CreditCard } from 'lucide-react';
 
 interface OrderManagerProps {
-  orders: Order[];
+  orders?: Order[];
   products: Product[];
-  customers: Customer[];
-  onAddOrder: (order: Order) => void;
-  onUpdateStatus: (id: string, status: 'PAID' | 'CANCELLED') => void;
-  onDeleteOrder: (id: string) => void;
-  initialCustomerId?: string | null; // Added for Quick Order
-  onClearInitialCustomer?: () => void; // Added for cleanup
+  customers?: Customer[];
+  onAddOrder?: (order: Order) => void;
+  onUpdateStatus?: (id: string, status: 'PAID' | 'CANCELLED') => void;
+  onDeleteOrder?: (id: string) => void;
+  initialCustomerId?: string | null;
+  onClearInitialCustomer?: () => void;
+
+  // Shop specific
+  isShopOrders?: boolean;
+  shopOrders?: ShopOrder[];
+  onUpdateShopStatus?: (id: string, status: ShopOrderStatus) => void;
+  onDeleteShopOrder?: (id: string) => void;
 }
 
 const formatCurrency = (amount: number) => {
@@ -19,17 +25,22 @@ const formatCurrency = (amount: number) => {
 };
 
 export const OrderManager: React.FC<OrderManagerProps> = ({
-  orders,
+  orders = [],
   products,
-  customers,
+  customers = [],
   onAddOrder,
   onUpdateStatus,
   onDeleteOrder,
   initialCustomerId,
-  onClearInitialCustomer
+  onClearInitialCustomer,
+  isShopOrders = false,
+  shopOrders = [],
+  onUpdateShopStatus,
+  onDeleteShopOrder
 }) => {
   const [view, setView] = useState<'LIST' | 'FORM' | 'INVOICE'>('LIST');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [selectedShopOrder, setSelectedShopOrder] = useState<ShopOrder | null>(null);
 
   // Form State
   const [formData, setFormData] = useState<{
@@ -162,7 +173,7 @@ export const OrderManager: React.FC<OrderManagerProps> = ({
       notes: formData.notes
     };
 
-    onAddOrder(newOrder);
+    if (onAddOrder) onAddOrder(newOrder);
 
     // Reset Form
     setFormData({
@@ -538,6 +549,115 @@ export const OrderManager: React.FC<OrderManagerProps> = ({
     </div>
   );
 
+  const renderShopList = () => (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-xl font-semibold text-slate-800">Order Toko Online</h2>
+          <p className="text-sm text-slate-500">Pantau dan kelola pesanan dari website.</p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4">
+        {shopOrders.length === 0 ? (
+          <div className="text-center py-12 bg-white rounded-xl border border-dashed border-slate-300">
+            <ShoppingBag className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+            <p className="text-slate-500 font-medium">Belum ada order online.</p>
+          </div>
+        ) : (
+          shopOrders.map(order => (
+            <Card key={order.id} className="hover:shadow-md transition-shadow">
+              <div className="flex flex-col md:flex-row justify-between gap-4">
+                <div className="flex-grow">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-orange-100 text-orange-600">
+                          #{order.orderNumber}
+                        </span>
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-medium ${order.status === 'PENDING' ? 'bg-yellow-100 text-yellow-700' :
+                          order.status === 'CONFIRMED' ? 'bg-blue-100 text-blue-700' :
+                            order.status === 'PREPARING' ? 'bg-purple-100 text-purple-700' :
+                              order.status === 'SHIPPING' ? 'bg-indigo-100 text-indigo-700' :
+                                order.status === 'DELIVERED' ? 'bg-emerald-100 text-emerald-700' :
+                                  'bg-slate-100 text-slate-600'
+                          }`}>
+                          {order.status}
+                        </span>
+                      </div>
+                      <h3 className="font-semibold text-slate-800 text-lg flex items-center gap-2">
+                        {order.addressName}
+                        {order.customer && <span className="text-xs font-normal text-slate-400 font-mono">(Reg: {order.customer.phone})</span>}
+                      </h3>
+                      <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1">
+                        <p className="text-xs text-slate-500 flex items-center gap-1">
+                          <Clock size={12} /> {new Date(order.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                        </p>
+                        <p className="text-xs text-slate-500 flex items-center gap-1">
+                          <Phone size={12} /> {order.addressPhone}
+                        </p>
+                        <p className="text-xs text-slate-500 flex items-center gap-1">
+                          <CreditCard size={12} /> {order.paymentMethod.toUpperCase()}
+                        </p>
+                      </div>
+                      <p className="text-xs text-slate-500 flex items-start gap-1 mt-2 max-w-xl">
+                        <MapPin size={12} className="mt-0.5 shrink-0" /> {order.addressFull}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 text-sm text-slate-600 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                    <ul className="space-y-1.5">
+                      {order.items.map((item, i) => (
+                        <li key={i} className="flex justify-between items-center">
+                          <span>{item.productName} <span className="text-slate-400 ml-1">({item.variant})</span></span>
+                          <span className="font-medium">x{item.qty}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+
+                <div className="flex flex-col justify-between items-end gap-3 min-w-[200px] border-l border-slate-100 pl-4">
+                  <div className="text-right">
+                    <p className="text-[10px] text-slate-400 uppercase tracking-wider font-bold">Total Pembayaran</p>
+                    <p className="text-xl font-bold text-blue-600">{formatCurrency(order.total)}</p>
+                    <p className="text-[10px] text-slate-400">Sub: {formatCurrency(order.subtotal)} + Ongkir: {formatCurrency(order.shippingFee)}</p>
+                  </div>
+
+                  <div className="flex flex-col gap-2 w-full">
+                    <select
+                      className="w-full text-xs font-semibold p-2 border rounded-lg bg-white"
+                      value={order.status}
+                      onChange={(e) => onUpdateShopStatus && onUpdateShopStatus(order.id, e.target.value as ShopOrderStatus)}
+                    >
+                      <option value="PENDING">Menunggu Konfirmasi</option>
+                      <option value="CONFIRMED">Dikonfirmasi</option>
+                      <option value="PREPARING">Sedang Disiapkan</option>
+                      <option value="SHIPPING">Dalam Pengiriman</option>
+                      <option value="DELIVERED">Selesai / Sampai</option>
+                      <option value="CANCELLED">Dibatalkan</option>
+                    </select>
+
+                    <div className="flex gap-2">
+                      {/* Future: Add Print Label/Invoice for Shop Orders */}
+                      <button
+                        onClick={() => onDeleteShopOrder && onDeleteShopOrder(order.id)}
+                        className="flex-1 flex justify-center items-center gap-1 px-3 py-2 bg-rose-50 text-rose-600 rounded text-xs font-bold hover:bg-rose-100"
+                      >
+                        <Trash2 size={14} /> Hapus
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          ))
+        )}
+      </div>
+    </div>
+  );
+
   const renderList = () => (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -577,7 +697,7 @@ export const OrderManager: React.FC<OrderManagerProps> = ({
                     </div>
                     <div className="md:hidden">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${order.status === 'PAID' ? 'bg-emerald-100 text-emerald-800' :
-                          order.status === 'CANCELLED' ? 'bg-slate-100 text-slate-500' : 'bg-yellow-100 text-yellow-800'
+                        order.status === 'CANCELLED' ? 'bg-slate-100 text-slate-500' : 'bg-yellow-100 text-yellow-800'
                         }`}>
                         {order.status === 'PAID' ? 'LUNAS' : order.status === 'CANCELLED' ? 'BATAL' : 'BELUM BAYAR'}
                       </span>
@@ -597,7 +717,7 @@ export const OrderManager: React.FC<OrderManagerProps> = ({
                 <div className="flex flex-col justify-between items-end gap-3 min-w-[150px]">
                   <div className="text-right hidden md:block">
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${order.status === 'PAID' ? 'bg-emerald-100 text-emerald-800' :
-                        order.status === 'CANCELLED' ? 'bg-slate-100 text-slate-500' : 'bg-yellow-100 text-yellow-800'
+                      order.status === 'CANCELLED' ? 'bg-slate-100 text-slate-500' : 'bg-yellow-100 text-yellow-800'
                       }`}>
                       {order.status === 'PAID' ? 'LUNAS' : order.status === 'CANCELLED' ? 'BATAL' : 'BELUM BAYAR'}
                     </span>
@@ -611,7 +731,7 @@ export const OrderManager: React.FC<OrderManagerProps> = ({
                   <div className="flex gap-2 w-full md:w-auto">
                     {order.status === 'PENDING' && (
                       <button
-                        onClick={() => onUpdateStatus(order.id, 'PAID')}
+                        onClick={() => onUpdateStatus && onUpdateStatus(order.id, 'PAID')}
                         className="flex-1 md:flex-none flex justify-center items-center gap-1 px-3 py-1.5 bg-emerald-600 text-white rounded text-xs font-medium hover:bg-emerald-700"
                         title="Tandai Lunas"
                       >
@@ -629,7 +749,7 @@ export const OrderManager: React.FC<OrderManagerProps> = ({
 
                     {order.status !== 'CANCELLED' && (
                       <button
-                        onClick={() => onUpdateStatus(order.id, 'CANCELLED')}
+                        onClick={() => onUpdateStatus && onUpdateStatus(order.id, 'CANCELLED')}
                         className="px-2 py-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded"
                         title="Batalkan Order"
                       >
@@ -638,7 +758,7 @@ export const OrderManager: React.FC<OrderManagerProps> = ({
                     )}
 
                     <button
-                      onClick={() => onDeleteOrder(order.id)}
+                      onClick={() => onDeleteOrder && onDeleteOrder(order.id)}
                       className="px-2 py-1.5 text-slate-300 hover:text-rose-600 hover:bg-rose-50 rounded"
                       title="Hapus Permanen"
                     >
@@ -656,7 +776,7 @@ export const OrderManager: React.FC<OrderManagerProps> = ({
 
   return (
     <div>
-      {view === 'LIST' && renderList()}
+      {view === 'LIST' && (isShopOrders ? renderShopList() : renderList())}
       {view === 'FORM' && renderForm()}
       {view === 'INVOICE' && renderInvoice()}
     </div>

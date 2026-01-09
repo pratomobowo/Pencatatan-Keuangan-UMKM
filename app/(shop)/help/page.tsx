@@ -1,13 +1,28 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ChevronLeft, ChevronDown, ChevronUp, MessageCircle, Phone, Mail, HelpCircle, Search } from 'lucide-react';
 
 export default function HelpPage() {
     const [openFaq, setOpenFaq] = useState<number | null>(0);
+    const [loading, setLoading] = useState(true);
+    const [settings, setSettings] = useState<any>(null);
 
-    const faqs = [
+    useEffect(() => {
+        fetch('/api/admin/shop-config')
+            .then(res => res.json())
+            .then(data => {
+                setSettings({
+                    faq: JSON.parse(data.faq || '[]'),
+                    contact: JSON.parse(data.contactInfo || '{}')
+                });
+                setLoading(false);
+            })
+            .catch(() => setLoading(false));
+    }, []);
+
+    const defaultFaqs = [
         {
             q: "Kapan pesanan saya akan dikirim?",
             a: "Pesanan Anda akan dikirim setiap harinya pada jam operasional kami (07:00 - 17:00). Estimasi waktu pengiriman adalah 1-2 jam setelah pesanan dikonfirmasi."
@@ -15,20 +30,11 @@ export default function HelpPage() {
         {
             q: "Bagaimana cara melakukan pembayaran?",
             a: "Saat ini kami mendukung metode Cash on Delivery (COD). Anda dapat membayar tunai langsung kepada kurir kami saat barang sampai di tempat Anda."
-        },
-        {
-            q: "Apakah saya bisa membatalkan pesanan?",
-            a: "Pembatalan pesanan dapat dilakukan selama status pesanan masih 'PENDING'. Jika sudah dalam proses 'PREPARING' atau 'SHIPPING', harap hubungi layanan pelanggan kami via WhatsApp."
-        },
-        {
-            q: "Barang yang saya terima rusak/busuk?",
-            a: "Kami memberikan garansi kualitas. Jika barang tidak sesuai, silakan ambil foto dan hubungi kami segera. Kami akan mengganti barang tersebut atau mengembalikan uang Anda."
-        },
-        {
-            q: "Berapa biaya pengiriman?",
-            a: "Biaya pengiriman tetap (Flat Rate) adalah Rp 15.000 untuk wilayah jangkauan kami."
         }
     ];
+
+    const displayFaqs = settings?.faq?.length > 0 ? settings.faq.map((f: any) => ({ q: f.question, a: f.answer })) : defaultFaqs;
+    const waNumber = settings?.contact?.whatsapp || '6281234567890';
 
     return (
         <div className="min-h-screen bg-white flex flex-col pb-24 text-stone-900">
@@ -47,7 +53,7 @@ export default function HelpPage() {
                         <div className="relative z-10">
                             <h2 className="text-2xl font-bold mb-3 leading-tight">Ada yang bisa <br />kami bantu?</h2>
                             <p className="text-orange-50 text-sm leading-relaxed max-w-[200px]">
-                                Temukan jawaban cepat atau hubungi tim kami.
+                                {loading ? 'Memuat informasi...' : 'Temukan jawaban cepat atau hubungi tim kami.'}
                             </p>
                         </div>
                         <div className="absolute -bottom-6 -right-6 opacity-20 transform rotate-12">
@@ -66,7 +72,7 @@ export default function HelpPage() {
                     </div>
 
                     <div className="flex flex-col gap-3">
-                        {faqs.map((faq, index) => (
+                        {displayFaqs.map((faq: any, index: number) => (
                             <div
                                 key={index}
                                 className={`group rounded-2xl border transition-all duration-300 ${openFaq === index
@@ -102,7 +108,7 @@ export default function HelpPage() {
                     <h3 className="text-xs font-bold text-stone-400 uppercase tracking-[0.1em] mb-4 px-1">Hubungi Kami</h3>
                     <div className="flex flex-col">
                         <a
-                            href="https://wa.me/6281234567890"
+                            href={`https://wa.me/${waNumber.startsWith('0') ? '62' + waNumber.slice(1) : waNumber}`}
                             target="_blank"
                             className="bg-white p-6 rounded-[1.5rem] border border-stone-100 shadow-sm flex items-center justify-between hover:border-orange-500 hover:shadow-orange-50 transition-all active:scale-95 group"
                         >
@@ -131,7 +137,9 @@ export default function HelpPage() {
                         <div>
                             <p className="text-[10px] text-stone-400 font-bold uppercase tracking-wider mb-0.5">Jam Operasional</p>
                             <p className="text-sm font-bold text-stone-700 leading-none">Senin - Minggu</p>
-                            <p className="text-xs text-stone-500 mt-1">07:00 - 17:00 WIB</p>
+                            <p className="text-xs text-stone-500 mt-1">
+                                {settings?.contact?.operationalHours || '07:00 - 17:00 WIB'}
+                            </p>
                         </div>
                     </div>
                 </div>

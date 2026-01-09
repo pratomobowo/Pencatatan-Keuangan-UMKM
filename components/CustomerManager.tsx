@@ -1,15 +1,20 @@
 import React, { useState } from 'react';
-import { Customer, Order } from '@/lib/types';
+import { Customer, Order, ShopCustomer } from '@/lib/types';
 import { Card } from './ui/Card';
-import { Plus, Edit2, Trash2, Users, Search, MapPin, Phone, User, ShoppingBag, ChevronDown, ChevronUp, ShoppingCart } from 'lucide-react';
+import { Plus, Edit2, Trash2, Users, Search, MapPin, Phone, User, ShoppingBag, ChevronDown, ChevronUp, ShoppingCart, Calendar, Mail, RefreshCw } from 'lucide-react';
 
 interface CustomerManagerProps {
-  customers: Customer[];
+  customers?: Customer[];
   orders?: Order[]; // Optional for backward compatibility, but we will pass it
-  onAddCustomer: (customer: Customer) => void;
-  onUpdateCustomer: (customer: Customer) => void;
-  onDeleteCustomer: (id: string) => void;
+  onAddCustomer?: (customer: Customer) => void;
+  onUpdateCustomer?: (customer: Customer) => void;
+  onDeleteCustomer?: (id: string) => void;
   onQuickOrder?: (customerId: string) => void; // Added Prop
+
+  // Shop specific
+  isShopCustomers?: boolean;
+  shopCustomers?: ShopCustomer[];
+  onRefresh?: () => void;
 }
 
 const formatCurrency = (amount: number) => {
@@ -17,12 +22,15 @@ const formatCurrency = (amount: number) => {
 };
 
 export const CustomerManager: React.FC<CustomerManagerProps> = ({
-  customers,
+  customers = [],
   orders = [],
   onAddCustomer,
   onUpdateCustomer,
   onDeleteCustomer,
-  onQuickOrder
+  onQuickOrder,
+  isShopCustomers = false,
+  shopCustomers = [],
+  onRefresh
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -38,10 +46,10 @@ export const CustomerManager: React.FC<CustomerManagerProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (isEditing) {
+    if (isEditing && onUpdateCustomer) {
       onUpdateCustomer(formData);
       setIsEditing(false);
-    } else {
+    } else if (onAddCustomer) {
       onAddCustomer({
         ...formData,
         id: crypto.randomUUID(),
@@ -69,7 +77,79 @@ export const CustomerManager: React.FC<CustomerManagerProps> = ({
     }
   };
 
-  const filteredCustomers = customers.filter(c =>
+  const renderShopCustomers = () => (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-xl font-semibold text-slate-800">Pelanggan Toko Online</h2>
+          <p className="text-sm text-slate-500">Daftar pelanggan yang terdaftar melalui website.</p>
+        </div>
+        <button
+          onClick={() => onRefresh && onRefresh()}
+          className="p-2 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+          title="Refresh Data"
+        >
+          <RefreshCw size={20} />
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {shopCustomers.length === 0 ? (
+          <div className="col-span-full text-center py-12 bg-white rounded-xl border border-dashed border-slate-300">
+            <Users className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+            <p className="text-slate-500 font-medium">Belum ada pelanggan terdaftar.</p>
+          </div>
+        ) : (
+          shopCustomers.map(sc => (
+            <Card key={sc.id} className="hover:shadow-md transition-shadow">
+              <div className="flex items-start gap-3 mb-4">
+                <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 font-bold shrink-0">
+                  {sc.name.charAt(0).toUpperCase()}
+                </div>
+                <div className="overflow-hidden">
+                  <h4 className="font-semibold text-slate-900 truncate">{sc.name}</h4>
+                  <p className="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
+                    <Phone size={12} /> {sc.phone}
+                  </p>
+                  {sc.email && (
+                    <p className="text-xs text-slate-500 flex items-center gap-1 mt-0.5 truncate">
+                      <Mail size={12} /> {sc.email}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 border-t border-slate-100 pt-4 mt-2">
+                <div className="text-center p-2 bg-slate-50 rounded-lg">
+                  <p className="text-[10px] text-slate-400 uppercase font-bold">Total Order</p>
+                  <p className="text-lg font-bold text-slate-700">{sc._count?.orders || 0}</p>
+                </div>
+                <div className="text-center p-2 bg-slate-50 rounded-lg">
+                  <p className="text-[10px] text-slate-400 uppercase font-bold">Member Sejak</p>
+                  <p className="text-xs font-semibold text-slate-600 mt-1">
+                    {new Date(sc.createdAt).toLocaleDateString('id-ID', { month: 'short', year: 'numeric' })}
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-4 flex gap-2">
+                <button className="flex-1 text-xs font-semibold py-2 bg-slate-100 text-slate-600 rounded hover:bg-slate-200 transition-colors">
+                  Detail Profil
+                </button>
+                <button className="flex-1 text-xs font-semibold py-2 bg-orange-50 text-orange-600 rounded hover:bg-orange-100 transition-colors">
+                  Kirim Promo
+                </button>
+              </div>
+            </Card>
+          ))
+        )}
+      </div>
+    </div>
+  );
+
+  if (isShopCustomers) return renderShopCustomers();
+
+  const filteredCustomers = (customers || []).filter(c =>
     c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     c.phone.includes(searchTerm)
   );
@@ -154,7 +234,7 @@ export const CustomerManager: React.FC<CustomerManagerProps> = ({
                             <Edit2 size={16} />
                           </button>
                           <button
-                            onClick={() => onDeleteCustomer(c.id)}
+                            onClick={() => onDeleteCustomer && onDeleteCustomer(c.id)}
                             className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded transition-colors"
                           >
                             <Trash2 size={16} />

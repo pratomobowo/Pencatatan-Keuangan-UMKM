@@ -22,7 +22,7 @@ export interface FinancialSummary {
   netProfit: number; // Income - Expense (ignoring capital)
 }
 
-export type ViewState = 'DASHBOARD' | 'TRANSACTIONS' | 'ORDERS' | 'PRODUCTS' | 'ANALYSIS' | 'CUSTOMERS' | 'REPORTS' | 'HPP_CALCULATOR' | 'USER_MANAGEMENT' | 'PROFILE';
+export type ViewState = 'DASHBOARD' | 'TRANSACTIONS' | 'ORDERS' | 'SHOP_ORDERS' | 'PRODUCTS' | 'ANALYSIS' | 'CUSTOMERS' | 'SHOP_CUSTOMERS' | 'REPORTS' | 'HPP_CALCULATOR' | 'USER_MANAGEMENT' | 'PROFILE' | 'SHOP_SETTINGS';
 
 export interface User {
   id: string;
@@ -76,6 +76,7 @@ export interface ProductVariant {
 export interface Product {
   id: string;
   name: string;
+  slug?: string;
   description?: string; // Short product description
   unit: string; // kg, pack, ekor (default unit)
   price: number; // Base selling price
@@ -110,7 +111,7 @@ export interface CostComponent {
   unit: string; // pcs, lembar, butir
 }
 
-// Customer Types
+// Customer Types (Admin POS side)
 export interface Customer {
   id: string;
   name: string;
@@ -121,7 +122,21 @@ export interface Customer {
   lastOrderDate?: string; // Calculated field
 }
 
-// Order Types
+// Shop Customer Types
+export interface ShopCustomer {
+  id: string;
+  name: string;
+  phone: string;
+  email?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  orders?: ShopOrder[];
+  _count?: {
+    orders: number;
+  };
+}
+
+// Order Types (Admin POS side)
 export interface OrderItem {
   id: string;
   productId?: string; // Optional link to product
@@ -139,11 +154,53 @@ export interface Order {
   customerName: string;
   customerAddress?: string;
   customerPhone?: string;
-  date: string;
+  date: string; // ISO String
   items: OrderItem[];
   subtotal: number;
   deliveryFee: number;
   grandTotal: number;
   status: 'PENDING' | 'PAID' | 'CANCELLED';
   notes?: string;
+}
+
+// Shop Order Types
+export type ShopOrderStatus = 'PENDING' | 'CONFIRMED' | 'PREPARING' | 'SHIPPING' | 'DELIVERED' | 'CANCELLED';
+
+export interface ShopOrderItem {
+  id: string;
+  orderId: string;
+  productId?: string | null;
+  productName: string;
+  productImage?: string | null;
+  variant: string;
+  qty: number;
+  price: number;
+  total: number;
+}
+
+export interface ShopOrder {
+  id: string;
+  orderNumber: string;
+  customerId?: string | null;
+  customer?: ShopCustomer | null;
+
+  addressName: string;
+  addressPhone: string;
+  addressFull: string;
+  addressLabel?: string | null;
+  deliveryTime?: string | null;
+
+  items: ShopOrderItem[];
+
+  subtotal: number;
+  shippingFee: number;
+  serviceFee: number;
+  total: number;
+
+  paymentMethod: string;
+  status: ShopOrderStatus;
+  notes?: string | null;
+
+  createdAt: string;
+  updatedAt: string;
 }

@@ -9,6 +9,7 @@ import { ProductVariant } from '@/lib/types';
 
 interface ProductCardProps {
     id: string;
+    slug?: string;
     name: string;
     unit: string;
     price: number;
@@ -22,6 +23,7 @@ interface ProductCardProps {
 
 export const ProductCard: React.FC<ProductCardProps> = ({
     id,
+    slug,
     name,
     unit: defaultUnit,
     price: defaultPrice,
@@ -60,7 +62,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     return (
         <div className={`flex flex-col bg-white rounded-xl overflow-hidden border border-orange-50 shadow-sm relative group ${isGrid ? 'w-full' : 'min-w-[160px] w-[160px] shrink-0'}`}>
             <Link
-                href={`/products/${id}`}
+                href={`/products/${slug || id}`}
                 className="block"
             >
                 {/* Discount Badge */}
@@ -83,7 +85,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 
             {/* Product Info */}
             <div className="p-3 flex flex-col gap-1 flex-1">
-                <Link href={`/products/${id}`}>
+                <Link href={`/products/${slug || id}`}>
                     <h3 className="text-sm font-semibold text-stone-900 line-clamp-2 min-h-[40px]">{name}</h3>
                 </Link>
 

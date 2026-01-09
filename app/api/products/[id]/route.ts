@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { slugify } from '@/lib/utils';
 
 // GET /api/products/[id] - Get single product with variants
 export async function GET(
@@ -8,8 +9,15 @@ export async function GET(
 ) {
     try {
         const { id } = await params;
-        const product = await prisma.product.findUnique({
-            where: { id },
+
+        // Try finding by ID first, then by slug
+        const product = await prisma.product.findFirst({
+            where: {
+                OR: [
+                    { id },
+                    { slug: id }
+                ]
+            },
             include: {
                 variants: {
                     orderBy: { isDefault: 'desc' }
@@ -43,6 +51,23 @@ export async function PUT(
         const { id } = await params;
         const body = await request.json();
         const { variants, ...productData } = body;
+
+        // If name is changed, update slug
+        if (productData.name) {
+            let baseSlug = slugify(productData.name);
+            let finalSlug = baseSlug;
+            let counter = 1;
+
+            while (true) {
+                const existing = await prisma.product.findUnique({
+                    where: { slug: finalSlug }
+                });
+                if (!existing || existing.id === id) break;
+                finalSlug = `${baseSlug}-${counter}`;
+                counter++;
+            }
+            productData.slug = finalSlug;
+        }
 
         // Update product data
         const product = await prisma.product.update({

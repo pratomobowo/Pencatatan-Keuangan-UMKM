@@ -1,5 +1,5 @@
 // API utility functions for frontend
-import { Product, Customer, Order, Transaction, CostComponent, User } from '@/lib/types';
+import { Product, Customer, Order, Transaction, CostComponent, User, ShopOrder, ShopCustomer, ShopOrderStatus } from '@/lib/types';
 
 const API_BASE = '/api';
 
@@ -74,6 +74,26 @@ export const ordersAPI = {
     }),
 };
 
+// Admin Shop Orders API
+export const adminShopOrdersAPI = {
+    getAll: () => fetchAPI<ShopOrder[]>('/admin/shop-orders'),
+    getOne: (id: string) => fetchAPI<ShopOrder>(`/admin/shop-orders/${id}`),
+    updateStatus: (id: string, status: ShopOrderStatus) =>
+        fetchAPI<ShopOrder>(`/admin/shop-orders/${id}`, {
+            method: 'PATCH',
+            body: JSON.stringify({ status }),
+        }),
+    delete: (id: string) => fetchAPI<{ message: string }>(`/admin/shop-orders/${id}`, {
+        method: 'DELETE',
+    }),
+};
+
+// Admin Shop Customers API
+export const adminShopCustomersAPI = {
+    getAll: () => fetchAPI<ShopCustomer[]>('/admin/shop-customers'),
+    getOne: (id: string) => fetchAPI<ShopCustomer>(`/admin/shop-customers/${id}`),
+};
+
 // Transactions API
 export const transactionsAPI = {
     getAll: () => fetchAPI<Transaction[]>('/transactions'),
@@ -120,4 +140,12 @@ export const usersAPI = {
             method: 'PUT',
             body: JSON.stringify({ oldPassword, newPassword }),
         }),
+};
+
+export const adminShopConfigAPI = {
+    get: () => fetchAPI<any>('/admin/shop-config'),
+    update: (data: any) => fetchAPI<any>('/admin/shop-config', {
+        method: 'POST',
+        body: JSON.stringify(data),
+    }),
 };

@@ -42,6 +42,7 @@ export async function GET(request: NextRequest) {
             select: {
                 id: true,
                 name: true,
+                slug: true,
                 description: true,
                 price: true,
                 stock: true,
@@ -68,10 +69,10 @@ export async function GET(request: NextRequest) {
             },
             orderBy: { createdAt: 'desc' },
             take: limit ? parseInt(limit) : undefined,
-        });
+        }) as any;
 
         // Transform prices from Decimal to number and calculate display price
-        const transformedProducts = products.map(p => {
+        const transformedProducts = products.map((p: any) => {
             const now = new Date();
             const isPromoActive = p.isPromo &&
                 (!p.promoStartDate || new Date(p.promoStartDate) <= now) &&

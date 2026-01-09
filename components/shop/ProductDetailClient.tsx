@@ -1,56 +1,32 @@
 'use client';
 
-import { useState, useEffect, use, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, ShoppingBag, Heart, Truck, Shield, Thermometer, Check, Loader2, ChevronDown } from 'lucide-react';
+import { ArrowLeft, ShoppingBag, Heart, Truck, Shield, Thermometer, Check } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { Product, ProductVariant } from '@/lib/types';
 
 const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&q=80';
 
-export default function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
+interface ProductDetailClientProps {
+    product: Product;
+}
+
+export default function ProductDetailClient({ product }: ProductDetailClientProps) {
     const router = useRouter();
-    const { id } = use(params);
-    const [product, setProduct] = useState<Product | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
     const [quantity, setQuantity] = useState(1);
     const [isFavorite, setIsFavorite] = useState(false);
     const [added, setAdded] = useState(false);
-    const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
-    const { addItem } = useCart();
-
-    useEffect(() => {
-        fetchProduct();
-    }, [id]);
-
-    const fetchProduct = async () => {
-        try {
-            setLoading(true);
-            const response = await fetch(`/api/products/${id}`);
-            if (!response.ok) {
-                if (response.status === 404) {
-                    throw new Error('Produk tidak ditemukan');
-                }
-                throw new Error('Failed to fetch product');
-            }
-            const data = await response.json();
-            setProduct(data);
-
-            // Set default variant if available
-            if (data.variants && data.variants.length > 0) {
-                const defaultVar = data.variants.find((v: ProductVariant) => v.isDefault) || data.variants[0];
-                setSelectedVariant(defaultVar);
-            }
-        } catch (err: any) {
-            console.error('Error fetching product:', err);
-            setError(err.message || 'Gagal memuat produk');
-        } finally {
-            setLoading(false);
+    const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(() => {
+        if (product.variants && product.variants.length > 0) {
+            return product.variants.find((v) => v.isDefault) || product.variants[0];
         }
-    };
+        return null;
+    });
+
+    const { addItem } = useCart();
 
     // Sort variants to have default first
     const sortedVariants = useMemo(() => {
@@ -78,28 +54,6 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
         setAdded(true);
         setTimeout(() => setAdded(false), 1500);
     };
-
-    if (loading) {
-        return (
-            <div className="flex items-center justify-center py-20 min-h-screen bg-stone-50">
-                <Loader2 className="animate-spin text-orange-500" size={40} />
-            </div>
-        );
-    }
-
-    if (error || !product) {
-        return (
-            <div className="flex flex-col items-center justify-center py-20 px-4 min-h-screen bg-stone-50">
-                <p className="text-red-500 mb-4">{error || 'Produk tidak ditemukan'}</p>
-                <Link
-                    href="/"
-                    className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
-                >
-                    Kembali ke Beranda
-                </Link>
-            </div>
-        );
-    }
 
     const productImage = product.image || DEFAULT_IMAGE;
     const isInStock = product.stock > 0;
@@ -266,14 +220,14 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                         <Shield className="text-green-600" size={24} />
                         <div>
                             <p className="text-xs font-bold text-stone-900">Dijamin Segar</p>
-                            <p className="text-[10px] text-gray-500">Uang kembali 100%</p>
+                            <p className="text-xs text-gray-500">Uang kembali 100%</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-3 bg-white p-3 rounded-xl border border-orange-50 shadow-sm">
                         <Thermometer className="text-blue-500" size={24} />
                         <div>
                             <p className="text-xs font-bold text-stone-900">Suhu Terjaga</p>
-                            <p className="text-[10px] text-gray-500">Dikirim ice gel</p>
+                            <p className="text-xs text-gray-500">Dikirim ice gel</p>
                         </div>
                     </div>
                 </div>

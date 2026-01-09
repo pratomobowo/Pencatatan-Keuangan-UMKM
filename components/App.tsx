@@ -12,8 +12,10 @@ import { AIAdvisor } from '@/components/AIAdvisor';
 import { HPPCalculator } from '@/components/HPPCalculator';
 import { UserManager } from '@/components/UserManager';
 import { Profile } from '@/components/Profile';
-import { LayoutDashboard, List, BrainCircuit, ShoppingCart, Package, Users as UsersIcon, Download, PieChart, Calculator, LogOut, UserCog, User as UserIcon } from 'lucide-react';
-import { productsAPI, customersAPI, ordersAPI, transactionsAPI, costComponentsAPI } from '@/lib/api';
+import { ShopSettingsManager } from '@/components/ShopSettingsManager';
+import { LayoutDashboard, List, BrainCircuit, ShoppingCart, Package, Users as UsersIcon, Download, PieChart, Calculator, LogOut, UserCog, User as UserIcon, Settings } from 'lucide-react';
+import { productsAPI, customersAPI, ordersAPI, transactionsAPI, costComponentsAPI, adminShopOrdersAPI, adminShopCustomersAPI } from '@/lib/api';
+import { ShopOrder, ShopCustomer, ShopOrderStatus } from '@/lib/types';
 import { useSession, signOut } from 'next-auth/react';
 import { ToastProvider, useToast } from '@/components/ui/Toast';
 
@@ -27,6 +29,8 @@ const App: React.FC = () => {
     const [products, setProducts] = useState<Product[]>([]);
     const [customers, setCustomers] = useState<Customer[]>([]);
     const [costComponents, setCostComponents] = useState<CostComponent[]>([]);
+    const [shopOrders, setShopOrders] = useState<ShopOrder[]>([]);
+    const [shopCustomers, setShopCustomers] = useState<ShopCustomer[]>([]);
     const [users, setUsers] = useState<User[]>([]);
     const [view, setView] = useState<ViewState>('DASHBOARD');
     const [loading, setLoading] = useState(true);
@@ -41,18 +45,22 @@ const App: React.FC = () => {
         const fetchData = async () => {
             try {
                 setLoading(true);
-                const [txData, orderData, productData, customerData, costData] = await Promise.all([
+                const [txData, orderData, productData, customerData, costData, shopOrderData, shopCustomerData] = await Promise.all([
                     transactionsAPI.getAll(),
                     ordersAPI.getAll(),
                     productsAPI.getAll(),
                     customersAPI.getAll(),
                     costComponentsAPI.getAll(),
+                    adminShopOrdersAPI.getAll(),
+                    adminShopCustomersAPI.getAll(),
                 ]);
                 setTransactions(txData);
                 setOrders(orderData);
                 setProducts(productData);
                 setCustomers(customerData);
                 setCostComponents(costData);
+                setShopOrders(shopOrderData);
+                setShopCustomers(shopCustomerData);
             } catch (error) {
                 console.error('Failed to fetch initial data:', error);
                 toast.error('Gagal memuat data');
@@ -179,6 +187,37 @@ const App: React.FC = () => {
             } catch (error) {
                 console.error('Failed to delete order:', error);
                 alert('Gagal menghapus order');
+            }
+        }
+    };
+
+    // Handlers - Shop Orders
+    const updateShopOrderStatus = async (id: string, status: ShopOrderStatus) => {
+        try {
+            const updated = await adminShopOrdersAPI.updateStatus(id, status);
+            setShopOrders(prev => prev.map(o => o.id === id ? updated : o));
+            toast.success(`Status pesanan #${updated.orderNumber} diupdate`);
+
+            // If completed/delivered, we might want to refresh analytics/transactions
+            if (status === 'DELIVERED') {
+                const txs = await transactionsAPI.getAll();
+                setTransactions(txs);
+            }
+        } catch (error) {
+            console.error('Failed to update shop order:', error);
+            toast.error('Gagal update status pesanan');
+        }
+    };
+
+    const deleteShopOrder = async (id: string) => {
+        if (confirm('Hapus pesanan online ini dari database?')) {
+            try {
+                await adminShopOrdersAPI.delete(id);
+                setShopOrders(prev => prev.filter(o => o.id !== id));
+                toast.success('Pesanan berhasil dihapus');
+            } catch (error) {
+                console.error('Failed to delete shop order:', error);
+                toast.error('Gagal menghapus pesanan');
             }
         }
     };
@@ -343,7 +382,23 @@ const App: React.FC = () => {
                                 }`}
                         >
                             <ShoppingCart size={20} />
-                            <span>Order Masuk</span>
+                            <span>Order Manual</span>
+                        </button>
+
+                        <button
+                            onClick={() => setView('SHOP_ORDERS')}
+                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${view === 'SHOP_ORDERS'
+                                ? 'bg-blue-600 text-white shadow-md'
+                                : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600'
+                                }`}
+                        >
+                            <ShoppingCart className="text-orange-500" size={20} />
+                            <span>Order Toko Online</span>
+                            {shopOrders.filter(o => o.status === 'PENDING').length > 0 && (
+                                <span className="ml-auto bg-orange-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                                    {shopOrders.filter(o => o.status === 'PENDING').length}
+                                </span>
+                            )}
                         </button>
 
                         <div className="text-xs font-medium text-slate-400 px-4 mb-2 mt-4 uppercase tracking-wider">Manajemen</div>
@@ -377,7 +432,29 @@ const App: React.FC = () => {
                                 }`}
                         >
                             <UsersIcon size={20} />
-                            <span>Pelanggan</span>
+                            <span>Pelanggan POS</span>
+                        </button>
+
+                        <button
+                            onClick={() => setView('SHOP_CUSTOMERS')}
+                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${view === 'SHOP_CUSTOMERS'
+                                ? 'bg-blue-600 text-white shadow-md'
+                                : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600'
+                                }`}
+                        >
+                            <UsersIcon className="text-orange-500" size={20} />
+                            <span>Pelanggan Toko</span>
+                        </button>
+
+                        <button
+                            onClick={() => setView('SHOP_SETTINGS')}
+                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${view === 'SHOP_SETTINGS'
+                                ? 'bg-blue-600 text-white shadow-md'
+                                : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600'
+                                }`}
+                        >
+                            <Settings className="text-orange-500" size={20} />
+                            <span>Pengaturan Toko</span>
                         </button>
 
                         <div className="text-xs font-medium text-slate-400 px-4 mb-2 mt-4 uppercase tracking-wider">Keuangan</div>
@@ -473,26 +550,32 @@ const App: React.FC = () => {
                         <h2 className="text-2xl font-semibold text-slate-800">
                             {view === 'DASHBOARD' && 'Dashboard Pasarantar'}
                             {view === 'REPORTS' && 'Laporan Keuangan Bulanan'}
-                            {view === 'ORDERS' && 'Manajemen Order'}
+                            {view === 'ORDERS' && 'Manajemen Order POS'}
+                            {view === 'SHOP_ORDERS' && 'Order Toko Online'}
                             {view === 'PRODUCTS' && 'Katalog Produk'}
                             {view === 'HPP_CALCULATOR' && 'Kalkulator & Resep HPP'}
-                            {view === 'CUSTOMERS' && 'Database Pelanggan'}
+                            {view === 'CUSTOMERS' && 'Database Pelanggan POS'}
+                            {view === 'SHOP_CUSTOMERS' && 'Database Pelanggan Toko'}
                             {view === 'TRANSACTIONS' && 'Buku Kas Harian'}
                             {view === 'ANALYSIS' && 'Konsultan AI'}
                             {view === 'USER_MANAGEMENT' && 'User Management'}
                             {view === 'PROFILE' && 'Profile'}
+                            {view === 'SHOP_SETTINGS' && 'Store Settings'}
                         </h2>
                         <p className="text-slate-500 text-sm mt-1">
                             {view === 'DASHBOARD' && 'Pantau arus kas penjualan protein dan biaya operasional.'}
                             {view === 'REPORTS' && 'Evaluasi keuntungan bersih, aset, dan performa produk secara mendalam.'}
-                            {view === 'ORDERS' && 'Kelola pesanan pelanggan, invoice, dan status pembayaran.'}
+                            {view === 'ORDERS' && 'Kelola pesanan pelanggan manual (POS) dan invoice.'}
+                            {view === 'SHOP_ORDERS' && 'Pesanan masuk dari website toko online.'}
                             {view === 'PRODUCTS' && 'Atur daftar harga, stok (inventory), dan HPP dasar.'}
                             {view === 'HPP_CALCULATOR' && 'Rakit harga modal detail (Bahan Baku + Kemasan + Ops) sebelum dijual.'}
-                            {view === 'CUSTOMERS' && 'Kelola data kontak pelanggan dan riwayat belanja.'}
+                            {view === 'CUSTOMERS' && 'Kelola data kontak pelanggan manual.'}
+                            {view === 'SHOP_CUSTOMERS' && 'Daftar pelanggan yang terdaftar melalui website.'}
                             {view === 'TRANSACTIONS' && 'Catat pembelian pasar, penjualan customer, dan biaya lain.'}
                             {view === 'ANALYSIS' && 'Evaluasi performa penjualan dan efisiensi pengiriman.'}
                             {view === 'USER_MANAGEMENT' && 'Manage system users, roles, and permissions.'}
                             {view === 'PROFILE' && 'Update your account information and change password.'}
+                            {view === 'SHOP_SETTINGS' && 'Update FAQ, jam operasional, dan info pembayaran toko.'}
                         </p>
                     </div>
                 </header>
@@ -522,6 +605,16 @@ const App: React.FC = () => {
                     />
                 )}
 
+                {view === 'SHOP_ORDERS' && (
+                    <OrderManager
+                        isShopOrders={true}
+                        shopOrders={shopOrders}
+                        products={products}
+                        onUpdateShopStatus={updateShopOrderStatus}
+                        onDeleteShopOrder={deleteShopOrder}
+                    />
+                )}
+
                 {view === 'PRODUCTS' && (
                     <ProductManager
                         products={products}
@@ -539,6 +632,10 @@ const App: React.FC = () => {
                         onDeleteCostComponent={deleteCostComponent}
                         onSaveProduct={addProduct}
                     />
+                )}
+
+                {view === 'SHOP_SETTINGS' && (
+                    <ShopSettingsManager />
                 )}
 
                 {view === 'USER_MANAGEMENT' && isAdmin && (
@@ -613,6 +710,14 @@ const App: React.FC = () => {
                         onUpdateCustomer={updateCustomer}
                         onDeleteCustomer={deleteCustomer}
                         onQuickOrder={handleQuickOrder} // Handler for quick order button
+                    />
+                )}
+
+                {view === 'SHOP_CUSTOMERS' && (
+                    <CustomerManager
+                        isShopCustomers={true}
+                        shopCustomers={shopCustomers}
+                        onRefresh={() => adminShopCustomersAPI.getAll().then(setShopCustomers)}
                     />
                 )}
 
