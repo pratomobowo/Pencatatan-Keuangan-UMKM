@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { useNotifications } from '@/contexts/NotificationContext';
 
 export interface CartItem {
     id: string;
@@ -24,6 +25,7 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: ReactNode }) {
+    const { addNotification } = useNotifications();
     const [items, setItems] = useState<CartItem[]>([]);
     const [isInitialized, setIsInitialized] = useState(false);
 
@@ -61,6 +63,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
             return [...currentItems, { ...item, quantity }];
         });
+
+        addNotification('Keranjang', `${item.name} berhasil ditambahkan!`, 'success');
     };
 
     const removeItem = (id: string, variant: string) => {

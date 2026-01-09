@@ -16,7 +16,7 @@ const categories = [
     { name: 'Seafood', icon: Waves, href: '/products?category=seafood', color: 'text-orange-500' },
     { name: 'Ayam & Telur', icon: Egg, href: '/products?category=ayam', color: 'text-yellow-500' },
     { name: 'Daging Sapi', icon: Beef, href: '/products?category=daging-sapi', color: 'text-red-400' },
-    { name: 'Bumbu', icon: Leaf, href: '/products?category=bumbu', color: 'text-teal-400' },
+    { name: 'Bumbu', icon: Leaf, href: '/products?category=bumbu', color: 'text-orange-500' },
 ];
 
 // Default image when product has no image

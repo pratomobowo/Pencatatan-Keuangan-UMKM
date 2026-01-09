@@ -133,7 +133,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                         e.stopPropagation();
                         handleAddToCart();
                     }}
-                    className={`mt-2 w-full h-8 rounded-lg text-white text-sm font-semibold active:scale-95 transition-all shadow-sm flex items-center justify-center gap-1 ${added ? 'bg-green-500' : 'bg-teal-400 hover:bg-teal-500'
+                    className={`mt-2 w-full h-8 rounded-lg text-white text-sm font-semibold active:scale-95 transition-all shadow-sm flex items-center justify-center gap-1 ${added ? 'bg-orange-600' : 'bg-orange-500 hover:bg-orange-600'
                         }`}
                 >
                     {added ? (

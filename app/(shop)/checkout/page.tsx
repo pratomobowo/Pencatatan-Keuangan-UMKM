@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft, MapPin, Banknote, Building2, ShieldCheck, ArrowRight, Loader2 } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useShopAuth } from '@/contexts/ShopAuthContext';
+import { useNotifications } from '@/contexts/NotificationContext';
 
 const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=400&q=80';
 const SHIPPING_FEE = 15000;
@@ -29,6 +30,7 @@ export default function CheckoutPage() {
     const router = useRouter();
     const { items, subtotal, clearCart } = useCart();
     const { isAuthenticated, isLoading: authLoading } = useShopAuth();
+    const { addNotification } = useNotifications();
 
     const [selectedPayment, setSelectedPayment] = useState('cod');
     const [isProcessing, setIsProcessing] = useState(false);
@@ -126,6 +128,12 @@ export default function CheckoutPage() {
             clearCart();
             setOrderNumber(data.order.orderNumber);
             setOrderPlaced(true);
+
+            addNotification(
+                'Pesanan Berhasil',
+                `Pesanan #${data.order.orderNumber} telah berhasil dibuat!`,
+                'success'
+            );
         } catch (err: any) {
             setError(err.message || 'Gagal membuat pesanan');
         } finally {
@@ -355,9 +363,9 @@ export default function CheckoutPage() {
                                 <span className="text-lg font-bold text-orange-600">Rp {total.toLocaleString('id-ID')}</span>
                             </div>
                         </div>
-                        <div className="mt-4 flex items-center justify-center gap-2 rounded-lg bg-green-100 py-2">
-                            <ShieldCheck size={18} className="text-green-700" />
-                            <span className="text-xs font-medium text-green-700">Jaminan Produk Segar & Higienis</span>
+                        <div className="mt-4 flex items-center justify-center gap-2 rounded-lg bg-orange-50 py-2">
+                            <ShieldCheck size={18} className="text-orange-600" />
+                            <span className="text-xs font-medium text-orange-600">Jaminan Produk Segar & Higienis</span>
                         </div>
                     </div>
                 </section>

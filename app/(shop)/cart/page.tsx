@@ -33,7 +33,7 @@ export default function CartPage() {
             <div className="mt-4 mx-4">
                 <div className="flex items-center gap-4 bg-white rounded-xl p-4 shadow-sm border border-orange-50">
                     <div className="flex items-center gap-4 flex-1">
-                        <div className="text-teal-600 flex items-center justify-center rounded-full bg-teal-100 shrink-0 size-10">
+                        <div className="text-orange-600 flex items-center justify-center rounded-full bg-orange-100 shrink-0 size-10">
                             <MapPin size={20} />
                         </div>
                         <div className="flex flex-col justify-center">
@@ -50,7 +50,7 @@ export default function CartPage() {
             {/* Cart Items Header */}
             <div className="px-4 pb-2 pt-6 flex justify-between items-end">
                 <h3 className="text-stone-900 text-lg font-semibold">Daftar Pesanan</h3>
-                <span className="text-sm text-teal-600 font-medium">{itemCount} Item</span>
+                <span className="text-sm text-orange-600 font-medium">{itemCount} Item</span>
             </div>
 
             {/* Cart Items */}
@@ -138,7 +138,7 @@ export default function CartPage() {
                     </div>
                     <div className="flex justify-between items-center text-sm">
                         <span className="text-gray-600">Biaya Layanan</span>
-                        <span className="font-medium text-teal-600">Gratis</span>
+                        <span className="font-medium text-orange-600">Gratis</span>
                     </div>
                     <div className="my-2 border-t border-dashed border-gray-300"></div>
                     <div className="flex justify-between items-center text-base font-semibold">
