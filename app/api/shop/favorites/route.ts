@@ -60,7 +60,7 @@ export async function GET(request: NextRequest) {
             );
         }
 
-        const favorites = await prisma.favorite.findMany({
+        const favorites = await (prisma as any).favorite.findMany({
             where: { customerId: customer.id },
             include: {
                 product: {
@@ -73,7 +73,7 @@ export async function GET(request: NextRequest) {
         });
 
         // Transform into product list
-        const products = favorites.map(f => f.product);
+        const products = favorites.map((f: any) => f.product);
 
         return NextResponse.json(products);
     } catch (error) {

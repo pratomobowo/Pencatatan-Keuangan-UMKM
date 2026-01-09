@@ -96,7 +96,7 @@ export async function GET(
                 minute: '2-digit',
             }),
             status: order.status.toLowerCase(),
-            items: order.items.map(item => ({
+            items: order.items.map((item: any) => ({
                 name: item.productName,
                 quantity: item.qty,
                 price: Number(item.price),
