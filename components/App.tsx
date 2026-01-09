@@ -15,9 +15,11 @@ import { Profile } from '@/components/Profile';
 import { LayoutDashboard, List, BrainCircuit, ShoppingCart, Package, Users as UsersIcon, Download, PieChart, Calculator, LogOut, UserCog, User as UserIcon } from 'lucide-react';
 import { productsAPI, customersAPI, ordersAPI, transactionsAPI, costComponentsAPI } from '@/lib/api';
 import { useSession, signOut } from 'next-auth/react';
+import { ToastProvider, useToast } from '@/components/ui/Toast';
 
 const App: React.FC = () => {
     const { data: session } = useSession();
+    const toast = useToast();
 
     // State
     const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -52,14 +54,26 @@ const App: React.FC = () => {
                 setCustomers(customerData);
                 setCostComponents(costData);
             } catch (error) {
-                console.error('Failed to load data:', error);
-                alert('Gagal memuat data dari database. Silakan refresh halaman.');
+                console.error('Failed to fetch initial data:', error);
+                toast.error('Gagal memuat data');
             } finally {
                 setLoading(false);
             }
         };
         fetchData();
     }, []);
+
+    // Fetch users if admin
+    useEffect(() => {
+        if (isAdmin) {
+            fetch('/api/users')
+                .then(res => res.json())
+                .then(data => setUsers(data))
+                .catch(error => {
+                    console.error('Failed to fetch users:', error);
+                });
+        }
+    }, [isAdmin]);
 
     // Derived Summary
     const summary: FinancialSummary = useMemo(() => {
@@ -82,13 +96,14 @@ const App: React.FC = () => {
     }, [transactions]);
 
     // Handlers - Transactions
-    const addTransaction = async (t: Omit<Transaction, 'id'>) => {
+    const addTransaction = async (transaction: Omit<Transaction, 'id'>) => {
         try {
-            const newTransaction = await transactionsAPI.create(t);
+            const newTransaction = await transactionsAPI.create(transaction);
             setTransactions(prev => [newTransaction, ...prev]);
+            toast.success('Transaksi berhasil ditambahkan');
         } catch (error) {
             console.error('Failed to add transaction:', error);
-            alert('Gagal menambah transaksi');
+            toast.error('Gagal menambah transaksi');
         }
     };
 
@@ -97,9 +112,10 @@ const App: React.FC = () => {
             try {
                 await transactionsAPI.delete(id);
                 setTransactions(prev => prev.filter(t => t.id !== id));
+                toast.success('Transaksi berhasil dihapus');
             } catch (error) {
                 console.error('Failed to delete transaction:', error);
-                alert('Gagal menghapus transaksi');
+                toast.error('Gagal menghapus transaksi');
             }
         }
     };
@@ -112,9 +128,10 @@ const App: React.FC = () => {
             // Refresh products to get updated stock
             const updatedProducts = await productsAPI.getAll();
             setProducts(updatedProducts);
+            toast.success('Order berhasil ditambahkan');
         } catch (error) {
             console.error('Failed to add order:', error);
-            alert('Gagal menambah order');
+            toast.error('Gagal menambah order');
         }
     };
 
@@ -171,9 +188,10 @@ const App: React.FC = () => {
         try {
             const newProduct = await productsAPI.create(product);
             setProducts(prev => [...prev, newProduct]);
+            toast.success('Produk berhasil ditambahkan');
         } catch (error) {
             console.error('Failed to add product:', error);
-            alert('Gagal menambah produk');
+            toast.error('Gagal menambah produk');
         }
     };
 
@@ -181,9 +199,10 @@ const App: React.FC = () => {
         try {
             await productsAPI.update(product.id, product);
             setProducts(prev => prev.map(p => p.id === product.id ? product : p));
+            toast.success('Produk berhasil diupdate');
         } catch (error) {
             console.error('Failed to update product:', error);
-            alert('Gagal mengupdate produk');
+            toast.error('Gagal mengupdate produk');
         }
     };
 
@@ -192,9 +211,10 @@ const App: React.FC = () => {
             try {
                 await productsAPI.delete(id);
                 setProducts(prev => prev.filter(p => p.id !== id));
+                toast.success('Produk berhasil dihapus');
             } catch (error) {
                 console.error('Failed to delete product:', error);
-                alert('Gagal menghapus produk');
+                toast.error('Gagal menghapus produk');
             }
         }
     };
@@ -204,9 +224,10 @@ const App: React.FC = () => {
         try {
             const newCustomer = await customersAPI.create(customer);
             setCustomers(prev => [...prev, newCustomer]);
+            toast.success('Pelanggan berhasil ditambahkan');
         } catch (error) {
             console.error('Failed to add customer:', error);
-            alert('Gagal menambah pelanggan');
+            toast.error('Gagal menambah pelanggan');
         }
     };
 
@@ -214,9 +235,10 @@ const App: React.FC = () => {
         try {
             await customersAPI.update(customer.id, customer);
             setCustomers(prev => prev.map(c => c.id === customer.id ? customer : c));
+            toast.success('Pelanggan berhasil diupdate');
         } catch (error) {
             console.error('Failed to update customer:', error);
-            alert('Gagal mengupdate pelanggan');
+            toast.error('Gagal mengupdate pelanggan');
         }
     };
 
@@ -225,9 +247,10 @@ const App: React.FC = () => {
             try {
                 await customersAPI.delete(id);
                 setCustomers(prev => prev.filter(c => c.id !== id));
+                toast.success('Pelanggan berhasil dihapus');
             } catch (error) {
                 console.error('Failed to delete customer:', error);
-                alert('Gagal menghapus pelanggan');
+                toast.error('Gagal menghapus pelanggan');
             }
         }
     };
@@ -237,9 +260,10 @@ const App: React.FC = () => {
         try {
             const newCost = await costComponentsAPI.create(cost);
             setCostComponents(prev => [...prev, newCost]);
+            toast.success('Komponen biaya berhasil ditambahkan');
         } catch (error) {
             console.error('Failed to add cost component:', error);
-            alert('Gagal menambah komponen biaya');
+            toast.error('Gagal menambah komponen biaya');
         }
     };
 
@@ -248,9 +272,10 @@ const App: React.FC = () => {
             try {
                 await costComponentsAPI.delete(id);
                 setCostComponents(prev => prev.filter(c => c.id !== id));
+                toast.success('Komponen biaya berhasil dihapus');
             } catch (error) {
                 console.error('Failed to delete cost component:', error);
-                alert('Gagal menghapus komponen biaya');
+                toast.error('Gagal menghapus komponen biaya');
             }
         }
     };
@@ -607,4 +632,11 @@ const App: React.FC = () => {
     );
 };
 
-export default App;
+// Wrap App with ToastProvider
+const AppWithToast: React.FC = () => (
+    <ToastProvider>
+        <App />
+    </ToastProvider>
+);
+
+export default AppWithToast;

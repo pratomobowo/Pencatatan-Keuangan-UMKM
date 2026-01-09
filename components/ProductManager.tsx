@@ -367,7 +367,7 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
                   className="px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500 min-w-[120px]"
                 >
                   <option value="">Semua Status</option>
-                  <option value="promo">🔥 Promo</option>
+                  <option value="promo">Promo</option>
                   <option value="regular">Regular</option>
                 </select>
               </div>
@@ -418,7 +418,7 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
                               <div className="font-medium text-slate-900">{p.name}</div>
                               {p.isPromo && (
                                 <span className="px-1.5 py-0.5 text-[10px] font-bold bg-orange-100 text-orange-600 rounded">
-                                  🔥 PROMO
+                                  PROMO
                                 </span>
                               )}
                             </div>
