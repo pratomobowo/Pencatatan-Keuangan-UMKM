@@ -88,7 +88,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                 </Link>
 
                 {/* Display Unit */}
-                <p className="text-xs text-stone-500">{currentUnit}</p>
+                <p className="text-xs text-stone-500">Per {currentUnit}</p>
 
                 {/* Price */}
                 <div className="flex flex-col mt-auto pt-2">

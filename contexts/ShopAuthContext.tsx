@@ -14,7 +14,7 @@ interface AuthContextType {
     customer: Customer | null;
     isLoading: boolean;
     isAuthenticated: boolean;
-    login: (phone: string, password: string) => Promise<{ success: boolean; error?: string }>;
+    login: (phoneOrEmail: string, password: string, isEmail?: boolean) => Promise<{ success: boolean; error?: string; redirectTo?: string }>;
     register: (data: { name: string; phone: string; password: string; email?: string }) => Promise<{ success: boolean; error?: string }>;
     logout: () => Promise<void>;
     refreshCustomer: () => Promise<void>;
@@ -47,12 +47,16 @@ export function ShopAuthProvider({ children }: { children: ReactNode }) {
         }
     };
 
-    const login = async (phone: string, password: string) => {
+    const login = async (phoneOrEmail: string, password: string, isEmail = false) => {
         try {
             const response = await fetch('/api/shop/auth/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ phone, password }),
+                body: JSON.stringify({
+                    phone: !isEmail ? phoneOrEmail : undefined,
+                    email: isEmail ? phoneOrEmail : undefined,
+                    password
+                }),
             });
 
             const data = await response.json();
@@ -61,8 +65,10 @@ export function ShopAuthProvider({ children }: { children: ReactNode }) {
                 return { success: false, error: data.error };
             }
 
-            setCustomer(data.customer);
-            return { success: true };
+            // Refresh customer data to get full profile
+            await refreshCustomer();
+
+            return { success: true, redirectTo: data.redirectTo };
         } catch (error) {
             return { success: false, error: 'Gagal login' };
         }

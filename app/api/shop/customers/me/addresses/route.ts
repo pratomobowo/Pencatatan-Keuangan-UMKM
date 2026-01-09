@@ -16,7 +16,7 @@ async function getCustomerFromToken(request: NextRequest) {
 
     try {
         const { payload } = await jwtVerify(token, JWT_SECRET);
-        return payload as { customerId: string; phone: string };
+        return payload as { userId: string; identifier: string; type: string };
     } catch {
         return null;
     }
@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
         }
 
         const addresses = await prisma.shopAddress.findMany({
-            where: { customerId: tokenData.customerId },
+            where: { customerId: tokenData.userId },
             orderBy: [
                 { isDefault: 'desc' },
                 { createdAt: 'desc' },
@@ -70,19 +70,19 @@ export async function POST(request: NextRequest) {
         // If this is default, unset other defaults
         if (isDefault) {
             await prisma.shopAddress.updateMany({
-                where: { customerId: tokenData.customerId },
+                where: { customerId: tokenData.userId },
                 data: { isDefault: false },
             });
         }
 
         // Check if first address (make it default)
         const addressCount = await prisma.shopAddress.count({
-            where: { customerId: tokenData.customerId },
+            where: { customerId: tokenData.userId },
         });
 
         const newAddress = await prisma.shopAddress.create({
             data: {
-                customerId: tokenData.customerId,
+                customerId: tokenData.userId,
                 label,
                 name,
                 phone,

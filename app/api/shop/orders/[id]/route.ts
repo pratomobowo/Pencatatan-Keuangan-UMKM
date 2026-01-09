@@ -16,7 +16,7 @@ async function getCustomerFromToken(request: NextRequest) {
 
     try {
         const { payload } = await jwtVerify(token, JWT_SECRET);
-        return payload as { customerId: string; phone: string };
+        return payload as { userId: string; identifier: string; type: string };
     } catch {
         return null;
     }
@@ -41,7 +41,7 @@ export async function GET(
         const order = await prisma.shopOrder.findFirst({
             where: {
                 id,
-                customerId: tokenData.customerId,
+                customerId: tokenData.userId,
             },
             include: {
                 items: true,

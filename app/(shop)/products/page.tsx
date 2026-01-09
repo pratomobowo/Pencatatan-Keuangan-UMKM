@@ -122,7 +122,7 @@ function ProductsContent() {
             </header>
 
             {/* Content */}
-            <main className="p-4 pb-24">
+            <main className="px-4 pt-2 pb-24">
                 {loading ? (
                     <div className="flex items-center justify-center py-20">
                         <Loader2 className="animate-spin text-orange-500" size={40} />
@@ -148,18 +148,19 @@ function ProductsContent() {
                     </div>
                 ) : (
                     <>
-                        <p className="text-sm text-gray-500 mb-4">{products.length} produk ditemukan</p>
-                        <div className="grid grid-cols-2 gap-4">
+                        <p className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-4 ml-1">{products.length} produk ditemukan</p>
+                        <div className="grid grid-cols-2 gap-3">
                             {products.map((product) => (
                                 <ProductCard
                                     key={product.id}
                                     id={product.id}
                                     name={product.name}
                                     unit={product.unit}
-                                    price={product.displayPrice}
+                                    price={product.displayPrice || product.price}
                                     originalPrice={product.originalPrice || undefined}
                                     discount={product.discount || undefined}
                                     image={product.image || DEFAULT_IMAGE}
+                                    isGrid={true}
                                     variants={product.variants}
                                 />
                             ))}

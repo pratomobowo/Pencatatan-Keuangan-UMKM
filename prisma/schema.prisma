@@ -53,6 +53,7 @@ model Product {
   // Relations
   variants    ProductVariant[]
   orderItems  OrderItem[]
+  shopFavorites ShopFavorite[]
   
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -218,8 +219,10 @@ model ShopCustomer {
   password    String   // Hashed with bcrypt
   email       String?
   
-  addresses   ShopAddress[]
-  orders      ShopOrder[]
+  addresses     ShopAddress[]
+  orders        ShopOrder[]
+  favorites     ShopFavorite[]
+  notifications ShopNotification[]
   
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -308,3 +311,32 @@ model ShopOrderItem {
   @@index([orderId])
 }
 
+model ShopFavorite {
+  id          String   @id @default(uuid())
+  customerId  String
+  customer    ShopCustomer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  
+  createdAt   DateTime @default(now())
+  
+  @@unique([customerId, productId])
+  @@index([customerId])
+  @@index([productId])
+}
+
+model ShopNotification {
+  id          String   @id @default(uuid())
+  customerId  String
+  customer    ShopCustomer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  
+  title       String
+  message     String
+  type        String   @default("info") // info, success, warning, error
+  isRead      Boolean  @default(false)
+  
+  createdAt   DateTime @default(now())
+  
+  @@index([customerId])
+  @@index([createdAt])
+}

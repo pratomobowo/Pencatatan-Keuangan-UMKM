@@ -16,7 +16,7 @@ async function getCustomerFromToken(request: NextRequest) {
 
     try {
         const { payload } = await jwtVerify(token, JWT_SECRET);
-        return payload as { customerId: string; phone: string };
+        return payload as { userId: string; identifier: string; type: string };
     } catch {
         return null;
     }
@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
         const { searchParams } = new URL(request.url);
         const status = searchParams.get('status');
 
-        const where: any = { customerId: tokenData.customerId };
+        const where: any = { customerId: tokenData.userId };
         if (status && status !== 'all') {
             where.status = status.toUpperCase();
         }
@@ -120,7 +120,7 @@ export async function POST(request: NextRequest) {
         // Create order with items
         const order = await prisma.shopOrder.create({
             data: {
-                customerId: tokenData?.customerId as any,
+                customerId: tokenData?.userId as any,
                 addressLabel: addressLabel || null,
                 addressName,
                 addressPhone,

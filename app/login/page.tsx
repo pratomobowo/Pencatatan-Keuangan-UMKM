@@ -4,9 +4,11 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { useShopAuth } from '@/contexts/ShopAuthContext';
 
 export default function LoginPage() {
     const router = useRouter();
+    const { login } = useShopAuth();
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [loginMode, setLoginMode] = useState<'phone' | 'email'>('phone');
@@ -23,25 +25,16 @@ export default function LoginPage() {
         setIsLoading(true);
 
         try {
-            const response = await fetch('/api/shop/auth/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    phone: loginMode === 'phone' ? formData.phone : undefined,
-                    email: loginMode === 'email' ? formData.email : undefined,
-                    password: formData.password,
-                }),
-            });
+            const phoneOrEmail = loginMode === 'phone' ? formData.phone : formData.email;
+            const result = await login(phoneOrEmail, formData.password, loginMode === 'email');
 
-            const data = await response.json();
-
-            if (!response.ok) {
-                setError(data.error || 'Gagal login');
+            if (!result.success) {
+                setError(result.error || 'Gagal login');
                 return;
             }
 
             // Redirect based on user type
-            router.push(data.redirectTo);
+            router.push(result.redirectTo || '/account');
         } catch (err) {
             setError('Gagal login');
         } finally {

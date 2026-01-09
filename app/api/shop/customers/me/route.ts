@@ -16,7 +16,7 @@ async function getCustomerFromToken(request: NextRequest) {
 
     try {
         const { payload } = await jwtVerify(token, JWT_SECRET);
-        return payload as { customerId: string; phone: string };
+        return payload as { userId: string; identifier: string; type: string };
     } catch {
         return null;
     }
@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
         }
 
         const customer = await prisma.shopCustomer.findUnique({
-            where: { id: tokenData.customerId },
+            where: { id: tokenData.userId },
             select: {
                 id: true,
                 name: true,
@@ -84,7 +84,7 @@ export async function PUT(request: NextRequest) {
         const { name, email } = body;
 
         const customer = await prisma.shopCustomer.update({
-            where: { id: tokenData.customerId },
+            where: { id: tokenData.userId },
             data: {
                 name: name || undefined,
                 email: email || undefined,

@@ -16,7 +16,7 @@ async function getCustomerFromToken(request: NextRequest) {
 
     try {
         const { payload } = await jwtVerify(token, JWT_SECRET);
-        return payload as { customerId: string; phone: string };
+        return payload as { userId: string; identifier: string; type: string };
     } catch {
         return null;
     }
@@ -40,7 +40,7 @@ export async function PUT(
 
         // Verify address belongs to customer
         const existing = await prisma.shopAddress.findFirst({
-            where: { id, customerId: tokenData.customerId },
+            where: { id, customerId: tokenData.userId },
         });
 
         if (!existing) {
@@ -56,7 +56,7 @@ export async function PUT(
         // If setting as default, unset others
         if (isDefault) {
             await prisma.shopAddress.updateMany({
-                where: { customerId: tokenData.customerId, id: { not: id } },
+                where: { customerId: tokenData.userId, id: { not: id } },
                 data: { isDefault: false },
             });
         }
@@ -101,7 +101,7 @@ export async function DELETE(
 
         // Verify address belongs to customer
         const existing = await prisma.shopAddress.findFirst({
-            where: { id, customerId: tokenData.customerId },
+            where: { id, customerId: tokenData.userId },
         });
 
         if (!existing) {
