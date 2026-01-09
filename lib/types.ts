@@ -65,10 +65,20 @@ export const CATEGORIES = {
 export interface Product {
   id: string;
   name: string;
+  description?: string; // Short product description
   unit: string; // kg, pack, ekor
   price: number; // Base selling price
   costPrice: number; // Base cost price (HPP)
   stock: number; // Current inventory quantity
+  image?: string; // Product image URL
+  category?: string; // Product category
+  isActive?: boolean; // Show in shop
+  // Promo fields
+  isPromo?: boolean;
+  promoPrice?: number;
+  promoDiscount?: number; // Percentage discount
+  promoStartDate?: string;
+  promoEndDate?: string;
 }
 
 // Cost Component Type (New)

@@ -37,10 +37,16 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
   const [formData, setFormData] = useState<Product>({
     id: '',
     name: '',
+    description: '',
     unit: 'kg',
     price: 0,
     costPrice: 0,
-    stock: 0
+    stock: 0,
+    image: '',
+    category: '',
+    isPromo: false,
+    promoPrice: 0,
+    promoDiscount: 0,
   });
 
 
@@ -393,6 +399,47 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
                   />
                 </div>
 
+                {/* Deskripsi Singkat */}
+                <div>
+                  <label className="block text-sm text-slate-700 mb-1">Deskripsi Singkat</label>
+                  <textarea
+                    placeholder="Deskripsi produk untuk ditampilkan di toko..."
+                    value={formData.description || ''}
+                    onChange={e => setFormData({ ...formData, description: e.target.value })}
+                    rows={2}
+                    className="w-full p-2.5 bg-white border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm resize-none"
+                  />
+                </div>
+
+                {/* URL Gambar */}
+                <div>
+                  <label className="block text-sm text-slate-700 mb-1">URL Gambar Produk</label>
+                  <input
+                    type="text"
+                    placeholder="https://example.com/gambar-produk.jpg"
+                    value={formData.image || ''}
+                    onChange={e => setFormData({ ...formData, image: e.target.value })}
+                    className="w-full p-2.5 bg-white border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
+                  />
+                </div>
+
+                {/* Kategori */}
+                <div>
+                  <label className="block text-sm text-slate-700 mb-1">Kategori</label>
+                  <select
+                    value={formData.category || ''}
+                    onChange={e => setFormData({ ...formData, category: e.target.value })}
+                    className="w-full p-2.5 bg-white border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
+                  >
+                    <option value="">Pilih Kategori</option>
+                    <option value="ikan-laut">Ikan Laut</option>
+                    <option value="seafood">Seafood</option>
+                    <option value="ayam">Ayam & Telur</option>
+                    <option value="daging-sapi">Daging Sapi</option>
+                    <option value="bumbu">Bumbu</option>
+                  </select>
+                </div>
+
                 <div>
                   <label className="block text-sm text-slate-700 mb-1">Satuan</label>
                   <select
@@ -449,6 +496,47 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
                     />
                     <p className="text-[10px] text-slate-400 mt-1">Harga customer</p>
                   </div>
+                </div>
+
+                {/* Promo Settings */}
+                <div className="p-3 bg-orange-50 rounded-lg border border-orange-200">
+                  <label className="flex items-center gap-2 cursor-pointer mb-3">
+                    <input
+                      type="checkbox"
+                      checked={formData.isPromo || false}
+                      onChange={e => setFormData({ ...formData, isPromo: e.target.checked })}
+                      className="w-4 h-4 text-orange-600 bg-white border-slate-300 rounded focus:ring-orange-500"
+                    />
+                    <span className="text-sm font-medium text-orange-700">🔥 Aktifkan Promo</span>
+                  </label>
+
+                  {formData.isPromo && (
+                    <div className="grid grid-cols-2 gap-3 mt-2">
+                      <div>
+                        <label className="block text-xs text-slate-600 mb-1">Harga Promo</label>
+                        <input
+                          type="number"
+                          min="0"
+                          placeholder="0"
+                          value={formData.promoPrice || ''}
+                          onChange={e => setFormData({ ...formData, promoPrice: parseFloat(e.target.value) })}
+                          className="w-full p-2 bg-white border border-slate-300 rounded-lg focus:ring-orange-500 focus:border-orange-500 text-sm"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs text-slate-600 mb-1">Diskon (%)</label>
+                        <input
+                          type="number"
+                          min="0"
+                          max="100"
+                          placeholder="0"
+                          value={formData.promoDiscount || ''}
+                          onChange={e => setFormData({ ...formData, promoDiscount: parseInt(e.target.value) })}
+                          className="w-full p-2 bg-white border border-slate-300 rounded-lg focus:ring-orange-500 focus:border-orange-500 text-sm"
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Profit Preview */}
