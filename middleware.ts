@@ -4,23 +4,52 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { auth } from '@/lib/auth';
 
+// Public routes that don't require authentication
+const publicRoutes = [
+    '/',
+    '/products',
+    '/cart',
+    '/login',
+    '/register',
+    '/api/shop',  // Shop APIs are public or handle their own auth
+];
+
+// Admin routes that require NextAuth session
+const adminRoutes = [
+    '/admin',
+];
+
 export async function middleware(request: NextRequest) {
-    const session = await auth();
+    const { pathname } = request.nextUrl;
 
-    // Check if user is authenticated
-    const isAuthenticated = !!session?.user;
-    const isLoginPage = request.nextUrl.pathname === '/login';
+    // Check if route is public
+    const isPublicRoute = publicRoutes.some(route =>
+        pathname === route || pathname.startsWith(route + '/')
+    );
 
-    // Redirect to login if not authenticated and not on login page
-    if (!isAuthenticated && !isLoginPage) {
-        return NextResponse.redirect(new URL('/login', request.url));
+    // Check if route is admin
+    const isAdminRoute = adminRoutes.some(route =>
+        pathname === route || pathname.startsWith(route + '/')
+    );
+
+    // Allow public routes without any auth check
+    if (isPublicRoute) {
+        return NextResponse.next();
     }
 
-    // Redirect to home if authenticated and on login page
-    if (isAuthenticated && isLoginPage) {
-        return NextResponse.redirect(new URL('/', request.url));
+    // For admin routes, check NextAuth session
+    if (isAdminRoute) {
+        const session = await auth();
+        const isAuthenticated = !!session?.user;
+
+        if (!isAuthenticated) {
+            return NextResponse.redirect(new URL('/admin-login', request.url));
+        }
     }
 
+    // For other routes (checkout, orders, account, addresses)
+    // These are protected by shop JWT auth checked in API routes/pages themselves
+    // Let them through - the pages will redirect to /login if not authenticated
     return NextResponse.next();
 }
 
@@ -28,12 +57,12 @@ export const config = {
     matcher: [
         /*
          * Match all request paths except:
-         * - api/auth (auth endpoints)
+         * - api/auth (NextAuth endpoints)
          * - _next/static (static files)
          * - _next/image (image optimization files)
          * - favicon.ico (favicon file)
-         * - public folder
+         * - public assets
          */
-        '/((?!api/auth|_next/static|_next/image|favicon.ico|.*\\.png$).*)',
+        '/((?!api/auth|_next/static|_next/image|favicon.ico|.*\\.png$|.*\\.jpg$|.*\\.svg$).*)',
     ],
 };
