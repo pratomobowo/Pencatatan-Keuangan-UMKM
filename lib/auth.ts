@@ -84,7 +84,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         },
     },
     session: {
-        strategy: "jwt",
+        strategy: "database",
     },
     secret: process.env.NEXTAUTH_SECRET,
     trustHost: true, // Trust all hosts (required for production deployment)

@@ -116,7 +116,8 @@ export interface Customer {
   id: string;
   name: string;
   phone: string;
-  address: string;
+  email?: string | null;
+  address?: string;
   notes?: string;
   totalSpent?: number; // Calculated field
   lastOrderDate?: string; // Calculated field

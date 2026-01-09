@@ -26,6 +26,7 @@ model User {
   updatedAt DateTime @updatedAt
   
   accounts  Account[] // Relation to Account model
+  sessions  Session[] // Relation to Session model
   
   @@index([email])
 }
@@ -48,6 +49,24 @@ model Account {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
+}
+
+// NextAuth Session Model (required for database strategy)
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// NextAuth Verification Token Model
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
 }
 
 // ============================================

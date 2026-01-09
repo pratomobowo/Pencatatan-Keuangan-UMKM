@@ -35,7 +35,7 @@ export const OrderManager: React.FC<OrderManagerProps> = ({
   const [formData, setFormData] = useState<{
     customerId?: string;
     customerName: string;
-    customerAddress: string;
+    customerAddress?: string;
     customerPhone: string;
     recipientName: string;
     recipientPhone: string;

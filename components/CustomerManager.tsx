@@ -1,20 +1,14 @@
 import React, { useState } from 'react';
-import { Customer, Order, ShopCustomer } from '@/lib/types';
+import { Customer } from '@/lib/types';
 import { Card } from './ui/Card';
-import { Plus, Edit2, Trash2, Users, Search, MapPin, Phone, User, ShoppingBag, ChevronDown, ChevronUp, ShoppingCart, Calendar, Mail, RefreshCw } from 'lucide-react';
+import { Plus, Edit2, Trash2, Users, Search, X, ShoppingCart, Phone, MapPin, Mail } from 'lucide-react';
 
 interface CustomerManagerProps {
-  customers?: Customer[];
-  orders?: Order[]; // Optional for backward compatibility, but we will pass it
+  customers: Customer[]; // All customers (POS + Online)
   onAddCustomer?: (customer: Customer) => void;
-  onUpdateCustomer?: (customer: Customer) => void;
+  onUpdateCustomer?: (id: string, customer: Customer) => void;
   onDeleteCustomer?: (id: string) => void;
-  onQuickOrder?: (customerId: string) => void; // Added Prop
-
-  // Shop specific
-  isShopCustomers?: boolean;
-  shopCustomers?: ShopCustomer[];
-  onRefresh?: () => void;
+  onQuickOrder?: (customerId: string) => void;
 }
 
 const formatCurrency = (amount: number) => {
@@ -23,341 +17,300 @@ const formatCurrency = (amount: number) => {
 
 export const CustomerManager: React.FC<CustomerManagerProps> = ({
   customers = [],
-  orders = [],
   onAddCustomer,
   onUpdateCustomer,
   onDeleteCustomer,
   onQuickOrder,
-  isShopCustomers = false,
-  shopCustomers = [],
-  onRefresh
 }) => {
+  const [showFormModal, setShowFormModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [expandedCustomerId, setExpandedCustomerId] = useState<string | null>(null);
 
   const [formData, setFormData] = useState<Customer>({
     id: '',
     name: '',
     phone: '',
     address: '',
-    notes: ''
+    email: '',
+    notes: '',
+    totalSpent: 0,
+    orderCount: 0,
   });
+
+  const handleOpenModal = (customer?: Customer) => {
+    if (customer) {
+      setFormData(customer);
+      setIsEditing(true);
+    } else {
+      setFormData({
+        id: '',
+        name: '',
+        phone: '',
+        address: '',
+        email: '',
+        notes: '',
+        totalSpent: 0,
+        orderCount: 0,
+      });
+      setIsEditing(false);
+    }
+    setShowFormModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowFormModal(false);
+    setIsEditing(false);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (isEditing && onUpdateCustomer) {
-      onUpdateCustomer(formData);
-      setIsEditing(false);
+    if (isEditing && onUpdateCustomer && formData.id) {
+      onUpdateCustomer(formData.id, formData);
     } else if (onAddCustomer) {
       onAddCustomer({
         ...formData,
         id: crypto.randomUUID(),
-        totalSpent: 0
+        totalSpent: 0,
+        orderCount: 0,
       });
     }
-    setFormData({ id: '', name: '', phone: '', address: '', notes: '' });
+    handleCloseModal();
   };
 
-  const handleEdit = (customer: Customer) => {
-    setFormData(customer);
-    setIsEditing(true);
-  };
-
-  const handleCancel = () => {
-    setIsEditing(false);
-    setFormData({ id: '', name: '', phone: '', address: '', notes: '' });
-  };
-
-  const toggleHistory = (customerId: string) => {
-    if (expandedCustomerId === customerId) {
-      setExpandedCustomerId(null);
-    } else {
-      setExpandedCustomerId(customerId);
+  const handleDelete = (id: string) => {
+    if (confirm('Hapus pelanggan ini?')) {
+      if (onDeleteCustomer) onDeleteCustomer(id);
     }
   };
 
-  const renderShopCustomers = () => (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-xl font-semibold text-slate-800">Pelanggan Toko Online</h2>
-          <p className="text-sm text-slate-500">Daftar pelanggan yang terdaftar melalui website.</p>
-        </div>
-        <button
-          onClick={() => onRefresh && onRefresh()}
-          className="p-2 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-          title="Refresh Data"
-        >
-          <RefreshCw size={20} />
-        </button>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {shopCustomers.length === 0 ? (
-          <div className="col-span-full text-center py-12 bg-white rounded-xl border border-dashed border-slate-300">
-            <Users className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-            <p className="text-slate-500 font-medium">Belum ada pelanggan terdaftar.</p>
-          </div>
-        ) : (
-          shopCustomers.map(sc => (
-            <Card key={sc.id} className="hover:shadow-md transition-shadow">
-              <div className="flex items-start gap-3 mb-4">
-                <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 font-bold shrink-0">
-                  {sc.name.charAt(0).toUpperCase()}
-                </div>
-                <div className="overflow-hidden">
-                  <h4 className="font-semibold text-slate-900 truncate">{sc.name}</h4>
-                  <p className="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
-                    <Phone size={12} /> {sc.phone}
-                  </p>
-                  {sc.email && (
-                    <p className="text-xs text-slate-500 flex items-center gap-1 mt-0.5 truncate">
-                      <Mail size={12} /> {sc.email}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-2 border-t border-slate-100 pt-4 mt-2">
-                <div className="text-center p-2 bg-slate-50 rounded-lg">
-                  <p className="text-[10px] text-slate-400 uppercase font-bold">Total Order</p>
-                  <p className="text-lg font-bold text-slate-700">{sc._count?.orders || 0}</p>
-                </div>
-                <div className="text-center p-2 bg-slate-50 rounded-lg">
-                  <p className="text-[10px] text-slate-400 uppercase font-bold">Member Sejak</p>
-                  <p className="text-xs font-semibold text-slate-600 mt-1">
-                    {sc.createdAt ? new Date(sc.createdAt).toLocaleDateString('id-ID', { month: 'short', year: 'numeric' }) : '-'}
-                  </p>
-                </div>
-              </div>
-
-              <div className="mt-4 flex gap-2">
-                <button className="flex-1 text-xs font-semibold py-2 bg-slate-100 text-slate-600 rounded hover:bg-slate-200 transition-colors">
-                  Detail Profil
-                </button>
-                <button className="flex-1 text-xs font-semibold py-2 bg-orange-50 text-orange-600 rounded hover:bg-orange-100 transition-colors">
-                  Kirim Promo
-                </button>
-              </div>
-            </Card>
-          ))
-        )}
-      </div>
-    </div>
-  );
-
-  if (isShopCustomers) return renderShopCustomers();
-
-  const filteredCustomers = (customers || []).filter(c =>
+  const filteredCustomers = customers.filter(c =>
     c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    c.phone.includes(searchTerm)
+    c.phone.includes(searchTerm) ||
+    (c.email && c.email.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      {/* Customer List */}
-      <div className="lg:col-span-2 order-2 lg:order-1">
-        <Card className="h-full">
-          <div className="flex flex-col gap-4 mb-6">
-            <h3 className="text-lg font-medium text-slate-800">Data Pelanggan</h3>
-            <div className="relative w-full">
-              <Search className="absolute left-3 top-2.5 text-slate-400 w-4 h-4" />
-              <input
-                type="text"
-                placeholder="Cari nama atau no hp..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex justify-between items-center">
+        <div className="flex-1 max-w-md">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" size={20} />
+            <input
+              type="text"
+              placeholder="Cari nama, telepon, atau email..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
           </div>
-
-          <div className="space-y-3">
-            {filteredCustomers.length === 0 ? (
-              <div className="text-center py-8 text-slate-400">
-                <Users className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                <p>Belum ada data pelanggan.</p>
-              </div>
-            ) : (
-              filteredCustomers.map((c) => {
-                const customerOrders = orders.filter(o => o.customerId === c.id).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-                const isExpanded = expandedCustomerId === c.id;
-
-                return (
-                  <div key={c.id} className="bg-white border border-slate-200 rounded-lg hover:shadow-sm transition-shadow">
-                    <div className="p-4 flex flex-col sm:flex-row justify-between gap-4">
-                      <div className="flex items-start gap-3">
-                        <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold shrink-0">
-                          {c.name.charAt(0).toUpperCase()}
-                        </div>
-                        <div>
-                          <h4 className="font-semibold text-slate-900">{c.name}</h4>
-                          <div className="flex items-center gap-2 text-sm text-slate-500 mt-1">
-                            <Phone size={14} /> {c.phone || '-'}
-                          </div>
-                          <div className="flex items-start gap-2 text-sm text-slate-500 mt-1">
-                            <MapPin size={14} className="mt-0.5 shrink-0" /> <span className="line-clamp-2">{c.address || '-'}</span>
-                          </div>
-                          <div className="mt-3 flex items-center gap-4">
-                            <button
-                              onClick={() => toggleHistory(c.id)}
-                              className="text-xs font-medium text-blue-600 hover:text-blue-800 flex items-center gap-1"
-                            >
-                              {isExpanded ? 'Tutup Riwayat' : 'Lihat Riwayat'}
-                              {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-                            </button>
-
-                            {/* Quick Order Button Integration */}
-                            {onQuickOrder && (
-                              <button
-                                onClick={() => onQuickOrder(c.id)}
-                                className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-1 rounded hover:bg-emerald-100 flex items-center gap-1 transition-colors"
-                              >
-                                <ShoppingCart size={12} /> Buat Order
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex flex-row sm:flex-col items-end justify-between sm:justify-center gap-2 pl-12 sm:pl-0">
-                        <div className="text-right">
-                          <p className="text-xs text-slate-400">Total Belanja</p>
-                          <p className="font-semibold text-emerald-600">{formatCurrency(c.totalSpent || 0)}</p>
-                        </div>
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => handleEdit(c)}
-                            className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
-                          >
-                            <Edit2 size={16} />
-                          </button>
-                          <button
-                            onClick={() => onDeleteCustomer && onDeleteCustomer(c.id)}
-                            className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded transition-colors"
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Order History Expansion */}
-                    {isExpanded && (
-                      <div className="border-t border-slate-100 bg-slate-50 p-4 rounded-b-lg animate-fade-in">
-                        <h5 className="text-xs font-medium text-slate-500 uppercase mb-3 flex items-center gap-2">
-                          <ShoppingBag size={14} /> 5 Transaksi Terakhir
-                        </h5>
-                        {customerOrders.length === 0 ? (
-                          <p className="text-sm text-slate-400 italic">Belum ada riwayat transaksi.</p>
-                        ) : (
-                          <div className="space-y-2">
-                            {customerOrders.slice(0, 5).map(order => (
-                              <div key={order.id} className="flex justify-between items-center bg-white p-2 rounded border border-slate-200 text-sm">
-                                <div>
-                                  <span className="font-medium text-slate-700">{new Date(order.date).toLocaleDateString('id-ID')}</span>
-                                  <span className="mx-2 text-slate-300">|</span>
-                                  <span className="text-slate-600">{order.items.length} Item ({order.items.map(i => i.productName).join(', ')})</span>
-                                </div>
-                                <div className="font-semibold text-slate-800">
-                                  {formatCurrency(order.grandTotal)}
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                );
-              })
-            )}
-          </div>
-        </Card>
+        </div>
+        <button
+          onClick={() => handleOpenModal()}
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+        >
+          <Plus size={20} />
+          Tambah Pelanggan
+        </button>
       </div>
 
-      {/* Form */}
-      <div className="lg:col-span-1 order-1 lg:order-2">
-        <div className="sticky top-6">
-          <Card title={isEditing ? "Edit Pelanggan" : "Tambah Pelanggan"}>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm text-slate-700 mb-1">Nama Lengkap</label>
-                <div className="relative">
-                  <User className="absolute left-3 top-2.5 text-slate-400 w-4 h-4" />
-                  <input
-                    required
-                    type="text"
-                    placeholder="Contoh: Bu Siti"
-                    value={formData.name}
-                    onChange={e => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full pl-9 pr-4 py-2.5 bg-white border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
-                  />
-                </div>
-              </div>
+      {/* Customer Table */}
+      <Card>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-slate-200">
+                <th className="text-left px-4 py-3 text-sm font-semibold text-slate-700">Nama</th>
+                <th className="text-left px-4 py-3 text-sm font-semibold text-slate-700">Kontak</th>
+                <th className="text-left px-4 py-3 text-sm font-semibold text-slate-700">Alamat</th>
+                <th className="text-right px-4 py-3 text-sm font-semibold text-slate-700">Total Belanja</th>
+                <th className="text-center px-4 py-3 text-sm font-semibold text-slate-700">Order</th>
+                <th className="text-center px-4 py-3 text-sm font-semibold text-slate-700">Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredCustomers.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="text-center py-12">
+                    <Users className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+                    <p className="text-slate-500">Belum ada pelanggan</p>
+                  </td>
+                </tr>
+              ) : (
+                filteredCustomers.map((customer) => (
+                  <tr key={customer.id} className="border-b border-slate-100 hover:bg-slate-50/50 transition-colors">
+                    <td className="p-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
+                          {customer.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                          <p className="font-semibold text-slate-900">{customer.name}</p>
+                          {customer.email && (
+                            <p className="text-xs text-slate-500 flex items-center gap-1">
+                              <Mail size={12} /> {customer.email}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="p-4">
+                      <p className="text-sm text-slate-700 flex items-center gap-1">
+                        <Phone size={14} /> {customer.phone}
+                      </p>
+                    </td>
+                    <td className="p-4">
+                      <p className="text-sm text-slate-600 flex items-start gap-1 max-w-xs">
+                        <MapPin size={14} className="mt-0.5 shrink-0" />
+                        <span className="line-clamp-2">{customer.address || '-'}</span>
+                      </p>
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <p className="font-semibold text-slate-900">{formatCurrency(customer.totalSpent || 0)}</p>
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-slate-100 text-slate-700 font-semibold text-sm">
+                        {customer.orderCount || 0}
+                      </span>
+                    </td>
+                    <td className="p-4">
+                      <div className="flex items-center justify-center gap-1">
+                        {onQuickOrder && (
+                          <button
+                            onClick={() => onQuickOrder(customer.id)}
+                            className="p-1.5 text-green-600 hover:bg-green-50 rounded transition-colors"
+                            title="Quick Order"
+                          >
+                            <ShoppingCart size={16} />
+                          </button>
+                        )}
+                        <button
+                          onClick={() => handleOpenModal(customer)}
+                          className="p-1.5 text-slate-400 hover:text-blue-600 transition-colors"
+                          title="Edit"
+                        >
+                          <Edit2 size={16} />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(customer.id)}
+                          className="p-1.5 text-slate-400 hover:text-rose-600 transition-colors"
+                          title="Hapus"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </Card>
 
-              <div>
-                <label className="block text-sm text-slate-700 mb-1">Nomor WhatsApp/HP</label>
-                <div className="relative">
-                  <Phone className="absolute left-3 top-2.5 text-slate-400 w-4 h-4" />
-                  <input
-                    type="text"
-                    placeholder="0812..."
-                    value={formData.phone}
-                    onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                    className="w-full pl-9 pr-4 py-2.5 bg-white border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
-                  />
-                </div>
-              </div>
+      {/* Modal Form */}
+      {showFormModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 z-10 flex items-center justify-between p-4 border-b bg-white">
+              <h2 className="text-xl font-bold text-slate-800">
+                {isEditing ? 'Edit Pelanggan' : 'Tambah Pelanggan'}
+              </h2>
+              <button
+                onClick={handleCloseModal}
+                className="p-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100 transition-colors"
+              >
+                <X size={24} />
+              </button>
+            </div>
 
+            <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div>
-                <label className="block text-sm text-slate-700 mb-1">Alamat Lengkap</label>
-                <div className="relative">
-                  <MapPin className="absolute left-3 top-3 text-slate-400 w-4 h-4" />
-                  <textarea
-                    rows={3}
-                    placeholder="Jalan, No Rumah, Patokan..."
-                    value={formData.address}
-                    onChange={e => setFormData({ ...formData, address: e.target.value })}
-                    className="w-full pl-9 pr-4 py-2.5 bg-white border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm text-slate-700 mb-1">Catatan (Preferensi)</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  Nama <span className="text-rose-500">*</span>
+                </label>
                 <input
                   type="text"
-                  placeholder="Misal: Suka ikan dipotong kecil"
-                  value={formData.notes}
-                  onChange={e => setFormData({ ...formData, notes: e.target.value })}
-                  className="w-full p-2.5 bg-white border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
+                  required
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Nama pelanggan"
                 />
               </div>
 
-              <div className="pt-4 flex gap-3">
-                {isEditing && (
-                  <button
-                    type="button"
-                    onClick={handleCancel}
-                    className="flex-1 py-2.5 px-5 text-sm font-medium text-slate-700 bg-white rounded-lg border border-slate-300 hover:bg-slate-50"
-                  >
-                    Batal
-                  </button>
-                )}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  Telepon <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  type="tel"
+                  required
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="08xxxxxxxxxx"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  value={formData.email || ''}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="email@example.com"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  Alamat
+                </label>
+                <textarea
+                  value={formData.address || ''}
+                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  rows={3}
+                  placeholder="Alamat lengkap"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  Catatan
+                </label>
+                <textarea
+                  value={formData.notes || ''}
+                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  rows={2}
+                  placeholder="Catatan tambahan"
+                />
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={handleCloseModal}
+                  className="flex-1 px-4 py-2 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors"
+                >
+                  Batal
+                </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2.5 px-5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2"
+                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                 >
-                  <Users size={18} />
-                  {isEditing ? 'Update' : 'Simpan'}
+                  {isEditing ? 'Simpan' : 'Tambah'}
                 </button>
               </div>
             </form>
-          </Card>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

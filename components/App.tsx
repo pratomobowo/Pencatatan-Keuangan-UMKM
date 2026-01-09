@@ -27,9 +27,8 @@ const App: React.FC = () => {
     const [transactions, setTransactions] = useState<Transaction[]>([]);
     const [orders, setOrders] = useState<Order[]>([]); // All orders (MANUAL + ONLINE)
     const [products, setProducts] = useState<Product[]>([]);
-    const [customers, setCustomers] = useState<Customer[]>([]);
+    const [customers, setCustomers] = useState<Customer[]>([]); // All customers
     const [costComponents, setCostComponents] = useState<CostComponent[]>([]);
-    const [shopCustomers, setShopCustomers] = useState<ShopCustomer[]>([]);
     const [users, setUsers] = useState<User[]>([]);
     const [view, setView] = useState<ViewState>('DASHBOARD');
     const [loading, setLoading] = useState(true);
@@ -48,9 +47,8 @@ const App: React.FC = () => {
                     transactionsAPI.getAll(),
                     ordersAPI.getAll(), // Gets all orders (MANUAL + ONLINE)
                     productsAPI.getAll(),
-                    customersAPI.getAll(),
+                    customersAPI.getAll(), // Gets all customers
                     costComponentsAPI.getAll(),
-                    adminShopCustomersAPI.getAll(),
                 ]);
 
                 const handleResult = <T,>(result: PromiseSettledResult<T>, defaultValue: T, name: string) => {
@@ -63,9 +61,8 @@ const App: React.FC = () => {
                 setTransactions(handleResult(results[0], [], 'Data Transaksi'));
                 setOrders(handleResult(results[1], [], 'Data Pesanan')); // All orders
                 setProducts(handleResult(results[2], [], 'Data Produk'));
-                setCustomers(handleResult(results[3], [], 'Data Pelanggan'));
+                setCustomers(handleResult(results[3], [], 'Data Pelanggan')); // All customers
                 setCostComponents(handleResult(results[4], [], 'Data Biaya'));
-                setShopCustomers(handleResult(results[5], [], 'Pelanggan Toko'));
             } catch (error) {
                 console.error('Failed to fetch initial data:', error);
                 toast.error('Gagal memuat data');
@@ -245,7 +242,7 @@ const App: React.FC = () => {
         }
     };
 
-    const updateCustomer = async (customer: Customer) => {
+    const updateCustomer = async (id: string, customer: Customer) => {
         try {
             await customersAPI.update(customer.id, customer);
             setCustomers(prev => prev.map(c => c.id === customer.id ? customer : c));
@@ -391,18 +388,7 @@ const App: React.FC = () => {
                                 }`}
                         >
                             <UsersIcon size={20} />
-                            <span>Pelanggan POS</span>
-                        </button>
-
-                        <button
-                            onClick={() => setView('SHOP_CUSTOMERS')}
-                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${view === 'SHOP_CUSTOMERS'
-                                ? 'bg-blue-600 text-white shadow-md'
-                                : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600'
-                                }`}
-                        >
-                            <UsersIcon className="text-orange-500" size={20} />
-                            <span>Pelanggan Toko</span>
+                            <span>Pelanggan</span>
                         </button>
 
                         <button
@@ -512,8 +498,7 @@ const App: React.FC = () => {
                             {view === 'ORDERS' && 'Manajemen Pesanan'}
                             {view === 'PRODUCTS' && 'Katalog Produk'}
                             {view === 'HPP_CALCULATOR' && 'Kalkulator & Resep HPP'}
-                            {view === 'CUSTOMERS' && 'Database Pelanggan POS'}
-                            {view === 'SHOP_CUSTOMERS' && 'Database Pelanggan Toko'}
+                            {view === 'CUSTOMERS' && 'Database Pelanggan'}
                             {view === 'TRANSACTIONS' && 'Buku Kas Harian'}
                             {view === 'ANALYSIS' && 'Konsultan AI'}
                             {view === 'USER_MANAGEMENT' && 'User Management'}
@@ -526,8 +511,7 @@ const App: React.FC = () => {
                             {view === 'ORDERS' && 'Kelola semua pesanan (manual dan online).'}
                             {view === 'PRODUCTS' && 'Atur daftar harga, stok (inventory), dan HPP dasar.'}
                             {view === 'HPP_CALCULATOR' && 'Rakit harga modal detail (Bahan Baku + Kemasan + Ops) sebelum dijual.'}
-                            {view === 'CUSTOMERS' && 'Kelola data kontak pelanggan manual.'}
-                            {view === 'SHOP_CUSTOMERS' && 'Daftar pelanggan yang terdaftar melalui website.'}
+                            {view === 'CUSTOMERS' && 'Kelola semua data pelanggan (POS dan online).'}
                             {view === 'TRANSACTIONS' && 'Catat pembelian pasar, penjualan customer, dan biaya lain.'}
                             {view === 'ANALYSIS' && 'Evaluasi performa penjualan dan efisiensi pengiriman.'}
                             {view === 'USER_MANAGEMENT' && 'Manage system users, roles, and permissions.'}
@@ -653,19 +637,10 @@ const App: React.FC = () => {
                 {view === 'CUSTOMERS' && (
                     <CustomerManager
                         customers={customers}
-                        orders={orders}
                         onAddCustomer={addCustomer}
                         onUpdateCustomer={updateCustomer}
                         onDeleteCustomer={deleteCustomer}
-                        onQuickOrder={handleQuickOrder} // Handler for quick order button
-                    />
-                )}
-
-                {view === 'SHOP_CUSTOMERS' && (
-                    <CustomerManager
-                        isShopCustomers={true}
-                        shopCustomers={shopCustomers}
-                        onRefresh={() => adminShopCustomersAPI.getAll().then(setShopCustomers)}
+                        onQuickOrder={handleQuickOrder}
                     />
                 )}
 
