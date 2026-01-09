@@ -9,7 +9,7 @@ import { useCart } from '@/contexts/CartContext';
 import { useShopAuth } from '@/contexts/ShopAuthContext';
 import { useNotifications } from '@/contexts/NotificationContext';
 
-const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=400&q=80';
+const DEFAULT_IMAGE = '/images/coming-soon.jpg';
 const SHIPPING_FEE = 15000;
 const SERVICE_FEE = 1000;
 

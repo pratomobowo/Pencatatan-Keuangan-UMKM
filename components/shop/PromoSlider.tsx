@@ -16,14 +16,14 @@ const promoSlides: PromoSlide[] = [
         title: 'Ikan Laut Segar',
         subtitle: 'Langsung dari nelayan lokal',
         badge: 'PROMO SPESIAL',
-        image: 'https://images.unsplash.com/photo-1544943910-4c1dc44aab44?w=800&q=80',
+        image: '/images/coming-soon.jpg',
         buttonText: 'Belanja Sekarang',
     },
     {
         title: 'Daging Sapi Pilihan',
         subtitle: 'Potongan premium untuk keluarga',
         badge: 'FLASH SALE',
-        image: 'https://images.unsplash.com/photo-1603048297172-c92544798d5a?w=800&q=80',
+        image: '/images/coming-soon.jpg',
         buttonText: 'Lihat Promo',
     },
 ];

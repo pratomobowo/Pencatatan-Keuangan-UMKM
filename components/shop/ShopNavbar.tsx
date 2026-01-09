@@ -194,7 +194,7 @@ export const ShopNavbar = () => {
                                     >
                                         <div className="size-12 rounded-lg bg-stone-100 overflow-hidden relative shrink-0">
                                             <Image
-                                                src={product.image || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=400&q=80'}
+                                                src={product.image || '/images/coming-soon.jpg'}
                                                 alt={product.name}
                                                 fill
                                                 className="object-cover"

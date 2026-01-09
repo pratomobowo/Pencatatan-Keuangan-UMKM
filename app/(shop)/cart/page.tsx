@@ -52,7 +52,7 @@ export default function CartPage() {
                                 {/* Product Image */}
                                 <div className="relative rounded-lg size-20 shrink-0 border border-gray-100 overflow-hidden">
                                     <Image
-                                        src={item.image || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=400&q=80'}
+                                        src={item.image || '/images/coming-soon.jpg'}
                                         alt={item.name}
                                         fill
                                         className="object-cover"

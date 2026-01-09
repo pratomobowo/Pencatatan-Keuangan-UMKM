@@ -100,7 +100,7 @@ export async function GET(
                 name: item.productName,
                 quantity: item.qty,
                 price: Number(item.price),
-                image: item.productImage || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=200&q=80',
+                image: item.productImage || '/images/coming-soon.jpg',
             })),
             subtotal: Number(order.subtotal),
             shippingFee: Number(order.shippingFee),

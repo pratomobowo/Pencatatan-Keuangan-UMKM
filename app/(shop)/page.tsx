@@ -20,7 +20,7 @@ const categories = [
 ];
 
 // Default image when product has no image
-const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=400&q=80';
+const DEFAULT_IMAGE = '/images/coming-soon.jpg';
 
 export default function ShopHomepage() {
     const [products, setProducts] = useState<ShopProduct[]>([]);

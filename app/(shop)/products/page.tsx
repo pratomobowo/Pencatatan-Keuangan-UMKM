@@ -17,7 +17,7 @@ const categories = [
     { id: 'bumbu', name: 'Bumbu' },
 ];
 
-const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=400&q=80';
+const DEFAULT_IMAGE = '/images/coming-soon.jpg';
 
 function ProductsContent() {
     const searchParams = useSearchParams();

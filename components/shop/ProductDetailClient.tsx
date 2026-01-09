@@ -8,7 +8,7 @@ import { ArrowLeft, ShoppingBag, Heart, Truck, Shield, Thermometer, Check } from
 import { useCart } from '@/contexts/CartContext';
 import { Product, ProductVariant } from '@/lib/types';
 
-const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&q=80';
+const DEFAULT_IMAGE = '/images/coming-soon.jpg';
 
 interface ProductDetailClientProps {
     product: Product;
