@@ -50,6 +50,8 @@ model Product {
   promoStartDate DateTime? // Promo start date
   promoEndDate   DateTime? // Promo end date
   
+  // Relations
+  variants    ProductVariant[]
   orderItems  OrderItem[]
   
   createdAt   DateTime @default(now())
@@ -60,6 +62,26 @@ model Product {
   @@index([category])
   @@index([isActive])
   @@index([isPromo])
+}
+
+// Product Variants for multiple unit pricing
+model ProductVariant {
+  id          String   @id @default(uuid())
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  
+  unit        String   // kg, 500gr, 250gr, ekor, pack, etc.
+  unitQty     Decimal  @db.Decimal(10, 3) // Quantity in base unit (e.g., 0.5 for 500gr, 1 for 1kg)
+  price       Decimal  @db.Decimal(10, 2) // Selling price for this variant
+  costPrice   Decimal  @db.Decimal(10, 2) // Cost price for this variant
+  
+  isDefault   Boolean  @default(false) // Default variant shown in shop
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([productId])
+  @@unique([productId, unit])
 }
 
 // ============================================

@@ -1,11 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-// GET /api/products - Get all products
+// GET /api/products - Get all products with variants
 export async function GET() {
     try {
         const products = await prisma.product.findMany({
             orderBy: { createdAt: 'desc' },
+            include: {
+                variants: {
+                    orderBy: { isDefault: 'desc' }
+                }
+            }
         });
         return NextResponse.json(products);
     } catch (error) {
@@ -17,13 +22,14 @@ export async function GET() {
     }
 }
 
-// POST /api/products - Create new product
+// POST /api/products - Create new product with optional variants
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
         const {
             sku, name, description, price, costPrice, stock, unit, image, category, isActive,
-            isPromo, promoPrice, promoDiscount, promoStartDate, promoEndDate
+            isPromo, promoPrice, promoDiscount, promoStartDate, promoEndDate,
+            variants // Optional array of variants
         } = body;
 
         // Auto-generate SKU if not provided
@@ -46,7 +52,20 @@ export async function POST(request: NextRequest) {
                 promoDiscount: promoDiscount || null,
                 promoStartDate: promoStartDate ? new Date(promoStartDate) : null,
                 promoEndDate: promoEndDate ? new Date(promoEndDate) : null,
+                // Create variants if provided
+                variants: variants && variants.length > 0 ? {
+                    create: variants.map((v: any, index: number) => ({
+                        unit: v.unit,
+                        unitQty: v.unitQty || 1,
+                        price: v.price,
+                        costPrice: v.costPrice || v.price * 0.7,
+                        isDefault: index === 0 // First variant is default
+                    }))
+                } : undefined
             },
+            include: {
+                variants: true
+            }
         });
 
         return NextResponse.json(product, { status: 201 });

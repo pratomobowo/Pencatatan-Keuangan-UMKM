@@ -61,12 +61,23 @@ export const CATEGORIES = {
   ]
 };
 
+// Product Variant for multiple unit pricing
+export interface ProductVariant {
+  id: string;
+  productId: string;
+  unit: string; // kg, 500gr, 250gr, ekor, pack
+  unitQty: number; // Quantity in base unit (e.g., 0.5 for 500gr)
+  price: number; // Selling price
+  costPrice: number; // Cost price
+  isDefault: boolean;
+}
+
 // Product Types
 export interface Product {
   id: string;
   name: string;
   description?: string; // Short product description
-  unit: string; // kg, pack, ekor
+  unit: string; // kg, pack, ekor (default unit)
   price: number; // Base selling price
   costPrice: number; // Base cost price (HPP)
   stock: number; // Current inventory quantity
@@ -79,6 +90,8 @@ export interface Product {
   promoDiscount?: number; // Percentage discount
   promoStartDate?: string;
   promoEndDate?: string;
+  // Variants
+  variants?: ProductVariant[];
 }
 
 // Cost Component Type (New)

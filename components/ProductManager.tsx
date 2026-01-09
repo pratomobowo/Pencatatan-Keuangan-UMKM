@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Product, TransactionType } from '@/lib/types'; // Import TransactionType
+import { Product, TransactionType, ProductVariant } from '@/lib/types'; // Import TransactionType
 import { Card } from './ui/Card';
 import { Plus, Edit2, Trash2, Package, Search, Download, Upload, FileSpreadsheet, TrendingUp, ShoppingBasket, X, ImageIcon, Loader2, ChevronLeft, ChevronRight, Filter } from 'lucide-react';
 import * as XLSX from 'xlsx';
@@ -53,6 +53,7 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
     isPromo: false,
     promoPrice: 0,
     promoDiscount: 0,
+    variants: [],
   });
 
 
@@ -111,7 +112,7 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
       });
     }
     // Reset form
-    setFormData({ id: '', name: '', description: '', unit: 'kg', price: 0, costPrice: 0, stock: 0, image: '', category: '', isPromo: false, promoPrice: 0, promoDiscount: 0 });
+    setFormData({ id: '', name: '', description: '', unit: 'kg', price: 0, costPrice: 0, stock: 0, image: '', category: '', isPromo: false, promoPrice: 0, promoDiscount: 0, variants: [] });
   };
 
   const handleEdit = (product: Product) => {
@@ -125,13 +126,47 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
       isPromo: product.isPromo || false,
       promoPrice: product.promoPrice || 0,
       promoDiscount: product.promoDiscount || 0,
+      variants: product.variants || [],
     });
     setIsEditing(true);
   };
 
   const handleCancel = () => {
     setIsEditing(false);
-    setFormData({ id: '', name: '', description: '', unit: 'kg', price: 0, costPrice: 0, stock: 0, image: '', category: '', isPromo: false, promoPrice: 0, promoDiscount: 0 });
+    setFormData({ id: '', name: '', description: '', unit: 'kg', price: 0, costPrice: 0, stock: 0, image: '', category: '', isPromo: false, promoPrice: 0, promoDiscount: 0, variants: [] });
+  };
+
+  // Variant management handlers
+  const addVariant = () => {
+    const newVariant: ProductVariant = {
+      id: `temp-${Date.now()}`,
+      productId: formData.id || '',
+      unit: '',
+      unitQty: 1,
+      price: 0,
+      costPrice: 0,
+      isDefault: (formData.variants?.length || 0) === 0
+    };
+    setFormData(prev => ({
+      ...prev,
+      variants: [...(prev.variants || []), newVariant]
+    }));
+  };
+
+  const removeVariant = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      variants: (prev.variants || []).filter((_, i) => i !== index)
+    }));
+  };
+
+  const updateVariant = (index: number, field: keyof ProductVariant, value: any) => {
+    setFormData(prev => ({
+      ...prev,
+      variants: (prev.variants || []).map((v, i) =>
+        i === index ? { ...v, [field]: value } : v
+      )
+    }));
   };
 
   // Handle image upload
@@ -719,6 +754,90 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
                       </div>
                     </div>
                   )}
+                </div>
+
+                {/* Variant Editor */}
+                <div className="p-3 bg-purple-50 rounded-lg border border-purple-200">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-sm font-medium text-purple-700">📦 Opsi Satuan (Varian)</span>
+                    <button
+                      type="button"
+                      onClick={addVariant}
+                      className="text-xs px-2 py-1 bg-purple-600 text-white rounded hover:bg-purple-700 flex items-center gap-1"
+                    >
+                      <Plus size={12} /> Tambah
+                    </button>
+                  </div>
+
+                  {(formData.variants?.length || 0) === 0 ? (
+                    <p className="text-xs text-purple-500 text-center py-2">
+                      Belum ada varian. Klik tombol Tambah untuk menambah opsi satuan.
+                    </p>
+                  ) : (
+                    <div className="space-y-2">
+                      {formData.variants?.map((variant, index) => (
+                        <div key={variant.id || index} className="bg-white p-2 rounded border border-purple-100">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="text-xs font-medium text-purple-600">#{index + 1}</span>
+                            {index === 0 && <span className="text-[10px] px-1 bg-purple-100 text-purple-600 rounded">Default</span>}
+                            <button
+                              type="button"
+                              onClick={() => removeVariant(index)}
+                              className="ml-auto text-rose-500 hover:text-rose-700"
+                            >
+                              <X size={14} />
+                            </button>
+                          </div>
+                          <div className="grid grid-cols-4 gap-2">
+                            <div>
+                              <label className="block text-[10px] text-slate-500 mb-1">Satuan</label>
+                              <input
+                                type="text"
+                                placeholder="1kg"
+                                value={variant.unit}
+                                onChange={e => updateVariant(index, 'unit', e.target.value)}
+                                className="w-full px-2 py-1 text-xs border border-slate-200 rounded"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[10px] text-slate-500 mb-1">Qty Base</label>
+                              <input
+                                type="number"
+                                step="0.1"
+                                placeholder="1"
+                                value={variant.unitQty || ''}
+                                onChange={e => updateVariant(index, 'unitQty', parseFloat(e.target.value))}
+                                className="w-full px-2 py-1 text-xs border border-slate-200 rounded"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[10px] text-slate-500 mb-1">Harga Modal</label>
+                              <input
+                                type="number"
+                                placeholder="0"
+                                value={variant.costPrice || ''}
+                                onChange={e => updateVariant(index, 'costPrice', parseFloat(e.target.value))}
+                                className="w-full px-2 py-1 text-xs border border-slate-200 rounded"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[10px] text-slate-500 mb-1">Harga Jual</label>
+                              <input
+                                type="number"
+                                placeholder="0"
+                                value={variant.price || ''}
+                                onChange={e => updateVariant(index, 'price', parseFloat(e.target.value))}
+                                className="w-full px-2 py-1 text-xs border border-slate-200 rounded"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <p className="text-[10px] text-purple-500 mt-2">
+                    Contoh: 1kg, 500gr, 250gr, ekor, pack
+                  </p>
                 </div>
 
                 {/* Profit Preview */}

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-// GET /api/products/[id] - Get single product
+// GET /api/products/[id] - Get single product with variants
 export async function GET(
     request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
@@ -10,6 +10,11 @@ export async function GET(
         const { id } = await params;
         const product = await prisma.product.findUnique({
             where: { id },
+            include: {
+                variants: {
+                    orderBy: { isDefault: 'desc' }
+                }
+            }
         });
 
         if (!product) {
@@ -29,7 +34,7 @@ export async function GET(
     }
 }
 
-// PUT /api/products/[id] - Update product
+// PUT /api/products/[id] - Update product with variants
 export async function PUT(
     request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
@@ -37,11 +42,46 @@ export async function PUT(
     try {
         const { id } = await params;
         const body = await request.json();
+        const { variants, ...productData } = body;
 
+        // Update product data
         const product = await prisma.product.update({
             where: { id },
-            data: body,
+            data: productData,
+            include: {
+                variants: true
+            }
         });
+
+        // If variants are provided, sync them
+        if (variants && Array.isArray(variants)) {
+            // Delete existing variants
+            await prisma.productVariant.deleteMany({
+                where: { productId: id }
+            });
+
+            // Create new variants
+            if (variants.length > 0) {
+                await prisma.productVariant.createMany({
+                    data: variants.map((v: any, index: number) => ({
+                        productId: id,
+                        unit: v.unit,
+                        unitQty: v.unitQty || 1,
+                        price: v.price,
+                        costPrice: v.costPrice || v.price * 0.7,
+                        isDefault: index === 0
+                    }))
+                });
+            }
+
+            // Fetch updated product with new variants
+            const updatedProduct = await prisma.product.findUnique({
+                where: { id },
+                include: { variants: true }
+            });
+
+            return NextResponse.json(updatedProduct);
+        }
 
         return NextResponse.json(product);
     } catch (error: any) {
@@ -61,7 +101,7 @@ export async function PUT(
     }
 }
 
-// DELETE /api/products/[id] - Delete product
+// DELETE /api/products/[id] - Delete product (variants cascade)
 export async function DELETE(
     request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
