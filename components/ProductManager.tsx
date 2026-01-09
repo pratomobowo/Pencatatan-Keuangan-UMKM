@@ -716,15 +716,15 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
                 </div>
 
                 {/* Promo Settings */}
-                <div className="p-3 bg-orange-50 rounded-lg border border-orange-200">
+                <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
                   <label className="flex items-center gap-2 cursor-pointer mb-3">
                     <input
                       type="checkbox"
                       checked={formData.isPromo || false}
                       onChange={e => setFormData({ ...formData, isPromo: e.target.checked })}
-                      className="w-4 h-4 text-orange-600 bg-white border-slate-300 rounded focus:ring-orange-500"
+                      className="w-4 h-4 text-blue-600 bg-white border-slate-300 rounded focus:ring-blue-500"
                     />
-                    <span className="text-sm font-medium text-orange-700">🔥 Aktifkan Promo</span>
+                    <span className="text-sm font-medium text-slate-700">Aktifkan Promo</span>
                   </label>
 
                   {formData.isPromo && (
@@ -737,7 +737,7 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
                           placeholder="0"
                           value={formData.promoPrice || ''}
                           onChange={e => setFormData({ ...formData, promoPrice: parseFloat(e.target.value) })}
-                          className="w-full p-2 bg-white border border-slate-300 rounded-lg focus:ring-orange-500 focus:border-orange-500 text-sm"
+                          className="w-full p-2 bg-white border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
                         />
                       </div>
                       <div>
@@ -749,7 +749,7 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
                           placeholder="0"
                           value={formData.promoDiscount || ''}
                           onChange={e => setFormData({ ...formData, promoDiscount: parseInt(e.target.value) })}
-                          className="w-full p-2 bg-white border border-slate-300 rounded-lg focus:ring-orange-500 focus:border-orange-500 text-sm"
+                          className="w-full p-2 bg-white border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
                         />
                       </div>
                     </div>
@@ -757,33 +757,39 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
                 </div>
 
                 {/* Variant Editor */}
-                <div className="p-3 bg-purple-50 rounded-lg border border-purple-200">
+                <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
                   <div className="flex items-center justify-between mb-3">
-                    <span className="text-sm font-medium text-purple-700">📦 Opsi Satuan (Varian)</span>
+                    <span className="text-sm font-medium text-slate-700">Opsi Satuan</span>
                     <button
                       type="button"
                       onClick={addVariant}
-                      className="text-xs px-2 py-1 bg-purple-600 text-white rounded hover:bg-purple-700 flex items-center gap-1"
+                      className="text-xs px-2.5 py-1.5 bg-slate-600 text-white rounded-lg hover:bg-slate-700 flex items-center gap-1 transition-colors"
                     >
-                      <Plus size={12} /> Tambah
+                      <Plus size={12} /> Tambah Varian
                     </button>
                   </div>
 
                   {(formData.variants?.length || 0) === 0 ? (
-                    <p className="text-xs text-purple-500 text-center py-2">
-                      Belum ada varian. Klik tombol Tambah untuk menambah opsi satuan.
+                    <p className="text-xs text-slate-400 text-center py-3">
+                      Belum ada varian. Tambahkan opsi satuan seperti 1kg, 500gr, ekor.
                     </p>
                   ) : (
                     <div className="space-y-2">
                       {formData.variants?.map((variant, index) => (
-                        <div key={variant.id || index} className="bg-white p-2 rounded border border-purple-100">
-                          <div className="flex items-center gap-2 mb-2">
-                            <span className="text-xs font-medium text-purple-600">#{index + 1}</span>
-                            {index === 0 && <span className="text-[10px] px-1 bg-purple-100 text-purple-600 rounded">Default</span>}
+                        <div key={variant.id || index} className="bg-white p-3 rounded-lg border border-slate-200">
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-medium text-slate-500">Varian {index + 1}</span>
+                              {index === 0 && (
+                                <span className="text-[10px] px-1.5 py-0.5 bg-blue-100 text-blue-600 rounded font-medium">
+                                  Default
+                                </span>
+                              )}
+                            </div>
                             <button
                               type="button"
                               onClick={() => removeVariant(index)}
-                              className="ml-auto text-rose-500 hover:text-rose-700"
+                              className="p-1 text-slate-400 hover:text-rose-500 transition-colors"
                             >
                               <X size={14} />
                             </button>
@@ -796,7 +802,7 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
                                 placeholder="1kg"
                                 value={variant.unit}
                                 onChange={e => updateVariant(index, 'unit', e.target.value)}
-                                className="w-full px-2 py-1 text-xs border border-slate-200 rounded"
+                                className="w-full px-2 py-1.5 text-xs border border-slate-200 rounded-lg focus:ring-blue-500 focus:border-blue-500"
                               />
                             </div>
                             <div>
@@ -807,7 +813,7 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
                                 placeholder="1"
                                 value={variant.unitQty || ''}
                                 onChange={e => updateVariant(index, 'unitQty', parseFloat(e.target.value))}
-                                className="w-full px-2 py-1 text-xs border border-slate-200 rounded"
+                                className="w-full px-2 py-1.5 text-xs border border-slate-200 rounded-lg focus:ring-blue-500 focus:border-blue-500"
                               />
                             </div>
                             <div>
@@ -817,7 +823,7 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
                                 placeholder="0"
                                 value={variant.costPrice || ''}
                                 onChange={e => updateVariant(index, 'costPrice', parseFloat(e.target.value))}
-                                className="w-full px-2 py-1 text-xs border border-slate-200 rounded"
+                                className="w-full px-2 py-1.5 text-xs border border-slate-200 rounded-lg focus:ring-blue-500 focus:border-blue-500"
                               />
                             </div>
                             <div>
@@ -827,7 +833,7 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
                                 placeholder="0"
                                 value={variant.price || ''}
                                 onChange={e => updateVariant(index, 'price', parseFloat(e.target.value))}
-                                className="w-full px-2 py-1 text-xs border border-slate-200 rounded"
+                                className="w-full px-2 py-1.5 text-xs border border-slate-200 rounded-lg focus:ring-blue-500 focus:border-blue-500"
                               />
                             </div>
                           </div>
@@ -835,9 +841,6 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
                       ))}
                     </div>
                   )}
-                  <p className="text-[10px] text-purple-500 mt-2">
-                    Contoh: 1kg, 500gr, 250gr, ekor, pack
-                  </p>
                 </div>
 
                 {/* Profit Preview */}
