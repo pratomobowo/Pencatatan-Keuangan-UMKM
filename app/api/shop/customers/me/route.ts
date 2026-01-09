@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
             );
         }
 
-        const customer = await prisma.shopCustomer.findUnique({
+        const customer = await prisma.customer.findUnique({
             where: { id: tokenData.userId },
             select: {
                 id: true,
@@ -83,7 +83,7 @@ export async function PUT(request: NextRequest) {
         const body = await request.json();
         const { name, email } = body;
 
-        const customer = await prisma.shopCustomer.update({
+        const customer = await prisma.customer.update({
             where: { id: tokenData.userId },
             data: {
                 name: name || undefined,

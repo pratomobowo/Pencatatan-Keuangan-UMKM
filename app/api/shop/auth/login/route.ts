@@ -45,13 +45,29 @@ export async function POST(request: NextRequest) {
         // If not found as admin, try as shop customer (by phone)
         if (userType === 'customer') {
             const identifier = phone || email;
-            const customer = await prisma.shopCustomer.findUnique({
-                where: { phone: identifier },
+            // Use unified Customer model
+            // Note: Currently only finding by phone as it's the unique identifier
+            const customer = await prisma.customer.findFirst({
+                where: {
+                    OR: [
+                        { phone: identifier },
+                        // Optional: Allow finding by email if provided and configured
+                        // { email: identifier }
+                    ]
+                },
             });
 
             if (!customer) {
                 return NextResponse.json(
                     { error: 'Akun tidak ditemukan' },
+                    { status: 401 }
+                );
+            }
+
+            // For unified customer, password might be null (manual customer)
+            if (!customer.password) {
+                return NextResponse.json(
+                    { error: 'Akun ini belum diaktivasi untuk login. Silakan daftar ulang.' },
                     { status: 401 }
                 );
             }

@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
             where.status = status.toUpperCase();
         }
 
-        const orders = await prisma.shopOrder.findMany({
+        const orders = await prisma.order.findMany({
             where,
             include: {
                 items: {
@@ -71,7 +71,7 @@ export async function GET(request: NextRequest) {
                 quantity: item.qty,
                 image: item.productImage || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=200&q=80',
             })),
-            total: Number(order.total),
+            total: Number(order.grandTotal),
         }));
 
         return NextResponse.json(transformed);
@@ -115,22 +115,31 @@ export async function POST(request: NextRequest) {
         );
         const shippingFee = 15000;
         const serviceFee = 1000;
-        const total = subtotal + shippingFee + serviceFee;
+        const grandTotal = subtotal + shippingFee + serviceFee;
 
         // Create order with items
-        const order = await prisma.shopOrder.create({
+        const order = await prisma.order.create({
             data: {
-                customerId: tokenData?.userId as any,
-                addressLabel: addressLabel || null,
-                addressName,
-                addressPhone,
-                addressFull,
+                customerId: tokenData?.userId || null,
+                // Map Address fields to new Order model
+                recipientName: addressName,
+                recipientPhone: addressPhone,
+                shippingAddress: addressFull,
+                customerName: addressName, // Snapshot
+                customerPhone: addressPhone, // Snapshot
+                customerAddress: addressFull, // Snapshot
+
+                // Financials
                 subtotal,
                 shippingFee,
                 serviceFee,
-                total,
+                grandTotal,
+
+                // Meta
+                source: 'ONLINE',
                 paymentMethod: paymentMethod || 'cod',
-                notes: notes || null,
+                notes: notes ? `${addressLabel ? `[${addressLabel}] ` : ''}${notes}` : (addressLabel ? `[${addressLabel}]` : null),
+
                 items: {
                     create: items.map((item: any) => ({
                         productId: item.productId || null,
@@ -138,11 +147,13 @@ export async function POST(request: NextRequest) {
                         productImage: item.image || null,
                         variant: item.variant || item.unit || '-',
                         qty: item.quantity,
+                        unit: item.unit || 'pcs',
                         price: item.price,
+                        costPrice: item.costPrice || 0, // Fallback
                         total: item.price * item.quantity,
                     })),
                 },
-            } as any,
+            } as any, // Cast to any to bypass TS error until schema push
             include: {
                 items: true,
             },

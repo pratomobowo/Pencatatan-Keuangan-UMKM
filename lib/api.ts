@@ -64,7 +64,7 @@ export const ordersAPI = {
         method: 'POST',
         body: JSON.stringify(data),
     }),
-    updateStatus: (id: string, status: 'PENDING' | 'PAID' | 'CANCELLED') =>
+    updateStatus: (id: string, status: 'PENDING' | 'PAID' | 'CANCELLED' | ShopOrderStatus) =>
         fetchAPI<Order>(`/orders/${id}`, {
             method: 'PATCH',
             body: JSON.stringify({ status }),

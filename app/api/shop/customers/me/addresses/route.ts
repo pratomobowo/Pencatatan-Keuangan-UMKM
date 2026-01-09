@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
             );
         }
 
-        const addresses = await prisma.shopAddress.findMany({
+        const addresses = await prisma.address.findMany({
             where: { customerId: tokenData.userId },
             orderBy: [
                 { isDefault: 'desc' },
@@ -69,18 +69,18 @@ export async function POST(request: NextRequest) {
 
         // If this is default, unset other defaults
         if (isDefault) {
-            await prisma.shopAddress.updateMany({
+            await prisma.address.updateMany({
                 where: { customerId: tokenData.userId },
                 data: { isDefault: false },
             });
         }
 
         // Check if first address (make it default)
-        const addressCount = await prisma.shopAddress.count({
+        const addressCount = await prisma.address.count({
             where: { customerId: tokenData.userId },
         });
 
-        const newAddress = await prisma.shopAddress.create({
+        const newAddress = await prisma.address.create({
             data: {
                 customerId: tokenData.userId,
                 label,

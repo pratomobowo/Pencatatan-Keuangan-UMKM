@@ -88,11 +88,11 @@ export async function PATCH(
                 },
             });
 
-            if (Number(order.deliveryFee) > 0) {
+            if (Number(order.shippingFee) > 0) {
                 await prisma.transaction.create({
                     data: {
                         type: 'INCOME',
-                        amount: order.deliveryFee,
+                        amount: order.shippingFee,
                         category: 'Ongkos Kirim (Delivery)',
                         description: `Ongkir Order #${order.orderNumber}`,
                         orderId: order.id,

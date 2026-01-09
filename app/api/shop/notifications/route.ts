@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const notifications = await prisma.shopNotification.findMany({
+        const notifications = await prisma.notification.findMany({
             where: { customerId: tokenData.userId },
             orderBy: { createdAt: 'desc' },
             take: 50
@@ -37,12 +37,12 @@ export async function PUT(request: NextRequest) {
 
         if (!ids || !Array.isArray(ids)) {
             // Mark all as read if no ids provided
-            await prisma.shopNotification.updateMany({
+            await prisma.notification.updateMany({
                 where: { customerId: tokenData.userId, isRead: false },
                 data: { isRead: true }
             });
         } else {
-            await prisma.shopNotification.updateMany({
+            await prisma.notification.updateMany({
                 where: {
                     customerId: tokenData.userId,
                     id: { in: ids }

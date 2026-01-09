@@ -15,7 +15,7 @@ export async function PATCH(
 
         const { status } = await request.json();
 
-        const updatedOrder = await prisma.shopOrder.update({
+        const updatedOrder = await prisma.order.update({
             where: { id },
             data: { status },
             include: {
@@ -42,7 +42,7 @@ export async function PATCH(
             }
 
             if (message) {
-                await prisma.shopNotification.create({
+                await prisma.notification.create({
                     data: {
                         customerId: updatedOrder.customerId,
                         title: 'Update Status Pesanan',
@@ -71,7 +71,7 @@ export async function DELETE(
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        await prisma.shopOrder.delete({
+        await prisma.order.delete({
             where: { id }
         });
 

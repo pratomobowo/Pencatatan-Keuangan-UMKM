@@ -38,7 +38,7 @@ export async function GET(
             );
         }
 
-        const order = await prisma.shopOrder.findFirst({
+        const order = await prisma.order.findFirst({
             where: {
                 id,
                 customerId: tokenData.userId,
@@ -76,11 +76,11 @@ export async function GET(
             subtotal: Number(order.subtotal),
             shippingFee: Number(order.shippingFee),
             serviceFee: Number(order.serviceFee),
-            total: Number(order.total),
+            total: Number(order.grandTotal),
             address: {
-                name: order.addressLabel || 'Alamat',
-                phone: order.addressPhone,
-                address: order.addressFull,
+                name: order.recipientName || order.customerName || 'Penerima',
+                phone: order.recipientPhone || order.customerPhone || '-',
+                address: order.shippingAddress || order.customerAddress || '-',
             },
             deliveryTime: order.deliveryTime,
             paymentMethod: order.paymentMethod === 'cod'

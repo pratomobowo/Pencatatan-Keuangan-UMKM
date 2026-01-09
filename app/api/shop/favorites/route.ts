@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const favorites = await prisma.shopFavorite.findMany({
+        const favorites = await prisma.favorite.findMany({
             where: { customerId: tokenData.userId },
             include: {
                 product: {
@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Product ID required' }, { status: 400 });
         }
 
-        const favorite = await prisma.shopFavorite.upsert({
+        const favorite = await prisma.favorite.upsert({
             where: {
                 customerId_productId: {
                     customerId: tokenData.userId,
@@ -84,7 +84,7 @@ export async function DELETE(request: NextRequest) {
             return NextResponse.json({ error: 'Product ID required' }, { status: 400 });
         }
 
-        await prisma.shopFavorite.delete({
+        await prisma.favorite.delete({
             where: {
                 customerId_productId: {
                     customerId: tokenData.userId,

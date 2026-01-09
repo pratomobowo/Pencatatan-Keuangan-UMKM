@@ -4,20 +4,14 @@ import { Card } from './ui/Card';
 import { Plus, Trash2, Printer, CheckCircle, Clock, XCircle, ShoppingBag, ArrowLeft, Users, MessageCircle, MapPin, Phone, CreditCard } from 'lucide-react';
 
 interface OrderManagerProps {
-  orders?: Order[];
+  orders: Order[]; // All orders (MANUAL + ONLINE)
   products: Product[];
   customers?: Customer[];
   onAddOrder?: (order: Order) => void;
-  onUpdateStatus?: (id: string, status: 'PAID' | 'CANCELLED') => void;
+  onUpdateStatus?: (id: string, status: 'PAID' | 'CANCELLED' | ShopOrderStatus) => void;
   onDeleteOrder?: (id: string) => void;
   initialCustomerId?: string | null;
   onClearInitialCustomer?: () => void;
-
-  // Shop specific
-  isShopOrders?: boolean;
-  shopOrders?: ShopOrder[];
-  onUpdateShopStatus?: (id: string, status: ShopOrderStatus) => void;
-  onDeleteShopOrder?: (id: string) => void;
 }
 
 const formatCurrency = (amount: number) => {
@@ -33,32 +27,39 @@ export const OrderManager: React.FC<OrderManagerProps> = ({
   onDeleteOrder,
   initialCustomerId,
   onClearInitialCustomer,
-  isShopOrders = false,
-  shopOrders = [],
-  onUpdateShopStatus,
-  onDeleteShopOrder
 }) => {
   const [view, setView] = useState<'LIST' | 'FORM' | 'INVOICE'>('LIST');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-  const [selectedShopOrder, setSelectedShopOrder] = useState<ShopOrder | null>(null);
 
-  // Form State
+  // Form State - matches website order structure
   const [formData, setFormData] = useState<{
     customerId?: string;
     customerName: string;
     customerAddress: string;
     customerPhone: string;
+    recipientName: string;
+    recipientPhone: string;
+    shippingAddress: string;
+    paymentMethod: string;
+    deliveryTime: string;
     date: string;
     items: Omit<OrderItem, 'id' | 'total'>[];
-    deliveryFee: string;
+    shippingFee: string;
+    serviceFee: string;
     notes: string;
   }>({
     customerName: '',
     customerAddress: '',
     customerPhone: '',
+    recipientName: '',
+    recipientPhone: '',
+    shippingAddress: '',
+    paymentMethod: 'CASH',
+    deliveryTime: '',
     date: new Date().toISOString().split('T')[0],
     items: [{ productName: '', qty: 1, unit: 'kg', price: 0 }],
-    deliveryFee: '0',
+    shippingFee: '0',
+    serviceFee: '0',
     notes: ''
   });
 
@@ -145,14 +146,14 @@ export const OrderManager: React.FC<OrderManagerProps> = ({
 
   const calculateTotal = () => {
     const subtotal = formData.items.reduce((acc, item) => acc + (item.qty * item.price), 0);
-    const delivery = parseFloat(formData.deliveryFee) || 0;
+    const delivery = parseFloat(formData.shippingFee) || 0;
     return subtotal + delivery;
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const subtotal = formData.items.reduce((acc, item) => acc + (item.qty * item.price), 0);
-    const deliveryFee = parseFloat(formData.deliveryFee) || 0;
+    const deliveryFee = parseFloat(formData.shippingFee) || 0;
 
     const newOrder: Order = {
       id: crypto.randomUUID(),
@@ -167,7 +168,7 @@ export const OrderManager: React.FC<OrderManagerProps> = ({
         total: item.qty * item.price
       })),
       subtotal,
-      deliveryFee,
+      shippingFee: deliveryFee,
       grandTotal: subtotal + deliveryFee,
       status: 'PENDING',
       notes: formData.notes
@@ -181,9 +182,15 @@ export const OrderManager: React.FC<OrderManagerProps> = ({
       customerName: '',
       customerAddress: '',
       customerPhone: '',
+      recipientName: '',
+      recipientPhone: '',
+      shippingAddress: '',
+      paymentMethod: 'CASH',
+      deliveryTime: '',
       date: new Date().toISOString().split('T')[0],
       items: [{ productName: '', qty: 1, unit: 'kg', price: 0 }],
-      deliveryFee: '0',
+      shippingFee: '0',
+      serviceFee: '0',
       notes: ''
     });
     setView('LIST');
@@ -207,8 +214,8 @@ export const OrderManager: React.FC<OrderManagerProps> = ({
     });
 
     message += `\nSubtotal: ${formatCurrency(order.subtotal)}\n`;
-    if (order.deliveryFee > 0) {
-      message += `Ongkir: ${formatCurrency(order.deliveryFee)}\n`;
+    if (order.shippingFee > 0) {
+      message += `Ongkir: ${formatCurrency(order.shippingFee)}\n`;
     }
     message += `*TOTAL: ${formatCurrency(order.grandTotal)}*\n`;
     message += `--------------------------------\n`;
@@ -317,7 +324,7 @@ export const OrderManager: React.FC<OrderManagerProps> = ({
             </div>
             <div className="flex justify-between w-48 text-slate-600">
               <span>Ongkir:</span>
-              <span>{formatCurrency(selectedOrder.deliveryFee)}</span>
+              <span>{formatCurrency(selectedOrder.shippingFee)}</span>
             </div>
             <div className="flex justify-between w-48 text-xl font-semibold text-slate-900 pt-2 border-t border-slate-100">
               <span>Total:</span>
@@ -524,8 +531,8 @@ export const OrderManager: React.FC<OrderManagerProps> = ({
                 <input
                   type="number"
                   min="0"
-                  value={formData.deliveryFee}
-                  onChange={e => setFormData({ ...formData, deliveryFee: e.target.value })}
+                  value={formData.shippingFee}
+                  onChange={e => setFormData({ ...formData, shippingFee: e.target.value })}
                   className="w-full p-2 border rounded-lg text-sm text-slate-900"
                 />
               </div>
@@ -546,115 +553,6 @@ export const OrderManager: React.FC<OrderManagerProps> = ({
           </div>
         </form>
       </Card>
-    </div>
-  );
-
-  const renderShopList = () => (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-xl font-semibold text-slate-800">Order Toko Online</h2>
-          <p className="text-sm text-slate-500">Pantau dan kelola pesanan dari website.</p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 gap-4">
-        {shopOrders.length === 0 ? (
-          <div className="text-center py-12 bg-white rounded-xl border border-dashed border-slate-300">
-            <ShoppingBag className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-            <p className="text-slate-500 font-medium">Belum ada order online.</p>
-          </div>
-        ) : (
-          shopOrders.map(order => (
-            <Card key={order.id} className="hover:shadow-md transition-shadow">
-              <div className="flex flex-col md:flex-row justify-between gap-4">
-                <div className="flex-grow">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-orange-100 text-orange-600">
-                          #{order.orderNumber}
-                        </span>
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-medium ${order.status === 'PENDING' ? 'bg-yellow-100 text-yellow-700' :
-                          order.status === 'CONFIRMED' ? 'bg-blue-100 text-blue-700' :
-                            order.status === 'PREPARING' ? 'bg-purple-100 text-purple-700' :
-                              order.status === 'SHIPPING' ? 'bg-indigo-100 text-indigo-700' :
-                                order.status === 'DELIVERED' ? 'bg-emerald-100 text-emerald-700' :
-                                  'bg-slate-100 text-slate-600'
-                          }`}>
-                          {order.status}
-                        </span>
-                      </div>
-                      <h3 className="font-semibold text-slate-800 text-lg flex items-center gap-2">
-                        {order.addressName}
-                        {order.customer && <span className="text-xs font-normal text-slate-400 font-mono">(Reg: {order.customer.phone})</span>}
-                      </h3>
-                      <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1">
-                        <p className="text-xs text-slate-500 flex items-center gap-1">
-                          <Clock size={12} /> {new Date(order.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
-                        </p>
-                        <p className="text-xs text-slate-500 flex items-center gap-1">
-                          <Phone size={12} /> {order.addressPhone}
-                        </p>
-                        <p className="text-xs text-slate-500 flex items-center gap-1">
-                          <CreditCard size={12} /> {order.paymentMethod.toUpperCase()}
-                        </p>
-                      </div>
-                      <p className="text-xs text-slate-500 flex items-start gap-1 mt-2 max-w-xl">
-                        <MapPin size={12} className="mt-0.5 shrink-0" /> {order.addressFull}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="mt-4 text-sm text-slate-600 bg-slate-50 p-3 rounded-lg border border-slate-100">
-                    <ul className="space-y-1.5">
-                      {order.items.map((item, i) => (
-                        <li key={i} className="flex justify-between items-center">
-                          <span>{item.productName} <span className="text-slate-400 ml-1">({item.variant})</span></span>
-                          <span className="font-medium">x{item.qty}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-
-                <div className="flex flex-col justify-between items-end gap-3 min-w-[200px] border-l border-slate-100 pl-4">
-                  <div className="text-right">
-                    <p className="text-[10px] text-slate-400 uppercase tracking-wider font-bold">Total Pembayaran</p>
-                    <p className="text-xl font-bold text-blue-600">{formatCurrency(order.total)}</p>
-                    <p className="text-[10px] text-slate-400">Sub: {formatCurrency(order.subtotal)} + Ongkir: {formatCurrency(order.shippingFee)}</p>
-                  </div>
-
-                  <div className="flex flex-col gap-2 w-full">
-                    <select
-                      className="w-full text-xs font-semibold p-2 border rounded-lg bg-white"
-                      value={order.status}
-                      onChange={(e) => onUpdateShopStatus && onUpdateShopStatus(order.id, e.target.value as ShopOrderStatus)}
-                    >
-                      <option value="PENDING">Menunggu Konfirmasi</option>
-                      <option value="CONFIRMED">Dikonfirmasi</option>
-                      <option value="PREPARING">Sedang Disiapkan</option>
-                      <option value="SHIPPING">Dalam Pengiriman</option>
-                      <option value="DELIVERED">Selesai / Sampai</option>
-                      <option value="CANCELLED">Dibatalkan</option>
-                    </select>
-
-                    <div className="flex gap-2">
-                      {/* Future: Add Print Label/Invoice for Shop Orders */}
-                      <button
-                        onClick={() => onDeleteShopOrder && onDeleteShopOrder(order.id)}
-                        className="flex-1 flex justify-center items-center gap-1 px-3 py-2 bg-rose-50 text-rose-600 rounded text-xs font-bold hover:bg-rose-100"
-                      >
-                        <Trash2 size={14} /> Hapus
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </Card>
-          ))
-        )}
-      </div>
     </div>
   );
 
@@ -776,7 +674,7 @@ export const OrderManager: React.FC<OrderManagerProps> = ({
 
   return (
     <div>
-      {view === 'LIST' && (isShopOrders ? renderShopList() : renderList())}
+      {view === 'LIST' && renderList()}
       {view === 'FORM' && renderForm()}
       {view === 'INVOICE' && renderInvoice()}
     </div>

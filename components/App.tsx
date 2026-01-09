@@ -25,11 +25,10 @@ const App: React.FC = () => {
 
     // State
     const [transactions, setTransactions] = useState<Transaction[]>([]);
-    const [orders, setOrders] = useState<Order[]>([]);
+    const [orders, setOrders] = useState<Order[]>([]); // All orders (MANUAL + ONLINE)
     const [products, setProducts] = useState<Product[]>([]);
     const [customers, setCustomers] = useState<Customer[]>([]);
     const [costComponents, setCostComponents] = useState<CostComponent[]>([]);
-    const [shopOrders, setShopOrders] = useState<ShopOrder[]>([]);
     const [shopCustomers, setShopCustomers] = useState<ShopCustomer[]>([]);
     const [users, setUsers] = useState<User[]>([]);
     const [view, setView] = useState<ViewState>('DASHBOARD');
@@ -45,22 +44,28 @@ const App: React.FC = () => {
         const fetchData = async () => {
             try {
                 setLoading(true);
-                const [txData, orderData, productData, customerData, costData, shopOrderData, shopCustomerData] = await Promise.all([
+                const results = await Promise.allSettled([
                     transactionsAPI.getAll(),
-                    ordersAPI.getAll(),
+                    ordersAPI.getAll(), // Gets all orders (MANUAL + ONLINE)
                     productsAPI.getAll(),
                     customersAPI.getAll(),
                     costComponentsAPI.getAll(),
-                    adminShopOrdersAPI.getAll(),
                     adminShopCustomersAPI.getAll(),
                 ]);
-                setTransactions(txData);
-                setOrders(orderData);
-                setProducts(productData);
-                setCustomers(customerData);
-                setCostComponents(costData);
-                setShopOrders(shopOrderData);
-                setShopCustomers(shopCustomerData);
+
+                const handleResult = <T,>(result: PromiseSettledResult<T>, defaultValue: T, name: string) => {
+                    if (result.status === 'fulfilled') return result.value;
+                    console.error(`Failed to fetch ${name}:`, result.reason);
+                    toast.error(`Gagal memuat ${name}`);
+                    return defaultValue;
+                };
+
+                setTransactions(handleResult(results[0], [], 'Data Transaksi'));
+                setOrders(handleResult(results[1], [], 'Data Pesanan')); // All orders
+                setProducts(handleResult(results[2], [], 'Data Produk'));
+                setCustomers(handleResult(results[3], [], 'Data Pelanggan'));
+                setCostComponents(handleResult(results[4], [], 'Data Biaya'));
+                setShopCustomers(handleResult(results[5], [], 'Pelanggan Toko'));
             } catch (error) {
                 console.error('Failed to fetch initial data:', error);
                 toast.error('Gagal memuat data');
@@ -143,7 +148,7 @@ const App: React.FC = () => {
         }
     };
 
-    const updateOrderStatus = async (id: string, status: 'PAID' | 'CANCELLED') => {
+    const updateOrderStatus = async (id: string, status: 'PAID' | 'CANCELLED' | ShopOrderStatus) => {
         const orderToUpdate = orders.find(o => o.id === id);
         if (!orderToUpdate) return;
 
@@ -191,36 +196,6 @@ const App: React.FC = () => {
         }
     };
 
-    // Handlers - Shop Orders
-    const updateShopOrderStatus = async (id: string, status: ShopOrderStatus) => {
-        try {
-            const updated = await adminShopOrdersAPI.updateStatus(id, status);
-            setShopOrders(prev => prev.map(o => o.id === id ? updated : o));
-            toast.success(`Status pesanan #${updated.orderNumber} diupdate`);
-
-            // If completed/delivered, we might want to refresh analytics/transactions
-            if (status === 'DELIVERED') {
-                const txs = await transactionsAPI.getAll();
-                setTransactions(txs);
-            }
-        } catch (error) {
-            console.error('Failed to update shop order:', error);
-            toast.error('Gagal update status pesanan');
-        }
-    };
-
-    const deleteShopOrder = async (id: string) => {
-        if (confirm('Hapus pesanan online ini dari database?')) {
-            try {
-                await adminShopOrdersAPI.delete(id);
-                setShopOrders(prev => prev.filter(o => o.id !== id));
-                toast.success('Pesanan berhasil dihapus');
-            } catch (error) {
-                console.error('Failed to delete shop order:', error);
-                toast.error('Gagal menghapus pesanan');
-            }
-        }
-    };
 
     // Handlers - Products
     const addProduct = async (product: Product) => {
@@ -382,23 +357,7 @@ const App: React.FC = () => {
                                 }`}
                         >
                             <ShoppingCart size={20} />
-                            <span>Order Manual</span>
-                        </button>
-
-                        <button
-                            onClick={() => setView('SHOP_ORDERS')}
-                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${view === 'SHOP_ORDERS'
-                                ? 'bg-blue-600 text-white shadow-md'
-                                : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600'
-                                }`}
-                        >
-                            <ShoppingCart className="text-orange-500" size={20} />
-                            <span>Order Toko Online</span>
-                            {shopOrders.filter(o => o.status === 'PENDING').length > 0 && (
-                                <span className="ml-auto bg-orange-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
-                                    {shopOrders.filter(o => o.status === 'PENDING').length}
-                                </span>
-                            )}
+                            <span>Pesanan</span>
                         </button>
 
                         <div className="text-xs font-medium text-slate-400 px-4 mb-2 mt-4 uppercase tracking-wider">Manajemen</div>
@@ -550,8 +509,7 @@ const App: React.FC = () => {
                         <h2 className="text-2xl font-semibold text-slate-800">
                             {view === 'DASHBOARD' && 'Dashboard Pasarantar'}
                             {view === 'REPORTS' && 'Laporan Keuangan Bulanan'}
-                            {view === 'ORDERS' && 'Manajemen Order POS'}
-                            {view === 'SHOP_ORDERS' && 'Order Toko Online'}
+                            {view === 'ORDERS' && 'Manajemen Pesanan'}
                             {view === 'PRODUCTS' && 'Katalog Produk'}
                             {view === 'HPP_CALCULATOR' && 'Kalkulator & Resep HPP'}
                             {view === 'CUSTOMERS' && 'Database Pelanggan POS'}
@@ -565,8 +523,7 @@ const App: React.FC = () => {
                         <p className="text-slate-500 text-sm mt-1">
                             {view === 'DASHBOARD' && 'Pantau arus kas penjualan protein dan biaya operasional.'}
                             {view === 'REPORTS' && 'Evaluasi keuntungan bersih, aset, dan performa produk secara mendalam.'}
-                            {view === 'ORDERS' && 'Kelola pesanan pelanggan manual (POS) dan invoice.'}
-                            {view === 'SHOP_ORDERS' && 'Pesanan masuk dari website toko online.'}
+                            {view === 'ORDERS' && 'Kelola semua pesanan (manual dan online).'}
                             {view === 'PRODUCTS' && 'Atur daftar harga, stok (inventory), dan HPP dasar.'}
                             {view === 'HPP_CALCULATOR' && 'Rakit harga modal detail (Bahan Baku + Kemasan + Ops) sebelum dijual.'}
                             {view === 'CUSTOMERS' && 'Kelola data kontak pelanggan manual.'}
@@ -605,15 +562,6 @@ const App: React.FC = () => {
                     />
                 )}
 
-                {view === 'SHOP_ORDERS' && (
-                    <OrderManager
-                        isShopOrders={true}
-                        shopOrders={shopOrders}
-                        products={products}
-                        onUpdateShopStatus={updateShopOrderStatus}
-                        onDeleteShopOrder={deleteShopOrder}
-                    />
-                )}
 
                 {view === 'PRODUCTS' && (
                     <ProductManager

@@ -18,13 +18,14 @@ interface OrderDetail {
     subtotal: number;
     shippingFee: number;
     serviceFee?: number;
-    total: number;
-    address: {
-        name: string;
-        phone: string;
-        address: string;
-    };
-    deliveryTime: string;
+    grandTotal: number;
+
+    // Unified Address Fields
+    recipientName: string;
+    recipientPhone: string;
+    shippingAddress: string;
+
+    deliveryTime?: string;
     paymentMethod: string;
 }
 
@@ -193,10 +194,10 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                     <div className="flex gap-3">
                         <MapPin size={20} className="text-orange-500 shrink-0 mt-0.5" />
                         <div>
-                            <p className="font-medium text-stone-900">{order.address.name}</p>
-                            <p className="text-sm text-gray-600 mt-1">{order.address.address}</p>
+                            <p className="font-medium text-stone-900">{order.recipientName}</p>
+                            <p className="text-sm text-gray-600 mt-1">{order.shippingAddress}</p>
                             <p className="text-sm text-gray-500 mt-1 flex items-center gap-1">
-                                <Phone size={14} /> {order.address.phone}
+                                <Phone size={14} /> {order.recipientPhone}
                             </p>
                         </div>
                     </div>
@@ -248,7 +249,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                         <div className="border-t border-dashed border-gray-200 my-2"></div>
                         <div className="flex justify-between">
                             <span className="font-bold text-stone-900">Total</span>
-                            <span className="font-bold text-orange-600">Rp {order.total.toLocaleString('id-ID')}</span>
+                            <span className="font-bold text-orange-600">Rp {order.grandTotal.toLocaleString('id-ID')}</span>
                         </div>
                     </div>
                     <div className="mt-3 pt-3 border-t border-gray-100">

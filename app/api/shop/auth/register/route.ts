@@ -17,22 +17,49 @@ export async function POST(request: NextRequest) {
         }
 
         // Check if phone already exists
-        const existing = await prisma.shopCustomer.findUnique({
+        const existing = await prisma.customer.findUnique({
             where: { phone },
         });
 
         if (existing) {
-            return NextResponse.json(
-                { error: 'Nomor HP sudah terdaftar' },
-                { status: 400 }
-            );
+            // Check if customer already has a password (registered)
+            if (existing.password) {
+                return NextResponse.json(
+                    { error: 'Nomor HP sudah terdaftar' },
+                    { status: 400 }
+                );
+            }
+
+            // If customer exists but has no password (manual customer), update it
+            const hashedPassword = await bcrypt.hash(password, 10);
+
+            const customer = await prisma.customer.update({
+                where: { id: existing.id },
+                data: {
+                    name, // Update name if provided
+                    password: hashedPassword,
+                    email: email || existing.email,
+                },
+                select: {
+                    id: true,
+                    name: true,
+                    phone: true,
+                    email: true,
+                    createdAt: true,
+                },
+            });
+
+            return NextResponse.json({
+                message: 'Registrasi berhasil (Akun diaktifkan)',
+                customer,
+            }, { status: 201 });
         }
 
         // Hash password
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Create customer
-        const customer = await prisma.shopCustomer.create({
+        // Create new customer
+        const customer = await prisma.customer.create({
             data: {
                 name,
                 phone,

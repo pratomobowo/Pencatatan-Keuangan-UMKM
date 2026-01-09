@@ -127,7 +127,7 @@ export const CustomerManager: React.FC<CustomerManagerProps> = ({
                 <div className="text-center p-2 bg-slate-50 rounded-lg">
                   <p className="text-[10px] text-slate-400 uppercase font-bold">Member Sejak</p>
                   <p className="text-xs font-semibold text-slate-600 mt-1">
-                    {new Date(sc.createdAt).toLocaleDateString('id-ID', { month: 'short', year: 'numeric' })}
+                    {sc.createdAt ? new Date(sc.createdAt).toLocaleDateString('id-ID', { month: 'short', year: 'numeric' }) : '-'}
                   </p>
                 </div>
               </div>

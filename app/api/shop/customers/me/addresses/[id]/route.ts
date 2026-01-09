@@ -39,7 +39,7 @@ export async function PUT(
         }
 
         // Verify address belongs to customer
-        const existing = await prisma.shopAddress.findFirst({
+        const existing = await prisma.address.findFirst({
             where: { id, customerId: tokenData.userId },
         });
 
@@ -55,13 +55,13 @@ export async function PUT(
 
         // If setting as default, unset others
         if (isDefault) {
-            await prisma.shopAddress.updateMany({
+            await prisma.address.updateMany({
                 where: { customerId: tokenData.userId, id: { not: id } },
                 data: { isDefault: false },
             });
         }
 
-        const updated = await prisma.shopAddress.update({
+        const updated = await prisma.address.update({
             where: { id },
             data: {
                 label: label || undefined,
@@ -100,7 +100,7 @@ export async function DELETE(
         }
 
         // Verify address belongs to customer
-        const existing = await prisma.shopAddress.findFirst({
+        const existing = await prisma.address.findFirst({
             where: { id, customerId: tokenData.userId },
         });
 
@@ -111,7 +111,7 @@ export async function DELETE(
             );
         }
 
-        await prisma.shopAddress.delete({
+        await prisma.address.delete({
             where: { id },
         });
 

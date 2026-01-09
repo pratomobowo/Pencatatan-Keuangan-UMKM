@@ -22,12 +22,17 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Password baru minimal 8 karakter' }, { status: 400 });
         }
 
-        const customer = await prisma.shopCustomer.findUnique({
+        const customer = await prisma.customer.findUnique({
             where: { id: tokenData.userId }
         });
 
         if (!customer) {
             return NextResponse.json({ error: 'Customer not found' }, { status: 404 });
+        }
+
+        // Check if customer has a password
+        if (!customer.password) {
+            return NextResponse.json({ error: 'Akun ini tidak memiliki password (Login via OTP/Google)' }, { status: 400 });
         }
 
         // Verify current password
@@ -40,7 +45,7 @@ export async function POST(request: NextRequest) {
         const hashedPassword = await bcrypt.hash(newPassword, 10);
 
         // Update password
-        await prisma.shopCustomer.update({
+        await prisma.customer.update({
             where: { id: tokenData.userId },
             data: { password: hashedPassword }
         });

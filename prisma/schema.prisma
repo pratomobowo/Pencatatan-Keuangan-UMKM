@@ -18,6 +18,8 @@ model User {
   email     String   @unique
   name      String
   password  String?   // Optional for OAuth users
+  image     String?   // Profile image URL from OAuth
+  emailVerified DateTime? // Email verification timestamp
   role      String   @default("user") // user, admin
   
   createdAt DateTime @default(now())
@@ -76,7 +78,7 @@ model Product {
   // Relations
   variants    ProductVariant[]
   orderItems  OrderItem[]
-  shopFavorites ShopFavorite[]
+  favorites    Favorite[]
   
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -112,15 +114,26 @@ model ProductVariant {
 // CUSTOMER MANAGEMENT
 // ============================================
 
+// ============================================
+// CUSTOMER MANAGEMENT
+// ============================================
+
 model Customer {
   id          String   @id @default(uuid())
   name        String
   phone       String   @unique
+  password    String?  // Hashed with bcrypt (Optional for manual customers or OAuth)
+  email       String?
   address     String?
   notes       String?
   
-  orders      Order[]
+  // Relations
+  orders        Order[]
+  addresses     Address[]
+  favorites     Favorite[]
+  notifications Notification[]
   
+  // Stats
   totalSpent  Decimal  @db.Decimal(10, 2) @default(0)
   orderCount  Int      @default(0)
   lastOrderDate DateTime?
@@ -129,7 +142,26 @@ model Customer {
   updatedAt   DateTime @updatedAt
   
   @@index([phone])
+  @@index([email])
   @@index([name])
+}
+
+model Address {
+  id          String   @id @default(uuid())
+  customerId  String
+  customer    Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  
+  label       String
+  name        String
+  phone       String
+  address     String
+  isDefault   Boolean  @default(false)
+  type        String   @default("home") // home, office
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([customerId])
 }
 
 // ============================================
@@ -143,15 +175,32 @@ model Order {
   customerId    String?
   customer      Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
   
+  // Basic Customer Details (Snapshot)
   customerName  String
   customerAddress String?
   customerPhone String?
   
+  // Shipping / Delivery
+  recipientName String?
+  recipientPhone String?
+  shippingAddress String?
+  deliveryTime   String?
+  
+  // Source & Meta
+  source        OrderSource @default(MANUAL) // MANUAL, ONLINE
+  
+  // Items
   items         OrderItem[]
+  
+  // Financials
   subtotal      Decimal  @db.Decimal(10, 2)
-  deliveryFee   Decimal  @db.Decimal(10, 2) @default(0)
+  shippingFee   Decimal  @db.Decimal(10, 2) @default(0) // Renamed from deliveryFee for consistency
+  serviceFee    Decimal  @db.Decimal(10, 2) @default(0)
+  discount      Decimal  @db.Decimal(10, 2) @default(0)
   grandTotal    Decimal  @db.Decimal(10, 2)
   
+  // Payment & Status
+  paymentMethod String   @default("CASH") // CASH, COD, TRANSFER
   status        OrderStatus @default(PENDING)
   notes         String?
   
@@ -162,11 +211,21 @@ model Order {
   @@index([orderNumber])
   @@index([status])
   @@index([createdAt])
+  @@index([source])
+}
+
+enum OrderSource {
+  MANUAL
+  ONLINE
 }
 
 enum OrderStatus {
   PENDING
-  PAID
+  CONFIRMED // Shop specific
+  PREPARING // Shop specific
+  SHIPPING  // Shop specific
+  DELIVERED // Shop specific
+  PAID      // Manual specific (completed)
   CANCELLED
 }
 
@@ -175,10 +234,15 @@ model OrderItem {
   orderId     String
   order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
   
+  // Product Link (Optional for manual custom items)
   productId   String?
   product     Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
   
+  // Snapshot Data
   productName String
+  productImage String? // Added for shop display
+  variant     String?  // Added for shop variant info
+  
   qty         Int
   unit        String
   price       Decimal  @db.Decimal(10, 2)
@@ -232,112 +296,13 @@ model CostComponent {
 }
 
 // ============================================
-// SHOP CUSTOMER (Separate from Admin User)
+// SHOP EXTRAS (Favorites, Notifications, Config)
 // ============================================
 
-model ShopCustomer {
-  id          String   @id @default(uuid())
-  name        String
-  phone       String   @unique
-  password    String   // Hashed with bcrypt
-  email       String?
-  
-  addresses     ShopAddress[]
-  orders        ShopOrder[]
-  favorites     ShopFavorite[]
-  notifications ShopNotification[]
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  @@index([phone])
-  @@index([email])
-}
-
-model ShopAddress {
+model Favorite {
   id          String   @id @default(uuid())
   customerId  String
-  customer    ShopCustomer @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  
-  label       String
-  name        String
-  phone       String
-  address     String
-  isDefault   Boolean  @default(false)
-  type        String   @default("home") // home, office
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  @@index([customerId])
-}
-
-model ShopOrder {
-  id            String   @id @default(uuid())
-  orderNumber   String   @unique @default(cuid())
-  
-  customerId    String?
-  customer      ShopCustomer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
-  
-  // Shipping
-  addressLabel  String?
-  addressName   String
-  addressPhone  String
-  addressFull   String
-  deliveryTime  String?
-  
-  // Items
-  items         ShopOrderItem[]
-  
-  // Pricing
-  subtotal      Decimal  @db.Decimal(10, 2)
-  shippingFee   Decimal  @db.Decimal(10, 2) @default(15000)
-  serviceFee    Decimal  @db.Decimal(10, 2) @default(1000)
-  total         Decimal  @db.Decimal(10, 2)
-  
-  // Payment & Status
-  paymentMethod String   @default("cod")
-  status        ShopOrderStatus @default(PENDING)
-  notes         String?
-  
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  
-  @@index([customerId])
-  @@index([orderNumber])
-  @@index([status])
-  @@index([createdAt])
-}
-
-enum ShopOrderStatus {
-  PENDING
-  CONFIRMED
-  PREPARING
-  SHIPPING
-  DELIVERED
-  CANCELLED
-}
-
-model ShopOrderItem {
-  id          String   @id @default(uuid())
-  orderId     String
-  order       ShopOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  
-  productId   String?
-  productName String
-  productImage String?
-  variant     String
-  qty         Int
-  price       Decimal  @db.Decimal(10, 2)
-  total       Decimal  @db.Decimal(10, 2)
-  
-  @@index([orderId])
-}
-
-model ShopFavorite {
-  id          String   @id @default(uuid())
-  customerId  String
-  customer    ShopCustomer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  customer    Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
   productId   String
   product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   
@@ -348,10 +313,10 @@ model ShopFavorite {
   @@index([productId])
 }
 
-model ShopNotification {
+model Notification {
   id          String   @id @default(uuid())
   customerId  String
-  customer    ShopCustomer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  customer    Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
   
   title       String
   message     String

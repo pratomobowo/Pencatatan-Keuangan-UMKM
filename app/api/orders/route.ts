@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
                 customerAddress,
                 customerPhone,
                 subtotal,
-                deliveryFee: deliveryFee || 0,
+                shippingFee: deliveryFee || 0,
                 grandTotal,
                 status: status || 'PENDING',
                 notes,

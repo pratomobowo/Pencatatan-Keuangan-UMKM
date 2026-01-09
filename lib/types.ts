@@ -120,17 +120,16 @@ export interface Customer {
   notes?: string;
   totalSpent?: number; // Calculated field
   lastOrderDate?: string; // Calculated field
+  orderCount?: number; // Calculated field
+
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 // Shop Customer Types
-export interface ShopCustomer {
-  id: string;
-  name: string;
-  phone: string;
+export interface ShopCustomer extends Customer {
   email?: string | null;
-  createdAt: string;
-  updatedAt: string;
-  orders?: ShopOrder[];
+  orders?: ShopOrder[]; // Use the alias
   _count?: {
     orders: number;
   };
@@ -150,57 +149,46 @@ export interface OrderItem {
 
 export interface Order {
   id: string;
-  customerId?: string; // Link to customer
+  orderNumber?: string; // Added
+  customerId?: string;
   customerName: string;
   customerAddress?: string;
   customerPhone?: string;
+
+  // Shipping Details (New Unified Fields)
+  recipientName?: string;
+  recipientPhone?: string;
+  shippingAddress?: string;
+  deliveryTime?: string;
+
   date: string; // ISO String
   items: OrderItem[];
   subtotal: number;
-  deliveryFee: number;
+  shippingFee: number;
+  serviceFee?: number; // Added
   grandTotal: number;
-  status: 'PENDING' | 'PAID' | 'CANCELLED';
+
+  paymentMethod?: string; // Added
+  status: string; // broadened to string to accept all statuses or 'PENDING' | 'PAID' | 'CANCELLED' | 'CONFIRMED' etc
   notes?: string;
+
+  // Relations
+  customer?: Customer;
+
+  createdAt?: string;
+  updatedAt?: string;
 }
 
-// Shop Order Types
+// Shop Order Types (in sync with Order)
 export type ShopOrderStatus = 'PENDING' | 'CONFIRMED' | 'PREPARING' | 'SHIPPING' | 'DELIVERED' | 'CANCELLED';
 
-export interface ShopOrderItem {
-  id: string;
-  orderId: string;
-  productId?: string | null;
-  productName: string;
+export interface ShopOrderItem extends OrderItem {
+  variant?: string;
   productImage?: string | null;
-  variant: string;
-  qty: number;
-  price: number;
-  total: number;
 }
 
-export interface ShopOrder {
-  id: string;
-  orderNumber: string;
-  customerId?: string | null;
-  customer?: ShopCustomer | null;
-
-  addressName: string;
-  addressPhone: string;
-  addressFull: string;
-  addressLabel?: string | null;
-  deliveryTime?: string | null;
-
+// Alias ShopOrder to Order since they are now the same model
+// We allow for some extended fields if necessary, but primarily it's Order
+export interface ShopOrder extends Order {
   items: ShopOrderItem[];
-
-  subtotal: number;
-  shippingFee: number;
-  serviceFee: number;
-  total: number;
-
-  paymentMethod: string;
-  status: ShopOrderStatus;
-  notes?: string | null;
-
-  createdAt: string;
-  updatedAt: string;
 }
