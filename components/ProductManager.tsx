@@ -143,14 +143,16 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
 
   // Variant management handlers
   const addVariant = () => {
+    const isFirstVariant = (formData.variants?.length || 0) === 0;
+
     const newVariant: ProductVariant = {
       id: `temp-${Date.now()}`,
       productId: formData.id || '',
-      unit: '',
+      unit: isFirstVariant ? formData.unit : '',
       unitQty: 1,
-      price: 0,
-      costPrice: 0,
-      isDefault: (formData.variants?.length || 0) === 0
+      price: isFirstVariant ? (formData.price || 0) : 0,
+      costPrice: isFirstVariant ? (formData.costPrice || 0) : 0,
+      isDefault: isFirstVariant
     };
     setFormData(prev => ({
       ...prev,
@@ -166,12 +168,25 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
   };
 
   const updateVariant = (index: number, field: keyof ProductVariant, value: any) => {
-    setFormData(prev => ({
-      ...prev,
-      variants: (prev.variants || []).map((v, i) =>
+    setFormData(prev => {
+      const newVariants = (prev.variants || []).map((v, i) =>
         i === index ? { ...v, [field]: value } : v
-      )
-    }));
+      );
+
+      // If updating default variant, sync with main product fields
+      let syncedFields = {};
+      if (newVariants[index].isDefault) {
+        if (field === 'price') syncedFields = { price: value };
+        if (field === 'costPrice') syncedFields = { costPrice: value };
+        if (field === 'unit') syncedFields = { unit: value };
+      }
+
+      return {
+        ...prev,
+        variants: newVariants,
+        ...syncedFields
+      };
+    });
   };
 
   // Handle image upload
