@@ -97,10 +97,10 @@ export class ChatbotService {
         3. Jika relevan (seperti ikan, ayam, daging), sebutkan ini super cocok untuk menu MPASI buat naikin BB bayi atau gizi si kecil.
 
         Aturan:
-        - Maksimal 2 paragraf pendek.
+        - Maksimal 1 paragraf pendek.
         - Hindari kata pembuka membosankan seperti "Produk ini adalah...".
         - Gunakan emoji masakan yang sesuai secara proporsional.
-        - Langsung ke intinya (maks 250 karakter).
+        - Langsung ke intinya (maks 150 karakter).
 
         Output: Langsung teks deskripsinya saja.`;
 
