@@ -100,6 +100,7 @@ export async function GET(
                 name: item.productName,
                 quantity: item.qty,
                 price: Number(item.price),
+                originalPrice: item.originalPrice ? Number(item.originalPrice) : Number(item.price),
                 image: item.productImage || '/images/coming-soon.jpg',
             })),
             subtotal: Number(order.subtotal),

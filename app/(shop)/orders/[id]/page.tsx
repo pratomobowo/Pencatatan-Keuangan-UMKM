@@ -14,7 +14,7 @@ interface OrderDetail {
     orderNumber: string;
     date: string;
     status: OrderStatus;
-    items: { name: string; quantity: number; price: number; image: string }[];
+    items: { name: string; quantity: number; price: number; originalPrice?: number; image: string }[];
     subtotal: number;
     shippingFee: number;
     serviceFee?: number;
@@ -125,6 +125,12 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
     }
 
     const currentStep = getStatusIndex(order.status);
+    const totalSavings = order.items.reduce((sum, item) => {
+        if (item.originalPrice && item.originalPrice > item.price) {
+            return sum + (item.originalPrice - item.price) * item.quantity;
+        }
+        return sum;
+    }, 0);
 
     return (
         <>
@@ -247,8 +253,14 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                     <div className="space-y-2">
                         <div className="flex justify-between text-sm">
                             <span className="text-gray-500">Subtotal</span>
-                            <span className="text-stone-900">Rp {(order.subtotal || 0).toLocaleString('id-ID')}</span>
+                            <span className="text-stone-900">Rp {(totalSavings > 0 ? (order.subtotal + totalSavings) : order.subtotal).toLocaleString('id-ID')}</span>
                         </div>
+                        {totalSavings > 0 && (
+                            <div className="flex justify-between text-sm">
+                                <span className="text-emerald-600 font-medium italic">Hemat Promo</span>
+                                <span className="font-medium text-emerald-600">- Rp {totalSavings.toLocaleString('id-ID')}</span>
+                            </div>
+                        )}
                         <div className="flex justify-between text-sm">
                             <span className="text-gray-500">Ongkos Kirim</span>
                             <span className="text-stone-900">Rp {(order.shippingFee || 0).toLocaleString('id-ID')}</span>

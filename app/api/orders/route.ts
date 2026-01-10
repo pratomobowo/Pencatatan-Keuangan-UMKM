@@ -79,6 +79,7 @@ export async function POST(request: NextRequest) {
                         qty: item.qty,
                         unit: item.unit,
                         price: item.price,
+                        originalPrice: item.originalPrice || item.price,
                         costPrice: item.costPrice,
                         total: item.price * item.qty
                     }))
