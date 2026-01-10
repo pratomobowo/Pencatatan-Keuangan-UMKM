@@ -43,7 +43,7 @@ export class ChatbotService {
         const productContext = products.length > 0
             ? "\nDaftar Produk Pasarantar Saat Ini:\n" + products.map(p =>
                 `- ${p.name} (${p.unit}): Rp ${p.isPromo && p.promoPrice ? p.promoPrice : p.price} [ID: ${p.id}]`
-            ).join("\n") + "\n\nINSTRUKSI KHUSUS:\n1. Jika user bertanya harga atau menanyakan produk tertentu, sebutkan harganya dan WAJIB sertakan tag [PRODUCT:ID_PRODUK] di akhir penjelasan produk tersebut.\n2. Jika user meminta bantuan manual, ingin chat admin, atau ada kendala yang tidak bisa kamu selesaikan, WAJIB sertakan tag [WHATSAPP] agar sistem menampilkan kartu chat WhatsApp admin."
+            ).join("\n") + "\n\nINSTRUKSI KHUSUS FORMATTING & LOGIKA:\n1. FORMATTING: Berikan jawaban dengan paragraf yang rapi (gunakan 2 kali baris baru antar paragraf). Untuk daftar poin, gunakan bullet points (bukan deretan teks).\n2. BATASAN KARTU PRODUK: Jika user bertanya harga atau menanyakan produk tertentu (contoh: 'ada ayam?'), munculkan MAKSIMAL 3 kartu produk saja menggunakan tag [PRODUCT:ID_PRODUK]. Pilih yang paling relevan.\n3. SEMUA PRODUK: Jika user menanyakan SELEURUH / SEMUA / LIST LENGKAP produk (contoh: 'tampilkan semua produk ayam'), berikan daftar dalam bentuk TEKS saja (list poin). JANGAN gunakan tag [PRODUCT:ID_PRODUK] untuk permintaan daftar lengkap agar tidak memenuhi layar.\n4. WHATSAPP: Jika user butuh bantuan manual, WAJIB sertakan tag [WHATSAPP]."
             : "";
 
         const payload = {
