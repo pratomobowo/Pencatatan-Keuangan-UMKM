@@ -50,7 +50,7 @@ export const ShopNavbar = () => {
                     const res = await fetch(`/api/shop/products?search=${encodeURIComponent(searchQuery)}&limit=5`);
                     if (res.ok) {
                         const data = await res.json();
-                        setSearchResults(data);
+                        setSearchResults(data.products || []);
                     }
                 } catch (error) {
                     console.error('Search error:', error);
