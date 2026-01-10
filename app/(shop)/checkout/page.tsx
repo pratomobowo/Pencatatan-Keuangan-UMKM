@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
     ArrowLeft, MapPin, Banknote, Building2, ShieldCheck, ArrowRight,
-    Loader2, Navigation, CheckCircle2, AlertCircle, HelpCircle
+    Loader2, Navigation, CheckCircle2, AlertCircle, HelpCircle, Copy, Check
 } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useShopAuth } from '@/contexts/ShopAuthContext';
@@ -45,10 +45,12 @@ export default function CheckoutPage() {
     const { addNotification } = useNotifications();
 
     const [selectedPayment, setSelectedPayment] = useState('cod');
+    const [shopPaymentMethods, setShopPaymentMethods] = useState<any[]>([]);
     const [isProcessing, setIsProcessing] = useState(false);
     const [orderPlaced, setOrderPlaced] = useState(false);
     const [orderNumber, setOrderNumber] = useState('');
     const [error, setError] = useState('');
+    const [copied, setCopied] = useState<string | null>(null);
 
     // Address state
     const [addresses, setAddresses] = useState<Address[]>([]);
@@ -77,8 +79,9 @@ export default function CheckoutPage() {
     // Total calculation: if manual confirmation, shipping is 0 but noted
     const total = subtotal + shippingData.fee + serviceFee;
 
-    // Load addresses for authenticated users
+    // Load initial data
     useEffect(() => {
+        fetchShopConfig();
         if (isAuthenticated) {
             fetchAddresses();
         } else {
@@ -92,13 +95,25 @@ export default function CheckoutPage() {
         }
     }, [selectedAddress, isAuthenticated]);
 
+    const fetchShopConfig = async () => {
+        try {
+            const res = await fetch('/api/shop/config');
+            if (res.ok) {
+                const data = await res.json();
+                setShopPaymentMethods(data.paymentMethods || []);
+            }
+        } catch (err) {
+            console.error('Error fetching shop config:', err);
+        }
+    };
+
     const fetchAddresses = async () => {
         try {
             const response = await fetch('/api/shop/customers/me/addresses');
             if (response.ok) {
                 const data = await response.json();
                 setAddresses(data);
-                const defaultAddr = data.find((a: Address & { isDefault?: boolean }) => a.isDefault) || data[0];
+                const defaultAddr = data.find((a: any) => a.isDefault) || data[0];
                 if (defaultAddr) setSelectedAddress(defaultAddr);
             }
         } catch (err) {
@@ -108,23 +123,18 @@ export default function CheckoutPage() {
         }
     };
 
-    const calculateShippingForAddress = async (address: Address) => {
-        setShippingData(prev => ({ ...prev, isCalculating: true, error: null, requiresManualConfirmation: false }));
-
-        try {
-            let latitude = address.latitude;
-            let longitude = address.longitude;
-
-            if (!latitude || !longitude) {
+    const calculateShippingForAddress = async (addr: Address) => {
+        if (!addr.latitude || !addr.longitude) {
+            // Re-geocode if coordinates missing
+            setShippingData(prev => ({ ...prev, isCalculating: true, error: null, requiresManualConfirmation: false }));
+            try {
                 const geocodeRes = await fetch('/api/shop/geocode', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ address: address.address }),
+                    body: JSON.stringify({ address: addr.address }),
                 });
 
                 if (!geocodeRes.ok) {
-                    // Fallback: Allow manual confirmation
-                    console.warn('Geocoding failed, enabling manual confirmation');
                     setShippingData({
                         fee: 0,
                         distance: null,
@@ -135,24 +145,39 @@ export default function CheckoutPage() {
                     });
                     return;
                 }
-
-                const geocodeData = await geocodeRes.json();
-                latitude = geocodeData.latitude;
-                longitude = geocodeData.longitude;
+                const { latitude, longitude } = await geocodeRes.json();
+                addr.latitude = latitude;
+                addr.longitude = longitude;
+            } catch (error) {
+                setShippingData({
+                    fee: 0,
+                    distance: null,
+                    isFreeShipping: false,
+                    isCalculating: false,
+                    error: null,
+                    requiresManualConfirmation: true,
+                });
+                return;
             }
+        }
 
-            const shippingRes = await fetch('/api/shop/calculate-shipping', {
+        setShippingData(prev => ({ ...prev, isCalculating: true, error: null, requiresManualConfirmation: false }));
+
+        try {
+            const res = await fetch('/api/shop/calculate-shipping', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ latitude, longitude, subtotal }),
+                body: JSON.stringify({
+                    latitude: addr.latitude,
+                    longitude: addr.longitude,
+                    subtotal
+                }),
             });
 
-            if (!shippingRes.ok) throw new Error('Gagal menghitung ongkir');
-            const result = await shippingRes.json();
+            if (!res.ok) throw new Error('Gagal menghitung ongkir');
+            const result = await res.json();
 
             if (result.isOutOfRange) {
-                // Out of range is different from "unknown location". 
-                // Here we might still block, OR allow manual. Let's block for strict range limits.
                 setShippingData({
                     fee: 0,
                     distance: result.distance_km,
@@ -174,9 +199,8 @@ export default function CheckoutPage() {
             });
 
             setServiceFee(result.serviceFee || 0);
+
         } catch (error: any) {
-            console.error('Shipping calculation error:', error);
-            // On general error, fallback to manual confirmation
             setShippingData({
                 fee: 0,
                 distance: null,
@@ -264,9 +288,6 @@ export default function CheckoutPage() {
     };
 
     const handlePlaceOrder = async () => {
-        if (items.length === 0) return;
-
-        // Validation: Must have calculated shipping OR be in manual confirmation mode
         if (shippingData.fee === 0 && !shippingData.isFreeShipping && !shippingData.requiresManualConfirmation) {
             setError('Hitung ongkir terlebih dahulu');
             return;
@@ -309,7 +330,6 @@ export default function CheckoutPage() {
                 paymentMethod: selectedPayment,
                 shippingFee: shippingData.requiresManualConfirmation ? 0 : shippingData.fee, // 0 if manual
                 serviceFee: serviceFee,
-                // Pass a flag to backend if needed, or just rely on shippingFee 0
             };
 
             const response = await fetch('/api/shop/orders', {
@@ -340,7 +360,12 @@ export default function CheckoutPage() {
         }
     };
 
-    // ... (Loading state, Order Success state, Empty Cart state - same as before)
+    const handleCopy = (text: string, id: string) => {
+        navigator.clipboard.writeText(text);
+        setCopied(id);
+        setTimeout(() => setCopied(null), 2000);
+    }
+
     if (authLoading || loadingAddresses) {
         return (
             <div className="flex items-center justify-center py-20">
@@ -351,20 +376,26 @@ export default function CheckoutPage() {
 
     if (orderPlaced) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-[60vh] px-4 text-center">
-                <div className="size-20 rounded-full bg-green-100 flex items-center justify-center mb-6">
-                    <ShieldCheck size={40} className="text-green-600" />
+            <div className="min-h-screen bg-white flex flex-col items-center justify-center p-6 text-center">
+                <div className="size-24 bg-green-100 rounded-full flex items-center justify-center mb-6 text-green-600">
+                    <CheckCircle2 size={48} />
                 </div>
-                <h2 className="text-2xl font-semibold text-stone-900 mb-2">Pesanan Berhasil!</h2>
-                <p className="text-gray-600 mb-2">
-                    {shippingData.requiresManualConfirmation
-                        ? 'Pesanan diterima. Admin akan menghubungi Anda untuk info ongkir.'
-                        : 'Terima kasih, pesanan Anda sedang diproses.'}
+                <h2 className="text-2xl font-bold text-stone-900 mb-2">Pesanan Berhasil!</h2>
+                <p className="text-gray-500 mb-6">
+                    Pesan Anda dengan nomor <strong>#{orderNumber}</strong> sedang diproses.
+                    {shippingData.requiresManualConfirmation && (
+                        <span className="block mt-2 text-orange-600 font-medium bg-orange-50 p-3 rounded-lg text-sm">
+                            ⚠️ Ongkir akan dikonfirmasi manual oleh Admin via WhatsApp.
+                        </span>
+                    )}
                 </p>
-                <p className="text-sm text-gray-500 mb-6">No. Pesanan: {orderNumber}</p>
-                <div className="flex gap-3">
-                    <Link href="/orders" className="px-6 py-3 bg-orange-500 text-white font-bold rounded-xl">Lihat Pesanan</Link>
-                    <Link href="/" className="px-6 py-3 border border-orange-500 text-orange-500 font-bold rounded-xl">Kembali</Link>
+                <div className="flex flex-col gap-3 w-full max-w-xs">
+                    <Link href={`/orders/${orderNumber}`} className="w-full bg-orange-500 text-white font-bold py-3 rounded-xl shadow-lg shadow-orange-200 transition-all">
+                        Lihat Detail Pesanan
+                    </Link>
+                    <Link href="/" className="w-full bg-stone-100 text-stone-600 font-bold py-3 rounded-xl hover:bg-stone-200 transition-all">
+                        Kembali Belanja
+                    </Link>
                 </div>
             </div>
         );
@@ -372,131 +403,107 @@ export default function CheckoutPage() {
 
     if (items.length === 0) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-[60vh] px-4 text-center">
-                <p className="text-gray-500 mb-4">Keranjang belanja kosong</p>
-                <Link href="/" className="px-6 py-3 bg-orange-500 text-white font-bold rounded-xl">Belanja Sekarang</Link>
+            <div className="min-h-screen bg-white flex flex-col items-center justify-center p-6 text-center">
+                <div className="size-20 bg-gray-100 rounded-full flex items-center justify-center mb-6 text-gray-400">
+                    <HelpCircle size={40} />
+                </div>
+                <h2 className="text-xl font-bold text-stone-900 mb-2">Keranjang Kosong</h2>
+                <p className="text-gray-500 mb-6">Wah, sepertinya Anda belum memilih produk apa pun.</p>
+                <Link href="/" className="bg-orange-500 text-white font-bold px-8 py-3 rounded-xl shadow-lg shadow-orange-200">
+                    Mulai Belanja
+                </Link>
             </div>
         );
     }
 
     return (
         <>
-            <header className="sticky top-0 z-50 flex items-center bg-white/90 backdrop-blur-md px-4 py-3 shadow-sm justify-between">
-                <Link href="/cart" className="flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-orange-50">
-                    <ArrowLeft size={24} />
-                </Link>
-                <h2 className="text-stone-900 text-lg font-semibold flex-1 text-center pr-10">Checkout</h2>
+            {/* Header */}
+            <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md shadow-sm">
+                <div className="flex items-center px-4 py-3 justify-between">
+                    <button onClick={() => router.back()} className="flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-orange-50">
+                        <ArrowLeft size={24} />
+                    </button>
+                    <h2 className="text-stone-900 text-lg font-bold flex-1 text-center pr-10">Checkout</h2>
+                </div>
             </header>
 
-            <div className="px-4 py-6 pb-48 space-y-6">
-                {/* Order Items Summary */}
+            <div className="p-4 pb-24 flex flex-col gap-6 max-w-md mx-auto">
+                {/* Shipping Address Section */}
                 <div>
-                    <h3 className="text-stone-900 font-bold mb-3">Pesanan Anda ({items.length} item)</h3>
-                    <div className="space-y-2">
-                        {items.map((item) => (
-                            <div key={`${item.id}-${item.variant}`} className="flex gap-3 bg-white p-3 rounded-lg border border-gray-100">
-                                <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-gray-100 shrink-0">
-                                    <Image src={item.image || DEFAULT_IMAGE} alt={item.name} fill className="object-cover" />
-                                </div>
-                                <div className="flex-1">
-                                    <h4 className="text-sm font-semibold text-stone-900 line-clamp-1">{item.name}</h4>
-                                    <p className="text-xs text-gray-500">{item.variant}</p>
-                                    <div className="flex items-center justify-between mt-1">
-                                        <span className="text-xs text-gray-600">{item.quantity}x</span>
-                                        <span className="text-sm font-bold text-orange-600">Rp {item.price.toLocaleString('id-ID')}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
+                    <div className="flex items-center justify-between mb-3">
+                        <h3 className="text-stone-900 font-bold flex items-center gap-2">
+                            <MapPin size={18} className="text-orange-500" />
+                            Alamat Pengiriman
+                        </h3>
                     </div>
-                </div>
-
-                {/* Address Section */}
-                <div>
-                    <h3 className="text-stone-900 font-bold mb-3 flex items-center gap-2">
-                        <MapPin size={20} className="text-orange-500" />
-                        Alamat Pengiriman
-                    </h3>
 
                     {isAuthenticated ? (
                         <div className="space-y-3">
-                            {addresses.length > 0 ? (
-                                addresses.map((addr) => (
-                                    <div key={addr.id} onClick={() => setSelectedAddress(addr)} className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${selectedAddress?.id === addr.id ? 'border-orange-500 bg-orange-50' : 'border-gray-200 bg-white hover:border-orange-300'}`}>
-                                        <div className="flex-1">
-                                            <div className="flex items-center gap-2 mb-1">
-                                                <span className="text-xs font-bold text-orange-600 bg-orange-100 px-2 py-0.5 rounded">{addr.label}</span>
-                                                {selectedAddress?.id === addr.id && <CheckCircle2 size={16} className="text-orange-500" />}
-                                            </div>
-                                            <p className="font-semibold text-sm text-stone-900">{addr.name}</p>
-                                            <p className="text-xs text-gray-600">{addr.phone}</p>
-                                            <p className="text-xs text-gray-500 mt-1">{addr.address}</p>
-                                        </div>
+                            {addresses.map((addr) => (
+                                <div
+                                    key={addr.id}
+                                    onClick={() => setSelectedAddress(addr)}
+                                    className={`p-4 rounded-xl border-2 transition-all cursor-pointer ${selectedAddress?.id === addr.id ? 'border-orange-500 bg-orange-50' : 'border-gray-100 bg-white hover:border-orange-200'}`}
+                                >
+                                    <div className="flex justify-between items-start mb-1">
+                                        <span className="text-xs font-bold uppercase tracking-wider text-orange-600 bg-orange-100 px-2 py-0.5 rounded">{addr.label}</span>
+                                        {selectedAddress?.id === addr.id && <CheckCircle2 size={18} className="text-orange-500" />}
                                     </div>
-                                ))
-                            ) : (
-                                <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-xl text-sm text-yellow-800">
-                                    Belum ada alamat tersimpan. <Link href="/addresses" className="font-bold underline">Tambah alamat</Link>
+                                    <p className="font-bold text-sm text-stone-900">{addr.name}</p>
+                                    <p className="text-xs text-gray-600 mt-1 line-clamp-2">{addr.address}</p>
+                                    <p className="text-xs text-gray-500 mt-1">{addr.phone}</p>
                                 </div>
-                            )}
-
-                            {/* Status Messages for Auth User */}
-                            {shippingData.isCalculating && (
-                                <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg flex items-center gap-2 text-sm text-blue-700">
-                                    <Loader2 size={16} className="animate-spin" /> Menghitung ongkir...
-                                </div>
-                            )}
-
-                            {shippingData.requiresManualConfirmation && (
-                                <div className="bg-yellow-50 border border-yellow-200 p-3 rounded-lg flex items-start gap-2 text-sm text-yellow-800">
-                                    <HelpCircle size={18} className="shrink-0 mt-0.5" />
-                                    <div>
-                                        <strong>Lokasi tidak terdeteksi otomatis.</strong>
-                                        <p className="text-xs mt-1">Ongkir akan dicek manual dan dikonfirmasi oleh Admin via WhatsApp setelah pesanan dibuat.</p>
-                                    </div>
-                                </div>
-                            )}
-
-                            {shippingData.distance !== null && !shippingData.error && !shippingData.requiresManualConfirmation && (
-                                <div className="bg-emerald-50 border border-emerald-200 p-3 rounded-lg text-sm">
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-emerald-700">📍 Jarak: <strong>{shippingData.distance.toFixed(1)} km</strong></span>
-                                        {shippingData.isFreeShipping && <span className="bg-emerald-500 text-white px-2 py-0.5 rounded-full text-xs font-bold">GRATIS ONGKIR</span>}
-                                    </div>
-                                </div>
-                            )}
-
-                            {shippingData.error && (
-                                <div className="bg-rose-50 border border-rose-200 p-3 rounded-lg flex items-start gap-2 text-sm text-rose-700">
-                                    <AlertCircle size={16} className="shrink-0 mt-0.5" />
-                                    <span>{shippingData.error}</span>
-                                </div>
-                            )}
+                            ))}
+                            <Link href="/settings" className="block w-full py-3 border-2 border-dashed border-gray-200 rounded-xl text-center text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                + Tambah Alamat Baru
+                            </Link>
                         </div>
                     ) : (
-                        <div className="space-y-3">
-                            <input type="text" placeholder="Nama Lengkap" value={guestInfo.name} onChange={(e) => setGuestInfo({ ...guestInfo, name: e.target.value })} className="w-full p-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" />
-                            <input type="tel" placeholder="Nomor Telepon" value={guestInfo.phone} onChange={(e) => setGuestInfo({ ...guestInfo, phone: e.target.value })} className="w-full p-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" />
-                            <div className="relative">
-                                <textarea placeholder="Alamat Lengkap (Jl. Nama Jalan, Kota)" value={guestInfo.address} onChange={(e) => setGuestInfo({ ...guestInfo, address: e.target.value })} rows={3} className="w-full p-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" />
+                        <div className="bg-white p-4 rounded-xl border border-gray-100 space-y-4 shadow-sm">
+                            <div className="space-y-2">
+                                <label className="text-xs font-bold text-gray-500 uppercase">Nama Lengkap</label>
+                                <input
+                                    type="text"
+                                    placeholder="Nama penerima"
+                                    value={guestInfo.name}
+                                    onChange={(e) => setGuestInfo({ ...guestInfo, name: e.target.value })}
+                                    className="w-full px-4 py-3 bg-gray-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-orange-200 transition-all outline-none"
+                                />
                             </div>
-                            <button onClick={calculateShippingForGuest} disabled={shippingData.isCalculating || !guestInfo.address.trim()} className="w-full bg-orange-500 hover:bg-orange-600 disabled:bg-gray-300 text-white px-4 py-3 rounded-xl text-sm font-medium transition-colors flex items-center justify-center gap-2">
-                                {shippingData.isCalculating ? <><Loader2 size={18} className="animate-spin" /> Menghitung Ongkir...</> : <><Navigation size={18} /> Hitung Ongkir</>}
+                            <div className="space-y-2">
+                                <label className="text-xs font-bold text-gray-500 uppercase">Nomor WhatsApp</label>
+                                <input
+                                    type="tel"
+                                    placeholder="Contoh: 0812..."
+                                    value={guestInfo.phone}
+                                    onChange={(e) => setGuestInfo({ ...guestInfo, phone: e.target.value })}
+                                    className="w-full px-4 py-3 bg-gray-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-orange-200 transition-all outline-none"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-xs font-bold text-gray-500 uppercase">Alamat Lengkap</label>
+                                <textarea
+                                    placeholder="Jl. Nama Jalan, No. Rumah, Kecamatan, Kota"
+                                    rows={3}
+                                    value={guestInfo.address}
+                                    onChange={(e) => setGuestInfo({ ...guestInfo, address: e.target.value })}
+                                    className="w-full px-4 py-3 bg-gray-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-orange-200 transition-all outline-none resize-none"
+                                />
+                                <p className="text-[10px] text-gray-400">Pastikan alamat lengkap untuk penghitungan ongkir akurat.</p>
+                            </div>
+
+                            <button
+                                onClick={calculateShippingForGuest}
+                                disabled={shippingData.isCalculating || !guestInfo.address}
+                                className="w-full py-3 bg-slate-800 text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2 hover:bg-black transition-all disabled:opacity-50"
+                            >
+                                {shippingData.isCalculating ? <Loader2 size={16} className="animate-spin" /> : <Navigation size={16} />}
+                                {shippingData.isCalculating ? 'Menghitung...' : 'Hitung Ongkir'}
                             </button>
 
-                            {/* Status Messages for Guest */}
-                            {shippingData.requiresManualConfirmation && (
-                                <div className="bg-yellow-50 border border-yellow-200 p-3 rounded-lg flex items-start gap-2 text-sm text-yellow-800">
-                                    <HelpCircle size={18} className="shrink-0 mt-0.5" />
-                                    <div>
-                                        <strong>Lokasi tidak terdeteksi otomatis.</strong>
-                                        <p className="text-xs mt-1">Ongkir akan dicek manual dan dikonfirmasi oleh Admin via WhatsApp setelah pesanan dibuat.</p>
-                                    </div>
-                                </div>
-                            )}
-
-                            {shippingData.distance !== null && !shippingData.error && !shippingData.requiresManualConfirmation && (
-                                <div className="bg-emerald-50 border border-emerald-200 p-3 rounded-lg text-sm">
+                            {shippingData.distance !== null && !shippingData.error && (
+                                <div className="bg-emerald-50 border border-emerald-100 p-3 rounded-lg text-sm text-emerald-800 flex flex-col gap-1">
                                     <div className="flex items-center justify-between">
                                         <span className="text-emerald-700">📍 Jarak: <strong>{shippingData.distance.toFixed(1)} km</strong></span>
                                         {shippingData.isFreeShipping && <span className="bg-emerald-500 text-white px-2 py-0.5 rounded-full text-xs font-bold">GRATIS ONGKIR</span>}
@@ -514,22 +521,66 @@ export default function CheckoutPage() {
                     )}
                 </div>
 
-                {/* Payment Method - same as before */}
+                {/* Payment Method */}
                 <div>
                     <h3 className="text-stone-900 font-bold mb-3">Metode Pembayaran</h3>
                     <div className="space-y-2">
-                        {paymentMethods.map((method) => (
-                            <div key={method.id} onClick={() => setSelectedPayment(method.id)} className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${selectedPayment === method.id ? 'border-orange-500 bg-orange-50' : 'border-gray-200 bg-white hover:border-orange-300'}`}>
-                                <div className="flex items-center gap-3">
-                                    <div className={`p-2 rounded-lg ${method.color}`}><method.icon size={20} /></div>
-                                    <div className="flex-1">
-                                        <p className="font-semibold text-sm text-stone-900">{method.label}</p>
-                                        <p className="text-xs text-gray-500">{method.description}</p>
-                                    </div>
-                                    {selectedPayment === method.id && <CheckCircle2 size={20} className="text-orange-500" />}
+                        {/* COD Option */}
+                        <div
+                            onClick={() => setSelectedPayment('cod')}
+                            className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${selectedPayment === 'cod' ? 'border-orange-500 bg-orange-50' : 'border-gray-200 bg-white hover:border-orange-300'}`}
+                        >
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 rounded-lg bg-green-100 text-green-600"><Banknote size={20} /></div>
+                                <div className="flex-1">
+                                    <p className="font-semibold text-sm text-stone-900">COD (Bayar di Tempat)</p>
+                                    <p className="text-xs text-gray-500">Bayar tunai saat kurir sampai</p>
                                 </div>
+                                {selectedPayment === 'cod' && <CheckCircle2 size={20} className="text-orange-500" />}
                             </div>
-                        ))}
+                        </div>
+
+                        {/* Bank Transfer Options */}
+                        {shopPaymentMethods.map((method, idx) => {
+                            const methodId = `transfer-${idx}`;
+                            return (
+                                <div
+                                    key={methodId}
+                                    onClick={() => setSelectedPayment(methodId)}
+                                    className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${selectedPayment === methodId ? 'border-orange-500 bg-orange-50' : 'border-gray-200 bg-white hover:border-orange-300'}`}
+                                >
+                                    <div className="flex flex-col gap-3">
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-2 rounded-lg bg-blue-100 text-blue-600"><Building2 size={20} /></div>
+                                            <div className="flex-1">
+                                                <p className="font-semibold text-sm text-stone-900">Transfer {method.name}</p>
+                                                <p className="text-xs text-gray-500">Bayar via transfer bank</p>
+                                            </div>
+                                            {selectedPayment === methodId && <CheckCircle2 size={20} className="text-orange-500" />}
+                                        </div>
+
+                                        {selectedPayment === methodId && (
+                                            <div className="mt-2 p-3 bg-white rounded-lg border border-orange-200 border-dashed animate-in fade-in slide-in-from-top-1 duration-200">
+                                                <div className="flex items-center justify-between mb-1">
+                                                    <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Nomor Rekening</p>
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleCopy(method.details.split('\n')[0], methodId);
+                                                        }}
+                                                        className="text-orange-500 flex items-center gap-1 text-[10px] font-bold"
+                                                    >
+                                                        {copied === methodId ? <Check size={12} /> : <Copy size={12} />}
+                                                        {copied === methodId ? 'Tersalin' : 'Salin'}
+                                                    </button>
+                                                </div>
+                                                <p className="text-sm font-mono font-bold text-stone-800 break-all">{method.details}</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            );
+                        })}
                     </div>
                 </div>
 

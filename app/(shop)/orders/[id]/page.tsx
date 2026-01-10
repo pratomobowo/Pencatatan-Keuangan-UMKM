@@ -4,7 +4,7 @@ import { useState, useEffect, use } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Package, Truck, CheckCircle, Clock, MapPin, Phone, Copy, Check, Loader2 } from 'lucide-react';
+import { ArrowLeft, Package, Truck, CheckCircle, Clock, MapPin, Phone, Copy, Check, Loader2, Building2 } from 'lucide-react';
 import { useShopAuth } from '@/contexts/ShopAuthContext';
 
 type OrderStatus = 'pending' | 'confirmed' | 'preparing' | 'shipping' | 'delivered' | 'cancelled';
@@ -49,6 +49,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
     const { isAuthenticated, isLoading: authLoading } = useShopAuth();
 
     const [order, setOrder] = useState<OrderDetail | null>(null);
+    const [shopConfig, setShopConfig] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [copied, setCopied] = useState(false);
@@ -67,19 +68,29 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
     const fetchOrder = async () => {
         try {
             setLoading(true);
-            const response = await fetch(`/api/shop/orders/${id}`);
-            if (!response.ok) {
-                if (response.status === 404) {
+            const [orderRes, configRes] = await Promise.all([
+                fetch(`/api/shop/orders/${id}`),
+                fetch('/api/shop/config')
+            ]);
+
+            if (!orderRes.ok) {
+                if (orderRes.status === 404) {
                     setError('Pesanan tidak ditemukan');
                 } else {
                     throw new Error('Failed to fetch order');
                 }
                 return;
             }
-            const data = await response.json();
-            setOrder(data);
+
+            const orderData = await orderRes.json();
+            setOrder(orderData);
+
+            if (configRes.ok) {
+                const configData = await configRes.json();
+                setShopConfig(configData);
+            }
         } catch (err) {
-            console.error('Error fetching order:', err);
+            console.error('Error fetching order/config:', err);
             setError('Gagal memuat pesanan');
         } finally {
             setLoading(false);
@@ -201,10 +212,12 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                             </p>
                         </div>
                     </div>
-                    <div className="mt-3 pt-3 border-t border-gray-100">
-                        <p className="text-sm text-gray-500">Waktu Pengiriman</p>
-                        <p className="font-medium text-stone-900">{order.deliveryTime}</p>
-                    </div>
+                    {order.deliveryTime && (
+                        <div className="mt-3 pt-3 border-t border-gray-100">
+                            <p className="text-sm text-gray-500">Waktu Pengiriman</p>
+                            <p className="font-medium text-stone-900">{order.deliveryTime}</p>
+                        </div>
+                    )}
                 </div>
 
                 {/* Order Items */}
@@ -240,9 +253,12 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                             <span className="text-gray-500">Ongkos Kirim</span>
                             <span className="text-stone-900">Rp {(order.shippingFee || 0).toLocaleString('id-ID')}</span>
                         </div>
-                        <div className="flex justify-between text-sm text-amber-600 bg-amber-50 p-2 rounded-lg mt-1">
-                            <span className="text-xs">Biaya layanan & total mungkin berubah sesuai konfirmasi admin jika ongkir manual.</span>
-                        </div>
+                        {order.serviceFee && order.serviceFee > 0 && (
+                            <div className="flex justify-between text-sm">
+                                <span className="text-gray-500">Biaya Layanan</span>
+                                <span className="text-stone-900">Rp {order.serviceFee.toLocaleString('id-ID')}</span>
+                            </div>
+                        )}
                         <div className="border-t border-dashed border-gray-200 my-2"></div>
                         <div className="flex justify-between">
                             <span className="font-bold text-stone-900">Total</span>
@@ -251,9 +267,44 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                     </div>
                     <div className="mt-3 pt-3 border-t border-gray-100">
                         <p className="text-sm text-gray-500">Metode Pembayaran</p>
-                        <p className="font-medium text-stone-900">{order.paymentMethod}</p>
+                        <p className="font-medium text-stone-900 uppercase">
+                            {order.paymentMethod === 'cod' ? 'Bayar di Tempat (COD)' : order.paymentMethod.replace('transfer-', 'Transfer ')}
+                        </p>
                     </div>
                 </div>
+
+                {/* Payment Instructions for Transfer */}
+                {order.status === 'pending' && order.paymentMethod.startsWith('transfer-') && (
+                    <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4 shadow-sm">
+                        <h3 className="text-sm font-bold text-blue-800 mb-3 flex items-center gap-2">
+                            <Building2 size={16} /> Instruksi Pembayaran
+                        </h3>
+                        <p className="text-xs text-blue-600 mb-4">
+                            Silakan lakukan transfer sesuai rincian di bawah ini dan simpan bukti transfer Anda.
+                        </p>
+
+                        {(() => {
+                            const idx = parseInt(order.paymentMethod.split('-')[1]);
+                            const method = shopConfig?.paymentMethods?.[idx];
+                            if (!method) return null;
+
+                            return (
+                                <div className="bg-white rounded-xl p-3 border border-blue-200 border-dashed">
+                                    <p className="text-[10px] font-bold text-blue-400 uppercase tracking-wider mb-1">
+                                        Transfer ke {method.name}
+                                    </p>
+                                    <p className="text-sm font-mono font-bold text-stone-800 break-all mb-2 whitespace-pre-line">
+                                        {method.details}
+                                    </p>
+                                    <div className="flex justify-between items-center pt-2 border-t border-blue-50">
+                                        <p className="text-xs text-gray-400">Total Tagihan:</p>
+                                        <p className="text-sm font-bold text-blue-700">Rp {order.grandTotal.toLocaleString('id-ID')}</p>
+                                    </div>
+                                </div>
+                            );
+                        })()}
+                    </div>
+                )}
 
                 {/* Action Button */}
                 {order.status === 'shipping' && (
