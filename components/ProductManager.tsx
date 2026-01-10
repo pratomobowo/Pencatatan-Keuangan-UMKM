@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Product, TransactionType, ProductVariant, Category } from '@/lib/types'; // Import Category
 import { categoriesAPI } from '@/lib/api'; // Import categoriesAPI
 import { Card } from './ui/Card';
-import { Plus, Edit2, Trash2, Package, Search, Download, Upload, FileSpreadsheet, TrendingUp, ShoppingBasket, X, ImageIcon, Loader2, ChevronLeft, ChevronRight, Filter } from 'lucide-react';
+import { Plus, Edit2, Trash2, Package, Search, Download, Upload, FileSpreadsheet, TrendingUp, ShoppingBasket, X, ImageIcon, Loader2, Sparkles, ChevronLeft, ChevronRight, Filter } from 'lucide-react';
 import * as XLSX from 'xlsx';
 
 interface ProductManagerProps {
