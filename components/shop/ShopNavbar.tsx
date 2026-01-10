@@ -81,8 +81,8 @@ export const ShopNavbar = () => {
         <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md shadow-sm w-full">
             {/* Logo & Notification */}
             <div className="flex items-center justify-between p-4 pb-2">
-                <Link href="/" className="flex items-center gap-2 group">
-                    <div className="relative size-10 shrink-0 transform group-hover:scale-105 transition-transform duration-300">
+                <Link href="/" className="flex items-center group">
+                    <div className="relative size-14 shrink-0 transform group-hover:scale-105 transition-transform duration-300">
                         <Image
                             src="/logo.webp"
                             alt="Pasarantar Logo"
@@ -91,7 +91,6 @@ export const ShopNavbar = () => {
                             priority
                         />
                     </div>
-                    <span className="text-stone-900 text-xl font-bold tracking-tight">Pasarantar</span>
                 </Link>
                 <div className="relative" ref={notificationsRef}>
                     <button
