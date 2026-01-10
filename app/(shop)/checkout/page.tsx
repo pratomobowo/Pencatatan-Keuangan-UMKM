@@ -480,8 +480,8 @@ export default function CheckoutPage() {
                                 <div className="mt-4 bg-orange-50 border border-orange-200 p-3 rounded-lg flex items-start gap-2 text-sm text-orange-700">
                                     <AlertCircle size={16} className="shrink-0 mt-0.5" />
                                     <div>
-                                        <p className="font-bold">Alamat Berhasil Ditemukan</p>
-                                        <p className="text-xs mt-1">Namun biaya ongkir akan dihitung secara manual oleh Admin via WhatsApp setelah pesanan dibuat.</p>
+                                        <p className="font-bold">Alamat tidak di temukan</p>
+                                        <p className="text-xs mt-1">Biaya ongkir akan di konfirmasi manual oleh admin via WhatsApp setelah pesanan dibuat.</p>
                                     </div>
                                 </div>
                             )}
@@ -549,8 +549,8 @@ export default function CheckoutPage() {
                                 <div className="bg-orange-50 border border-orange-200 p-3 rounded-lg flex items-start gap-2 text-sm text-orange-700">
                                     <AlertCircle size={16} className="shrink-0 mt-0.5" />
                                     <div>
-                                        <p className="font-bold">Alamat Berhasil Ditemukan</p>
-                                        <p className="text-xs mt-1">Namun biaya ongkir akan dihitung secara manual oleh Admin via WhatsApp setelah pesanan dibuat.</p>
+                                        <p className="font-bold">Alamat tidak di temukan</p>
+                                        <p className="text-xs mt-1">Biaya ongkir akan di konfirmasi manual oleh admin via WhatsApp setelah pesanan dibuat.</p>
                                     </div>
                                 </div>
                             )}
