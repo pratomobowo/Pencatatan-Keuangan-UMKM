@@ -91,7 +91,10 @@ export async function GET(request: NextRequest) {
                     }
                 }
             },
-            orderBy: { createdAt: 'desc' },
+            orderBy: [
+                { createdAt: 'desc' },
+                { id: 'desc' }
+            ],
             take: limit,
             skip: skip,
         }) as any;

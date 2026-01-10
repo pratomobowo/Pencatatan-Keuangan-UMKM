@@ -59,6 +59,9 @@ export default function ShopHomepage() {
 
     const fetchProducts = useCallback(async (pageNum: number) => {
         try {
+            // Guard against duplicate fetches or fetching beyond available data
+            if (loading || loadingMore || (pageNum > 1 && !hasMore)) return;
+
             if (pageNum === 1) setLoading(true);
             else setLoadingMore(true);
 
@@ -67,7 +70,16 @@ export default function ShopHomepage() {
 
             const data = await res.json();
 
-            setProducts(prev => pageNum === 1 ? data.products : [...prev, ...data.products]);
+            setProducts(prev => {
+                const combined = pageNum === 1 ? data.products : [...prev, ...data.products];
+                // Deduplicate items by ID to prevent key errors
+                const uniqueIds = new Set();
+                return (combined as ShopProduct[]).filter(item => {
+                    if (uniqueIds.has(item.id)) return false;
+                    uniqueIds.add(item.id);
+                    return true;
+                });
+            });
             setHasMore(data.hasMore);
         } catch (err) {
             console.error('Error fetching products:', err);
@@ -76,7 +88,7 @@ export default function ShopHomepage() {
             setLoading(false);
             setLoadingMore(false);
         }
-    }, []);
+    }, [loading, loadingMore]);
 
     useEffect(() => {
         fetchProducts(page);
