@@ -1,29 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowLeft, MapPin, ChevronRight, Trash2, Minus, Plus, ArrowRight, Loader2, Navigation } from 'lucide-react';
+import { ArrowLeft, Trash2, Minus, Plus, ArrowRight } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 
 export default function CartPage() {
     const { items: cartItems, removeItem, updateQuantity, itemCount, subtotal } = useCart();
-
-    // Shipping state
-    const [deliveryAddress, setDeliveryAddress] = useState('');
-    const [shippingData, setShippingData] = useState<{
-        fee: number;
-        distance: number | null;
-        isFreeShipping: boolean;
-        isCalculating: boolean;
-        error: string | null;
-    }>({
-        fee: 0,
-        distance: null,
-        isFreeShipping: false,
-        isCalculating: false,
-        error: null,
-    });
 
     const handleQuantityChange = (id: string, variant: string, delta: number) => {
         const item = cartItems.find(i => i.id === id && i.variant === variant);
@@ -31,74 +14,6 @@ export default function CartPage() {
             updateQuantity(id, variant, item.quantity + delta);
         }
     };
-
-    const calculateShipping = async () => {
-        if (!deliveryAddress.trim()) {
-            setShippingData({ fee: 0, distance: null, isFreeShipping: false, isCalculating: false, error: 'Masukkan alamat pengiriman' });
-            return;
-        }
-
-        setShippingData(prev => ({ ...prev, isCalculating: true, error: null }));
-
-        try {
-            // 1. Geocode address
-            const geocodeRes = await fetch('/api/shop/geocode', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ address: deliveryAddress }),
-            });
-
-            if (!geocodeRes.ok) {
-                const error = await geocodeRes.json();
-                throw new Error(error.message || 'Alamat tidak ditemukan');
-            }
-
-            const { latitude, longitude } = await geocodeRes.json();
-
-            // 2. Calculate shipping
-            const shippingRes = await fetch('/api/shop/calculate-shipping', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ latitude, longitude, subtotal }),
-            });
-
-            if (!shippingRes.ok) {
-                throw new Error('Gagal menghitung ongkir');
-            }
-
-            const shippingResult = await shippingRes.json();
-
-            if (shippingResult.isOutOfRange) {
-                setShippingData({
-                    fee: 0,
-                    distance: shippingResult.distance_km,
-                    isFreeShipping: false,
-                    isCalculating: false,
-                    error: shippingResult.message || 'Lokasi di luar jangkauan pengiriman',
-                });
-                return;
-            }
-
-            setShippingData({
-                fee: shippingResult.shippingFee,
-                distance: shippingResult.distance_km,
-                isFreeShipping: shippingResult.isFreeShipping,
-                isCalculating: false,
-                error: null,
-            });
-        } catch (error: any) {
-            console.error('Shipping calculation error:', error);
-            setShippingData({
-                fee: 0,
-                distance: null,
-                isFreeShipping: false,
-                isCalculating: false,
-                error: error.message || 'Gagal menghitung ongkir',
-            });
-        }
-    };
-
-    const total = subtotal + shippingData.fee;
 
     return (
         <>
@@ -176,66 +91,6 @@ export default function CartPage() {
             {/* Divider */}
             {cartItems.length > 0 && <div className="mx-4 my-6 h-px bg-gray-200"></div>}
 
-            {/* Delivery Address */}
-            {cartItems.length > 0 && (
-                <div className="px-4 mb-6">
-                    <h3 className="text-stone-900 text-lg font-bold mb-3 flex items-center gap-2">
-                        <MapPin size={20} className="text-orange-500" />
-                        Alamat Pengiriman
-                    </h3>
-                    <div className="space-y-3">
-                        <div className="relative">
-                            <input
-                                type="text"
-                                value={deliveryAddress}
-                                onChange={(e) => setDeliveryAddress(e.target.value)}
-                                onKeyDown={(e) => e.key === 'Enter' && calculateShipping()}
-                                placeholder="Contoh: Jl. Dago No. 123, Bandung"
-                                className="w-full p-3 pr-24 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
-                            />
-                            <button
-                                onClick={calculateShipping}
-                                disabled={shippingData.isCalculating || !deliveryAddress.trim()}
-                                className="absolute right-2 top-1/2 -translate-y-1/2 bg-orange-500 hover:bg-orange-600 disabled:bg-gray-300 text-white px-4 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1"
-                            >
-                                {shippingData.isCalculating ? (
-                                    <>
-                                        <Loader2 size={14} className="animate-spin" />
-                                        Hitung
-                                    </>
-                                ) : (
-                                    <>
-                                        <Navigation size={14} />
-                                        Hitung
-                                    </>
-                                )}
-                            </button>
-                        </div>
-
-                        {shippingData.error && (
-                            <div className="bg-rose-50 border border-rose-200 text-rose-700 p-3 rounded-lg text-xs">
-                                {shippingData.error}
-                            </div>
-                        )}
-
-                        {shippingData.distance !== null && !shippingData.error && (
-                            <div className="bg-emerald-50 border border-emerald-200 p-3 rounded-lg text-xs">
-                                <div className="flex items-center justify-between">
-                                    <span className="text-emerald-700">
-                                        📍 Jarak: <strong>{shippingData.distance.toFixed(1)} km</strong>
-                                    </span>
-                                    {shippingData.isFreeShipping && (
-                                        <span className="bg-emerald-500 text-white px-2 py-0.5 rounded-full text-[10px] font-bold">
-                                            GRATIS ONGKIR
-                                        </span>
-                                    )}
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            )}
-
             {/* Payment Summary */}
             {cartItems.length > 0 && (
                 <div className="px-4 pb-48">
@@ -247,18 +102,12 @@ export default function CartPage() {
                         </div>
                         <div className="flex justify-between items-center text-sm">
                             <span className="text-gray-600">Biaya Pengiriman</span>
-                            {shippingData.isFreeShipping ? (
-                                <span className="font-medium text-emerald-600">Gratis</span>
-                            ) : shippingData.fee > 0 ? (
-                                <span className="font-medium text-stone-900">Rp {shippingData.fee.toLocaleString('id-ID')}</span>
-                            ) : (
-                                <span className="text-xs text-gray-400">Hitung dulu</span>
-                            )}
+                            <span className="text-xs text-gray-400">Dihitung di checkout</span>
                         </div>
                         <div className="my-2 border-t border-dashed border-gray-300"></div>
                         <div className="flex justify-between items-center text-base font-semibold">
-                            <span className="text-stone-900">Total Pembayaran</span>
-                            <span className="text-stone-900">Rp {total.toLocaleString('id-ID')}</span>
+                            <span className="text-stone-900">Subtotal</span>
+                            <span className="text-stone-900">Rp {subtotal.toLocaleString('id-ID')}</span>
                         </div>
                     </div>
                 </div>
@@ -269,12 +118,12 @@ export default function CartPage() {
                 <div className="fixed bottom-[70px] left-0 w-full bg-white border-t border-gray-100 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] px-4 py-4 z-40">
                     <div className="flex items-center justify-between gap-4 max-w-md mx-auto">
                         <div className="flex flex-col">
-                            <span className="text-xs text-gray-500 font-medium">Total Belanja</span>
-                            <span className="text-xl font-semibold text-stone-900">Rp {total.toLocaleString('id-ID')}</span>
+                            <span className="text-xs text-gray-500 font-medium">Subtotal</span>
+                            <span className="text-xl font-semibold text-stone-900">Rp {subtotal.toLocaleString('id-ID')}</span>
                         </div>
                         <Link
                             href="/checkout"
-                            className={`flex-1 ${shippingData.fee > 0 || shippingData.isFreeShipping ? 'bg-orange-500 hover:bg-orange-600' : 'bg-gray-300 pointer-events-none'} active:scale-[0.98] transition-all h-12 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-orange-300/30`}
+                            className="flex-1 bg-orange-500 hover:bg-orange-600 active:scale-[0.98] transition-all h-12 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-orange-300/30"
                         >
                             <span className="text-white font-semibold text-base">Lanjut Checkout</span>
                             <ArrowRight className="text-white" size={20} />
