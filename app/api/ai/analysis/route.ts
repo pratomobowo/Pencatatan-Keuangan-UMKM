@@ -60,30 +60,54 @@ export async function POST(request: NextRequest) {
             
             Saya akan memberikan data operasional yang komprehensif.
             
-            Tugas Anda adalah memberikan analisis strategis untuk model bisnis "Fresh Food Delivery":
-            1. **Kesehatan Keuangan**: Analisis margin berdasarkan Ringkasan Transaksi.
-            2. **Analisis Produk (PENTING)**: Lihat Daftar Produk Terlaris. Apakah ada pola musiman atau preferensi tertentu? Berikan saran stok.
-            3. **Peringatan Inventaris**: Analisis barang Low Stock. Apa dampaknya jika stok ini habis dan apa rekomendasinya?
-            4. **Loyalitas Pelanggan**: Berdasarkan data Customer (Total: ${totalCustomers}, Repeat: ${repeatCustomers}), seberapa baik retensi pelanggan kita? Apa saran untuk meningkatkan loyalitas?
-            5. **Saran Taktis**: Berikan ide konkret (misal: bundling, promo hari tertentu, rute pengiriman).
+            TUGAS ANDA: Berikan analisis strategis dalam format JSON yang bisa diubah menjadi infografik.
             
-            Gunakan Bahasa Indonesia yang profesional, menyemangati, dan praktis (Format Markdown).
+            FORMAT JSON YANG DIHARAPKAN:
+            {
+                "kpis": [
+                    { "label": "Margin Laba", "value": "25%", "status": "posistive|neutral|negative", "description": "Penjelasan singkat" },
+                    { "label": "Efisiensi Biaya", "value": "Tinggi", "status": "...", "description": "..." },
+                    { "label": "Retensi Pelanggan", "value": "45%", "status": "...", "description": "..." }
+                ],
+                "productAnalysis": {
+                    "topPerforming": "Nama Produk Terlaris",
+                    "suggestion": "Bundling yang disarankan",
+                    "chartData": [
+                        { "name": "Produk A", "sales": 100 }, ... (Maks 5 produk teratas)
+                    ]
+                },
+                "inventoryHealth": {
+                    "status": "Aman|Peringatan|Bahaya",
+                    "summary": "Ringkasan kondisi stok",
+                    "actionItems": ["Segera restock X", "Promo cuci gudang Y"]
+                },
+                "strategicAdvice": [
+                    { "title": "...", "content": "..." }, ... (Maks 3 saran taktis)
+                ],
+                "fullNarrative": "Konten analisis mendalam dalam format Markdown (tetap disediakan sebagai opsi bacaan detail)."
+            }
             
             DATA OPERASIONAL:
-            - Ringkasan Keuangan (100 Transaksi Terakhir): ${JSON.stringify(summary)}
+            - Ringkasan Keuangan: ${JSON.stringify(summary)}
             - Produk Terlaris: ${JSON.stringify(bestSellers)}
             - Stok Menipis: ${JSON.stringify(lowStock)}
-            - Statistik Pelanggan: Total ${totalCustomers}, Repeat Customer ${repeatCustomers} (${((repeatCustomers / totalCustomers) * 100).toFixed(1)}%)
+            - Statistik Pelanggan: Total ${totalCustomers}, Repeat ${repeatCustomers} (${((repeatCustomers / totalCustomers) * 100).toFixed(1)}%)
             
-            Daftar Transaksi Terakhir:
-            ${JSON.stringify(transactions.slice(0, 30))}
-            
-            Berikan analisis yang tajam dan "to the point" agar owner bisa langsung mengambil keputusan.
+            Berikan JSON yang valid. Jangan ada teks lain di luar block JSON.
         `;
 
-        const responseText = await ChatbotService.getGenericCompletion(prompt, "Anda adalah konsultan bisnis UMKM profesional untuk Pasarantar.");
+        const responseText = await ChatbotService.getGenericCompletion(prompt, "Anda adalah AI Analis yang menghasilkan output dalam format JSON valid saja.");
 
-        return NextResponse.json({ analysis: responseText });
+        // Attempt to parse JSON, if it fails, return standard markdown in analysis field
+        try {
+            // Clean AI response if it contains markdown code blocks
+            const cleanJson = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
+            const infographicData = JSON.parse(cleanJson);
+            return NextResponse.json({ infographic: infographicData });
+        } catch (e) {
+            console.error("Failed to parse AI JSON response:", responseText);
+            return NextResponse.json({ analysis: responseText });
+        }
 
     } catch (error: any) {
         console.error('AI Analysis Error:', error);
