@@ -1,6 +1,3 @@
-// Prisma Schema for Pasarantar Finance
-// Complete schema with all models
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -9,49 +6,40 @@ datasource db {
   provider = "postgresql"
 }
 
-// ============================================
-// USER AUTHENTICATION
-// ============================================
-
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  name      String
-  password  String?   // Optional for OAuth users
-  image     String?   // Profile image URL from OAuth
-  emailVerified DateTime? // Email verification timestamp
-  role      String   @default("user") // user, admin
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  
-  accounts  Account[] // Relation to Account model
-  sessions  Session[] // Relation to Session model
-  
+  id            String    @id @default(uuid())
+  email         String    @unique
+  name          String
+  password      String?
+  role          String    @default("user")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  emailVerified DateTime?
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+
   @@index([email])
 }
 
-// NextAuth Account Model
 model Account {
-  id                 String  @id @default(cuid())
-  userId             String
-  type               String
-  provider           String
-  providerAccountId  String
-  refresh_token      String? @db.Text
-  access_token       String? @db.Text
-  expires_at         Int?
-  token_type         String?
-  scope              String?
-  id_token           String? @db.Text
-  session_state      String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
 }
 
-// NextAuth Session Model (required for database strategy)
 model Session {
   id           String   @id @default(cuid())
   sessionToken String   @unique
@@ -60,7 +48,6 @@ model Session {
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-// NextAuth Verification Token Model
 model VerificationToken {
   identifier String
   token      String   @unique
@@ -69,41 +56,32 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
-// ============================================
-// PRODUCT MANAGEMENT
-// ============================================
-
 model Product {
-  id          String   @id @default(uuid())
-  sku         String   @unique
-  name        String
-  slug        String?  @unique
-  description String?
-  price       Decimal  @db.Decimal(10, 2)
-  costPrice   Decimal  @db.Decimal(10, 2)
-  stock       Int      @default(0)
-  unit        String
-  image       String?  // URL to product image
-  categoryName String?  // Keep original string name for legacy/simple use
-  categoryId   String?
-  category     Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  isActive    Boolean  @default(true) // Show in shop
-  
-  // Promo fields
-  isPromo        Boolean   @default(false)  // Is product on promo
-  promoPrice     Decimal?  @db.Decimal(10, 2) // Discounted price
-  promoDiscount  Int?      // Discount percentage (e.g. 20 for 20%)
-  promoStartDate DateTime? // Promo start date
-  promoEndDate   DateTime? // Promo end date
-  
-  // Relations
-  variants    ProductVariant[]
-  orderItems  OrderItem[]
-  favorites    Favorite[]
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
+  id             String           @id @default(uuid())
+  sku            String           @unique
+  name           String
+  description    String?
+  price          Decimal          @db.Decimal(10, 2)
+  costPrice      Decimal          @db.Decimal(10, 2)
+  stock          Int              @default(0)
+  unit           String
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  image          String?
+  isActive       Boolean          @default(true)
+  isPromo        Boolean          @default(false)
+  promoDiscount  Int?
+  promoEndDate   DateTime?
+  promoPrice     Decimal?         @db.Decimal(10, 2)
+  promoStartDate DateTime?
+  slug           String?          @unique
+  categoryId     String?
+  categoryName   String?
+  favorites      Favorite[]
+  orderItems     OrderItem[]
+  category       Category?        @relation(fields: [categoryId], references: [id])
+  variants       ProductVariant[]
+
   @@index([sku])
   @@index([name])
   @@index([categoryName])
@@ -113,145 +91,204 @@ model Product {
 }
 
 model Category {
-  id        String   @id @default(uuid())
-  name      String   @unique
-  slug      String   @unique
-  image     String?  // For icon/image
-  color     String?  // Tailwind color class like 'text-blue-400'
-  order     Int      @default(0)
-  isActive  Boolean  @default(true)
-  
+  id        String    @id @default(uuid())
+  name      String    @unique
+  slug      String    @unique
+  image     String?
+  color     String?
+  order     Int       @default(0)
+  isActive  Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   products  Product[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 
   @@index([order])
   @@index([isActive])
 }
 
-// Product Variants for multiple unit pricing
 model ProductVariant {
-  id          String   @id @default(uuid())
-  productId   String
-  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-  
-  unit        String   // kg, 500gr, 250gr, ekor, pack, etc.
-  unitQty     Decimal  @db.Decimal(10, 3) // Quantity in base unit (e.g., 0.5 for 500gr, 1 for 1kg)
-  price       Decimal  @db.Decimal(10, 2) // Selling price for this variant
-  costPrice   Decimal  @db.Decimal(10, 2) // Cost price for this variant
-  
-  isDefault   Boolean  @default(false) // Default variant shown in shop
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  @@index([productId])
+  id        String   @id @default(uuid())
+  productId String
+  unit      String
+  unitQty   Decimal  @db.Decimal(10, 3)
+  price     Decimal  @db.Decimal(10, 2)
+  costPrice Decimal  @db.Decimal(10, 2)
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
   @@unique([productId, unit])
+  @@index([productId])
 }
 
-// ============================================
-// CUSTOMER MANAGEMENT
-// ============================================
-
-// ============================================
-// CUSTOMER MANAGEMENT
-// ============================================
-
 model Customer {
-  id          String   @id @default(uuid())
-  name        String
-  phone       String?  @unique
-  password    String?  // Hashed with bcrypt (Optional for manual customers or OAuth)
-  email       String?
-  address     String?
-  notes       String?
-  
-  // Relations
-  orders        Order[]
+  id            String         @id @default(uuid())
+  name          String
+  phone         String?        @unique
+  address       String?
+  notes         String?
+  totalSpent    Decimal        @default(0) @db.Decimal(10, 2)
+  orderCount    Int            @default(0)
+  lastOrderDate DateTime?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  email         String?
+  password      String?
   addresses     Address[]
   favorites     Favorite[]
   notifications Notification[]
-  
-  // Stats
-  totalSpent  Decimal  @db.Decimal(10, 2) @default(0)
-  orderCount  Int      @default(0)
-  lastOrderDate DateTime?
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
+  orders        Order[]
+
   @@index([phone])
   @@index([email])
   @@index([name])
 }
 
 model Address {
-  id          String   @id @default(uuid())
-  customerId  String
-  customer    Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  
-  label       String
-  name        String
-  phone       String
-  address     String
-  isDefault   Boolean  @default(false)
-  type        String   @default("home") // home, office
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
+  id         String   @id @default(uuid())
+  customerId String
+  label      String
+  name       String
+  phone      String
+  address    String
+  isDefault  Boolean  @default(false)
+  type       String   @default("home")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
   @@index([customerId])
 }
 
-// ============================================
-// ORDER MANAGEMENT
-// ============================================
-
 model Order {
-  id            String   @id @default(uuid())
-  orderNumber   String   @unique @default(cuid())
-  
-  customerId    String?
-  customer      Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
-  
-  // Basic Customer Details (Snapshot)
-  customerName  String
+  id              String      @id @default(uuid())
+  orderNumber     String      @unique @default(cuid())
+  customerId      String?
+  customerName    String
   customerAddress String?
-  customerPhone String?
-  
-  // Shipping / Delivery
-  recipientName String?
-  recipientPhone String?
+  customerPhone   String?
+  subtotal        Decimal     @db.Decimal(10, 2)
+  grandTotal      Decimal     @db.Decimal(10, 2)
+  status          OrderStatus @default(PENDING)
+  notes           String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  deliveryTime    String?
+  discount        Decimal     @default(0) @db.Decimal(10, 2)
+  paymentMethod   String      @default("CASH")
+  recipientName   String?
+  recipientPhone  String?
+  serviceFee      Decimal     @default(0) @db.Decimal(10, 2)
   shippingAddress String?
-  deliveryTime   String?
-  
-  // Source & Meta
-  source        OrderSource @default(MANUAL) // MANUAL, ONLINE
-  
-  // Items
-  items         OrderItem[]
-  
-  // Financials
-  subtotal      Decimal  @db.Decimal(10, 2)
-  shippingFee   Decimal  @db.Decimal(10, 2) @default(0) // Renamed from deliveryFee for consistency
-  serviceFee    Decimal  @db.Decimal(10, 2) @default(0)
-  discount      Decimal  @db.Decimal(10, 2) @default(0)
-  grandTotal    Decimal  @db.Decimal(10, 2)
-  
-  // Payment & Status
-  paymentMethod String   @default("CASH") // CASH, COD, TRANSFER
-  status        OrderStatus @default(PENDING)
-  notes         String?
-  
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  
+  shippingFee     Decimal     @default(0) @db.Decimal(10, 2)
+  source          OrderSource @default(MANUAL)
+  customer        Customer?   @relation(fields: [customerId], references: [id])
+  items           OrderItem[]
+
   @@index([customerId])
   @@index([orderNumber])
   @@index([status])
   @@index([createdAt])
   @@index([source])
+}
+
+model OrderItem {
+  id           String   @id @default(uuid())
+  orderId      String
+  productId    String?
+  productName  String
+  qty          Int
+  unit         String
+  price        Decimal  @db.Decimal(10, 2)
+  costPrice    Decimal? @db.Decimal(10, 2)
+  total        Decimal  @db.Decimal(10, 2)
+  productImage String?
+  variant      String?
+  order        Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product      Product? @relation(fields: [productId], references: [id])
+
+  @@index([orderId])
+  @@index([productId])
+}
+
+model Transaction {
+  id          String          @id @default(uuid())
+  date        DateTime        @default(now())
+  type        TransactionType
+  amount      Decimal         @db.Decimal(10, 2)
+  category    String
+  description String
+  orderId     String?
+  createdAt   DateTime        @default(now())
+
+  @@index([date])
+  @@index([type])
+  @@index([orderId])
+}
+
+model CostComponent {
+  id        String   @id @default(uuid())
+  name      String
+  cost      Decimal  @db.Decimal(10, 2)
+  unit      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([name])
+}
+
+model Favorite {
+  id         String   @id @default(uuid())
+  customerId String
+  productId  String
+  createdAt  DateTime @default(now())
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([customerId, productId])
+  @@index([customerId])
+  @@index([productId])
+}
+
+model Notification {
+  id         String   @id @default(uuid())
+  customerId String
+  title      String
+  message    String
+  type       String   @default("info")
+  isRead     Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@index([customerId])
+  @@index([createdAt])
+}
+
+model ShopConfig {
+  id               String   @id @default("global")
+  faq              String   @default("[]")
+  paymentMethods   String   @default("[]")
+  operationalHours String   @default("{}")
+  contactInfo      String   @default("{}")
+  updatedAt        DateTime @updatedAt
+}
+
+model PromoBanner {
+  id         String   @id @default(uuid())
+  title      String
+  subtitle   String?
+  badge      String?
+  image      String
+  buttonText String   @default("Belanja Sekarang")
+  link       String   @default("/products")
+  order      Int      @default(0)
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([isActive])
+  @@index([order])
 }
 
 enum OrderSource {
@@ -261,141 +298,16 @@ enum OrderSource {
 
 enum OrderStatus {
   PENDING
-  CONFIRMED // Shop specific
-  PREPARING // Shop specific
-  SHIPPING  // Shop specific
-  DELIVERED // Shop specific
-  PAID      // Manual specific (completed)
+  PAID
   CANCELLED
-}
-
-model OrderItem {
-  id          String   @id @default(uuid())
-  orderId     String
-  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  
-  // Product Link (Optional for manual custom items)
-  productId   String?
-  product     Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
-  
-  // Snapshot Data
-  productName String
-  productImage String? // Added for shop display
-  variant     String?  // Added for shop variant info
-  
-  qty         Int
-  unit        String
-  price       Decimal  @db.Decimal(10, 2)
-  costPrice   Decimal? @db.Decimal(10, 2)
-  total       Decimal  @db.Decimal(10, 2)
-  
-  @@index([orderId])
-  @@index([productId])
-}
-
-// ============================================
-// FINANCIAL MANAGEMENT
-// ============================================
-
-model Transaction {
-  id          String   @id @default(uuid())
-  date        DateTime @default(now())
-  type        TransactionType
-  amount      Decimal  @db.Decimal(10, 2)
-  category    String
-  description String
-  orderId     String?
-  
-  createdAt   DateTime @default(now())
-  
-  @@index([date])
-  @@index([type])
-  @@index([orderId])
+  CONFIRMED
+  PREPARING
+  SHIPPING
+  DELIVERED
 }
 
 enum TransactionType {
   INCOME
   EXPENSE
   CAPITAL
-}
-
-// ============================================
-// HPP CALCULATOR
-// ============================================
-
-model CostComponent {
-  id          String   @id @default(uuid())
-  name        String
-  cost        Decimal  @db.Decimal(10, 2)
-  unit        String
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  @@index([name])
-}
-
-// ============================================
-// SHOP EXTRAS (Favorites, Notifications, Config)
-// ============================================
-
-model Favorite {
-  id          String   @id @default(uuid())
-  customerId  String
-  customer    Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  productId   String
-  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-  
-  createdAt   DateTime @default(now())
-  
-  @@unique([customerId, productId])
-  @@index([customerId])
-  @@index([productId])
-}
-
-model Notification {
-  id          String   @id @default(uuid())
-  customerId  String
-  customer    Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  
-  title       String
-  message     String
-  type        String   @default("info") // info, success, warning, error
-  isRead      Boolean  @default(false)
-  
-  createdAt   DateTime @default(now())
-  
-  @@index([customerId])
-  @@index([createdAt])
-}
-
-
-model ShopConfig {
-  id          String   @id @default("global")
-  
-  // JSON strings for complex structures
-  faq         String   @default("[]") // JSON: [{question, answer}]
-  paymentMethods String @default("[]") // JSON: [{name, details, icon}]
-  operationalHours String @default("{}") // JSON: {monday: {open, close}, ...}
-  contactInfo  String   @default("{}") // JSON: {whatsapp, email, address}
-  
-  updatedAt   DateTime @updatedAt
-}
-
-model PromoBanner {
-  id          String   @id @default(uuid())
-  title       String
-  subtitle    String?
-  badge       String?
-  image       String   // URL or path
-  buttonText  String   @default("Belanja Sekarang")
-  link        String   @default("/products")
-  order       Int      @default(0)
-  isActive    Boolean  @default(true)
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@index([isActive])
-  @@index([order])
 }

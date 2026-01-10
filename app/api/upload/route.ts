@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { writeFile, mkdir } from 'fs/promises';
+import { writeFile, mkdir, stat } from 'fs/promises';
 import path from 'path';
 
 export async function POST(request: NextRequest) {
@@ -48,17 +48,34 @@ export async function POST(request: NextRequest) {
 
         const timestamp = Date.now();
         const ext = file.name.split('.').pop() || 'jpg';
-        // Prefix based on folder
-        const prefix = folder === 'banners' ? 'banner' : 'product';
+
+        // Better prefix mapping
+        const prefixMap: Record<string, string> = {
+            'products': 'product',
+            'categories': 'category',
+            'banners': 'banner',
+            'shop': 'shop'
+        };
+        const prefix = prefixMap[folder] || 'upload';
         const filename = `${prefix}-${timestamp}.${ext}`;
 
         // Ensure uploads directory exists
         const uploadDir = path.join(process.cwd(), 'public', 'uploads', folder);
+        console.log(`[UPLOAD] Saving to folder: ${folder}, filename: ${filename}`);
         await mkdir(uploadDir, { recursive: true });
 
         // Write file
         const filePath = path.join(uploadDir, filename);
         await writeFile(filePath, buffer);
+
+        // Verification
+        try {
+            const stats = await stat(filePath);
+            console.log(`[UPLOAD] Success: ${filename} (${stats.size} bytes) saved to ${filePath}`);
+        } catch (e) {
+            console.error(`[UPLOAD] Error: File was not written correctly to ${filePath}`);
+            throw new Error('Gagal memverifikasi file yang diupload');
+        }
 
         // Return public URL
         const publicUrl = `/uploads/${folder}/${filename}`;
@@ -67,10 +84,10 @@ export async function POST(request: NextRequest) {
             url: publicUrl,
             filename: filename
         });
-    } catch (error) {
-        console.error('Error uploading file:', error);
+    } catch (error: any) {
+        console.error('Upload API Error:', error);
         return NextResponse.json(
-            { error: 'Failed to upload file' },
+            { error: error.message || 'Gagal mengupload file' },
             { status: 500 }
         );
     }
