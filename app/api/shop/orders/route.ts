@@ -161,6 +161,20 @@ export async function POST(request: NextRequest) {
             );
         }
 
+        // Deduct stock for each product
+        for (const item of items) {
+            if (item.productId) {
+                await prisma.product.update({
+                    where: { id: item.productId },
+                    data: {
+                        stock: {
+                            decrement: item.quantity,
+                        },
+                    },
+                });
+            }
+        }
+
         // Calculate totals
         const subtotal = items.reduce((sum: number, item: any) =>
             sum + (item.price * item.quantity), 0

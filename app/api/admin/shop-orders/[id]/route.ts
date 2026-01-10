@@ -15,6 +15,94 @@ export async function PATCH(
 
         const { status } = await request.json();
 
+        // Fetch order with items first
+        const order = await prisma.order.findUnique({
+            where: { id },
+            include: { items: true, customer: true },
+        });
+
+        if (!order) {
+            return NextResponse.json({ error: 'Order not found' }, { status: 404 });
+        }
+
+        const previousStatus = order.status;
+
+        // === FINANCE INTEGRATION ===
+
+        // 1. Handle CANCELLED - Return stock
+        if (status === 'CANCELLED' && previousStatus !== 'CANCELLED') {
+            for (const item of order.items) {
+                if (item.productId) {
+                    await prisma.product.update({
+                        where: { id: item.productId },
+                        data: {
+                            stock: {
+                                increment: item.qty,
+                            },
+                        },
+                    });
+                }
+            }
+        }
+
+        // 2. Handle DELIVERED - Create income transaction + update customer stats
+        if (status === 'DELIVERED' && previousStatus !== 'DELIVERED') {
+            // Create income transaction for the order
+            await prisma.transaction.create({
+                data: {
+                    type: 'INCOME',
+                    amount: order.subtotal,
+                    category: 'Penjualan Ikan & Seafood',
+                    description: `Order Online #${order.orderNumber} - ${order.customerName || 'Customer'}`,
+                    orderId: order.id,
+                },
+            });
+
+            // Create shipping income if applicable
+            if (Number(order.shippingFee) > 0) {
+                await prisma.transaction.create({
+                    data: {
+                        type: 'INCOME',
+                        amount: order.shippingFee,
+                        category: 'Ongkos Kirim (Delivery)',
+                        description: `Ongkir Order #${order.orderNumber}`,
+                        orderId: order.id,
+                    },
+                });
+            }
+
+            // Create service fee income if applicable
+            if (Number(order.serviceFee) > 0) {
+                await prisma.transaction.create({
+                    data: {
+                        type: 'INCOME',
+                        amount: order.serviceFee,
+                        category: 'Biaya Layanan',
+                        description: `Service Fee Order #${order.orderNumber}`,
+                        orderId: order.id,
+                    },
+                });
+            }
+
+            // Update customer stats
+            if (order.customerId) {
+                await prisma.customer.update({
+                    where: { id: order.customerId },
+                    data: {
+                        totalSpent: {
+                            increment: order.grandTotal,
+                        },
+                        orderCount: {
+                            increment: 1,
+                        },
+                        lastOrderDate: new Date(),
+                    },
+                });
+            }
+        }
+
+        // === END FINANCE INTEGRATION ===
+
         const updatedOrder = await prisma.order.update({
             where: { id },
             data: { status },
@@ -69,6 +157,31 @@ export async function DELETE(
         const session = await auth();
         if (!session || (session.user as any).role !== 'admin') {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
+        const order = await prisma.order.findUnique({
+            where: { id },
+            include: { items: true },
+        });
+
+        if (!order) {
+            return NextResponse.json({ error: 'Order not found' }, { status: 404 });
+        }
+
+        // Return stock if order is not cancelled
+        if (order.status !== 'CANCELLED') {
+            for (const item of order.items) {
+                if (item.productId) {
+                    await prisma.product.update({
+                        where: { id: item.productId },
+                        data: {
+                            stock: {
+                                increment: item.qty,
+                            },
+                        },
+                    });
+                }
+            }
         }
 
         await prisma.order.delete({
