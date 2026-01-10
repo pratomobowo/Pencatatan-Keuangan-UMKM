@@ -129,7 +129,7 @@ export const AdminNotificationBell: React.FC<AdminNotificationBellProps> = ({ on
 
             {/* Dropdown */}
             {isOpen && (
-                <div className="absolute left-0 top-full mt-2 w-80 bg-white rounded-xl shadow-xl border border-slate-200 z-50 overflow-hidden">
+                <div className="absolute left-0 top-full mt-2 w-80 bg-white rounded-xl shadow-xl border border-slate-200 z-[100] overflow-hidden">
                     <div className="flex items-center justify-between p-3 border-b border-slate-100 bg-slate-50">
                         <h3 className="font-semibold text-slate-900 text-sm">Pesanan Masuk</h3>
                         <button onClick={() => setIsOpen(false)} className="text-slate-400 hover:text-slate-600">
