@@ -89,21 +89,21 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                         <Link href={`/products/${slug || id}`}>
                             <h3 className="text-sm font-bold text-stone-900 truncate">{name}</h3>
                         </Link>
-                        <p className="text-[10px] text-stone-500 font-medium tracking-wide flex items-center gap-1.5">
-                            <span className="bg-stone-50 px-1.5 py-0.5 rounded">Per {currentUnit}</span>
-                        </p>
                     </div>
 
                     <div className="flex items-end justify-between gap-2">
                         <div className="flex flex-col">
                             {originalPrice && (
                                 <span className="text-[10px] text-stone-400 line-through">
-                                    Rp {originalPrice.toLocaleString('id-ID')}
+                                    Rp {originalPrice.toLocaleString('id-ID')}/{currentUnit}
                                 </span>
                             )}
-                            <span className="text-base font-bold text-orange-600">
-                                Rp {currentPrice.toLocaleString('id-ID')}
-                            </span>
+                            <div className="flex items-baseline gap-0.5 text-orange-600">
+                                <span className="text-base font-bold">
+                                    Rp {currentPrice.toLocaleString('id-ID')}
+                                </span>
+                                <span className="text-[10px] font-medium opacity-70">/{currentUnit}</span>
+                            </div>
                         </div>
 
                         <button
@@ -154,19 +154,19 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                     <h3 className="text-sm font-semibold text-stone-900 line-clamp-2 min-h-[40px]">{name}</h3>
                 </Link>
 
-                {/* Display Unit */}
-                <p className="text-xs text-stone-500">Per {currentUnit}</p>
-
-                {/* Price */}
+                {/* Price & Unit */}
                 <div className="flex flex-col mt-auto pt-2">
                     {originalPrice && (
                         <span className="text-xs text-stone-400 line-through">
-                            Rp {originalPrice.toLocaleString('id-ID')}
+                            Rp {originalPrice.toLocaleString('id-ID')}/{currentUnit}
                         </span>
                     )}
-                    <span className="text-base font-semibold text-orange-500">
-                        Rp {currentPrice.toLocaleString('id-ID')}
-                    </span>
+                    <div className="flex items-baseline gap-0.5 text-orange-500">
+                        <span className="text-base font-semibold">
+                            Rp {currentPrice.toLocaleString('id-ID')}
+                        </span>
+                        <span className="text-xs font-medium opacity-70">/{currentUnit}</span>
+                    </div>
                 </div>
 
                 {/* Add to Cart Button */}
