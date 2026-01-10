@@ -77,8 +77,8 @@ export async function POST(request: NextRequest) {
             throw new Error('Gagal memverifikasi file yang diupload');
         }
 
-        // Return public URL
-        const publicUrl = `/uploads/${folder}/${filename}`;
+        // Return API-served URL (Next.js doesn't serve runtime uploads from /public)
+        const publicUrl = `/api/files/${folder}/${filename}`;
 
         return NextResponse.json({
             url: publicUrl,
