@@ -327,7 +327,7 @@ const App: React.FC = () => {
             <aside className="w-full md:w-64 bg-white text-slate-800 flex-shrink-0 md:h-screen sticky top-0 z-50 border-r border-slate-200 shadow-sm flex flex-col justify-between">
                 <div>
                     <div className="p-8 flex items-center justify-center border-b border-slate-100">
-                        <div className="relative w-20 h-20 shrink-0">
+                        <div className="relative w-32 h-32 shrink-0">
                             <Image
                                 src="/logo.webp"
                                 alt="Pasarantar Logo"

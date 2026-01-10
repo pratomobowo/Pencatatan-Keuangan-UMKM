@@ -42,8 +42,8 @@ export default function LoginPage() {
         <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-50 flex items-center justify-center p-4">
             <div className="w-full max-w-md">
                 {/* Logo & Title */}
-                <div className="text-center mb-8">
-                    <div className="relative inline-flex items-center justify-center w-24 h-24 bg-white rounded-2xl shadow-lg mb-4 overflow-hidden p-2">
+                <div className="text-center mb-10">
+                    <div className="relative inline-flex items-center justify-center w-48 h-48 bg-white rounded-3xl shadow-2xl mb-6 overflow-hidden p-2">
                         <Image
                             src="/logo.webp"
                             alt="Pasarantar Logo"

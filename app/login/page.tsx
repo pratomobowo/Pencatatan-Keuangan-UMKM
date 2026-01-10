@@ -62,7 +62,7 @@ export default function LoginPage() {
 
                     {/* Logo & Title */}
                     <div className="px-6 pt-4 pb-8 text-center">
-                        <div className="relative size-24 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center mx-auto mb-4 shadow-xl overflow-hidden p-2">
+                        <div className="relative size-40 rounded-3xl bg-white/20 backdrop-blur flex items-center justify-center mx-auto mb-6 shadow-2xl overflow-hidden p-2">
                             <Image
                                 src="/logo.webp"
                                 alt="Pasarantar Logo"
