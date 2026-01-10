@@ -200,7 +200,7 @@ export default function AIChatbot() {
                                 <h2 className="text-xl font-bold text-stone-900 leading-tight">Minsar AI</h2>
                                 <p className="text-xs text-orange-600 font-medium flex items-center gap-1">
                                     <span className="size-1.5 bg-green-500 rounded-full animate-pulse"></span>
-                                    Selalu siap membantu Puh
+                                    Selalu siap membantu Buibu!
                                 </p>
                             </div>
                         </div>
@@ -279,13 +279,13 @@ export default function AIChatbot() {
                                 value={input}
                                 onChange={(e) => setInput(e.target.value)}
                                 placeholder="Tanya apa saja ke Minsar..."
-                                className="flex-1 px-5 py-4 bg-orange-50/30 border border-orange-100 rounded-2xl text-stone-800 focus:ring-2 focus:ring-orange-500 focus:bg-white outline-none transition-all"
+                                className="flex-1 min-w-0 px-5 py-4 bg-orange-50/30 border border-orange-100 rounded-2xl text-stone-800 focus:ring-2 focus:ring-orange-500 focus:bg-white outline-none transition-all"
                                 disabled={isLoading}
                             />
                             <button
                                 type="submit"
                                 disabled={isLoading || !input.trim()}
-                                className="size-14 flex items-center justify-center rounded-2xl bg-orange-500 text-white shadow-lg shadow-orange-300/40 hover:bg-orange-600 disabled:bg-gray-200 disabled:shadow-none transition-all active:scale-90"
+                                className="size-14 shrink-0 flex items-center justify-center rounded-2xl bg-orange-500 text-white shadow-lg shadow-orange-300/40 hover:bg-orange-600 disabled:bg-gray-200 disabled:shadow-none transition-all active:scale-90"
                             >
                                 <Send size={24} />
                             </button>
