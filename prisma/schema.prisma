@@ -161,7 +161,7 @@ model ProductVariant {
 model Customer {
   id          String   @id @default(uuid())
   name        String
-  phone       String   @unique
+  phone       String?  @unique
   password    String?  // Hashed with bcrypt (Optional for manual customers or OAuth)
   email       String?
   address     String?

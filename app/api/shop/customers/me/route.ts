@@ -75,7 +75,7 @@ export async function GET(request: NextRequest) {
                 data: {
                     name: session?.user?.name || 'Customer',
                     email: tokenData.identifier,
-                    phone: '0000000000', // Placeholder
+                    // phone is now optional
                 } as any,
                 select: {
                     id: true,
