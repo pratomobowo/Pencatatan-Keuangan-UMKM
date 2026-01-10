@@ -475,6 +475,16 @@ export default function CheckoutPage() {
                                     <span>{shippingData.error}</span>
                                 </div>
                             )}
+
+                            {selectedAddress && shippingData.requiresManualConfirmation && (
+                                <div className="mt-4 bg-orange-50 border border-orange-200 p-3 rounded-lg flex items-start gap-2 text-sm text-orange-700">
+                                    <AlertCircle size={16} className="shrink-0 mt-0.5" />
+                                    <div>
+                                        <p className="font-bold">Alamat Berhasil Ditemukan</p>
+                                        <p className="text-xs mt-1">Namun biaya ongkir akan dihitung secara manual oleh Admin via WhatsApp setelah pesanan dibuat.</p>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     ) : (
                         <div className="bg-white p-4 rounded-xl border border-gray-100 space-y-4 shadow-sm">
@@ -532,6 +542,16 @@ export default function CheckoutPage() {
                                 <div className="bg-rose-50 border border-rose-200 p-3 rounded-lg flex items-start gap-2 text-sm text-rose-700">
                                     <AlertCircle size={16} className="shrink-0 mt-0.5" />
                                     <span>{shippingData.error}</span>
+                                </div>
+                            )}
+
+                            {shippingData.requiresManualConfirmation && (
+                                <div className="bg-orange-50 border border-orange-200 p-3 rounded-lg flex items-start gap-2 text-sm text-orange-700">
+                                    <AlertCircle size={16} className="shrink-0 mt-0.5" />
+                                    <div>
+                                        <p className="font-bold">Alamat Berhasil Ditemukan</p>
+                                        <p className="text-xs mt-1">Namun biaya ongkir akan dihitung secara manual oleh Admin via WhatsApp setelah pesanan dibuat.</p>
+                                    </div>
                                 </div>
                             )}
                         </div>
