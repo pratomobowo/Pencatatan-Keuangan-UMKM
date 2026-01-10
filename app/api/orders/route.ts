@@ -15,7 +15,23 @@ export async function GET() {
             },
             orderBy: { createdAt: 'desc' },
         });
-        return NextResponse.json(orders);
+
+        // Transform orders: add date field and convert Decimals to numbers
+        const transformedOrders = orders.map((order: any) => ({
+            ...order,
+            date: order.createdAt, // Add date field for frontend compatibility
+            subtotal: Number(order.subtotal),
+            shippingFee: Number(order.shippingFee),
+            grandTotal: Number(order.grandTotal),
+            items: order.items.map((item: any) => ({
+                ...item,
+                price: Number(item.price),
+                costPrice: item.costPrice ? Number(item.costPrice) : null,
+                total: Number(item.total),
+            })),
+        }));
+
+        return NextResponse.json(transformedOrders);
     } catch (error) {
         console.error('Error fetching orders:', error);
         return NextResponse.json(

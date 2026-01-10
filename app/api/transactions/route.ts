@@ -7,7 +7,14 @@ export async function GET() {
         const transactions = await prisma.transaction.findMany({
             orderBy: { date: 'desc' },
         });
-        return NextResponse.json(transactions);
+
+        // Transform transactions: convert Decimals to numbers
+        const transformedTransactions = transactions.map((t: any) => ({
+            ...t,
+            amount: Number(t.amount),
+        }));
+
+        return NextResponse.json(transformedTransactions);
     } catch (error) {
         console.error('Error fetching transactions:', error);
         return NextResponse.json(
