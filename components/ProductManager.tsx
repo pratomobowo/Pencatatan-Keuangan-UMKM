@@ -35,6 +35,7 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
   const imageInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [dbCategories, setDbCategories] = useState<Category[]>([]);
+  const [isGeneratingDescription, setIsGeneratingDescription] = useState(false);
 
   // State for Restock Modal
   const [restockProduct, setRestockProduct] = useState<Product | null>(null);
@@ -238,6 +239,35 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
       if (imageInputRef.current) {
         imageInputRef.current.value = '';
       }
+    }
+  };
+
+  // Handle AI Description Generation
+  const handleGenerateDescription = async () => {
+    if (!formData.name) {
+      alert('Tolong isi nama produk dulu ya Puh!');
+      return;
+    }
+
+    setIsGeneratingDescription(true);
+    try {
+      const response = await fetch('/api/ai/generate-description', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productName: formData.name }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Gagal generate deskripsi Puh.');
+      }
+
+      const data = await response.json();
+      setFormData(prev => ({ ...prev, description: data.description }));
+    } catch (error: any) {
+      console.error('Generation error:', error);
+      alert(error.message || 'Gagal membuat deskripsi');
+    } finally {
+      setIsGeneratingDescription(false);
     }
   };
 
@@ -644,12 +674,27 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
 
                   {/* Deskripsi Singkat */}
                   <div>
-                    <label className="block text-sm text-slate-700 mb-1">Deskripsi Singkat</label>
+                    <div className="flex justify-between items-center mb-1">
+                      <label className="block text-sm text-slate-700">Deskripsi Singkat</label>
+                      <button
+                        type="button"
+                        onClick={handleGenerateDescription}
+                        disabled={isGeneratingDescription || !formData.name}
+                        className="flex items-center gap-1.5 px-2 py-1 text-[10px] font-bold bg-orange-50 text-orange-600 rounded-md hover:bg-orange-100 transition-all border border-orange-200 disabled:opacity-50"
+                      >
+                        {isGeneratingDescription ? (
+                          <Loader2 size={12} className="animate-spin" />
+                        ) : (
+                          <Sparkles size={12} />
+                        )}
+                        {isGeneratingDescription ? 'Mikir...' : 'Generate AI'}
+                      </button>
+                    </div>
                     <textarea
                       placeholder="Deskripsi produk untuk ditampilkan di toko..."
                       value={formData.description || ''}
                       onChange={e => setFormData({ ...formData, description: e.target.value })}
-                      rows={2}
+                      rows={3}
                       className="w-full p-2.5 bg-white border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm resize-none"
                     />
                   </div>

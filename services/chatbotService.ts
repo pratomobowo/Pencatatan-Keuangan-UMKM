@@ -77,4 +77,64 @@ export class ChatbotService {
             throw error;
         }
     }
+
+    static async generateProductDescription(productName: string): Promise<string> {
+        if (!ARK_API_KEY) {
+            console.error("ARK_API_KEY is not defined in environment variables");
+            throw new Error("Konfigurasi AI belum lengkap.");
+        }
+
+        const prompt = `Anda adalah spesialis konten (copywriter) senior dari Pasarantar.
+        Tugas Anda: Buat deskripsi produk yang SINGKAT, SANGAT MENARIK, dan PERSUASIF untuk produk: "${productName}".
+
+        Gaya Bahasa:
+        - Ramah, hangat, dan akrab (Gaya sapaan "Buibu" atau "Bund").
+        - Singkat tapi informatif, fokus pada manfaat kesehatan dan kelezatan.
+
+        Wajib Mengandung:
+        1. Deskripsi singkat kualitas (segar, higienis, kualitas pilihan).
+        2. 1-2 ide masakan/resep yang pas buat produk ini.
+        3. Jika relevan (seperti ikan, ayam, daging), sebutkan ini super cocok untuk menu MPASI buat naikin BB bayi atau gizi si kecil.
+
+        Aturan:
+        - Maksimal 2 paragraf pendek.
+        - Hindari kata pembuka membosankan seperti "Produk ini adalah...".
+        - Gunakan emoji masakan yang sesuai secara proporsional.
+        - Langsung ke intinya (maks 250 karakter).
+
+        Output: Langsung teks deskripsinya saja.`;
+
+        const payload = {
+            model: MODEL_ID,
+            messages: [
+                { role: 'system', content: "Anda adalah copywriter profesional Pasarantar yang spesialis produk protein segar." },
+                { role: 'user', content: prompt }
+            ],
+            temperature: 0.8,
+            max_tokens: 500,
+        };
+
+        try {
+            const response = await fetch(ARK_ENDPOINT, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${ARK_API_KEY}`,
+                },
+                body: JSON.stringify(payload),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error("BytePlus API Error (Generating Description):", errorData);
+                throw new Error("Gagal generate deskripsi.");
+            }
+
+            const data = await response.json();
+            return data.choices[0]?.message?.content?.trim() || "Gagal membuat deskripsi otomatis.";
+        } catch (error) {
+            console.error("ChatbotService Error (Generating Description):", error);
+            throw error;
+        }
+    }
 }
