@@ -307,7 +307,7 @@ export default function AddressesPage() {
             {/* Add/Edit Form Modal */}
             {showForm && (
                 <div className="fixed inset-0 z-50 bg-black/50 flex items-end">
-                    <div className="w-full max-w-md mx-auto bg-white rounded-t-3xl p-6 pb-8 animate-slide-up max-h-[90vh] overflow-y-auto">
+                    <div className="w-full max-w-md mx-auto bg-white rounded-t-3xl p-6 pb-24 animate-slide-up max-h-[90vh] overflow-y-auto">
                         <div className="flex items-center justify-between mb-6">
                             <h3 className="text-lg font-bold text-stone-900">
                                 {editingId ? 'Edit Alamat' : 'Tambah Alamat'}
