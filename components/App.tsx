@@ -14,7 +14,7 @@ import { HPPCalculator } from '@/components/HPPCalculator';
 import { UserManager } from '@/components/UserManager';
 import { Profile } from '@/components/Profile';
 import { ShopSettingsManager } from '@/components/ShopSettingsManager';
-import { LayoutDashboard, List, BrainCircuit, ShoppingCart, Package, Users as UsersIcon, Image as ImageIcon, Download, PieChart, Calculator, LogOut, UserCog, User as UserIcon, Settings, Tags } from 'lucide-react';
+import { LayoutDashboard, List, BrainCircuit, ShoppingCart, Package, Users as UsersIcon, Image as ImageIcon, Download, PieChart, Calculator, LogOut, UserCog, User as UserIcon, Settings, Tags, Menu, X } from 'lucide-react';
 import { BannerManager } from '@/components/BannerManager';
 import { CategoryManager } from '@/components/CategoryManager';
 import { productsAPI, customersAPI, ordersAPI, transactionsAPI, costComponentsAPI, adminShopOrdersAPI, adminShopCustomersAPI } from '@/lib/api';
@@ -38,6 +38,9 @@ const App: React.FC = () => {
 
     // State for Quick Order Integration
     const [quickOrderCustomerId, setQuickOrderCustomerId] = useState<string | null>(null);
+
+    // State for Mobile Navigation
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     const isAdmin = (session?.user as any)?.role === 'admin';
 
@@ -321,376 +324,454 @@ const App: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 flex flex-col md:flex-row">
+        <div className="min-h-screen bg-slate-50 flex flex-col">
+            {/* Mobile Header with Hamburger */}
+            <header className="lg:hidden sticky top-0 z-50 bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-blue-600 rounded-lg shadow-sm flex items-center justify-center">
+                        <span className="text-white font-semibold text-sm">PA</span>
+                    </div>
+                    <div>
+                        <h1 className="font-semibold text-base leading-none text-slate-900">Pasarantar</h1>
+                        <span className="text-[10px] text-slate-500">Admin Dashboard</span>
+                    </div>
+                </div>
+                <button
+                    onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                    className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+                >
+                    {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                </button>
+            </header>
 
-            {/* Sidebar Navigation - LIGHT THEME */}
-            <aside className="w-full md:w-64 bg-white text-slate-800 flex-shrink-0 md:h-screen sticky top-0 z-50 border-r border-slate-200 shadow-sm flex flex-col justify-between">
-                <div>
-                    <div className="p-6 flex items-center gap-3 border-b border-slate-100">
-                        <div className="w-10 h-10 bg-blue-600 rounded-lg shadow-sm flex items-center justify-center">
-                            <span className="text-white font-semibold text-lg tracking-tight">PA</span>
+            {/* Mobile Overlay */}
+            {mobileMenuOpen && (
+                <div
+                    className="lg:hidden fixed inset-0 bg-black/50 z-40"
+                    onClick={() => setMobileMenuOpen(false)}
+                />
+            )}
+
+            <div className="flex flex-1 relative">
+                {/* Sidebar Navigation - Responsive */}
+                <aside className={`
+                    fixed lg:sticky top-0 left-0 h-screen
+                    w-64 bg-white text-slate-800 flex-shrink-0
+                    border-r border-slate-200 shadow-lg lg:shadow-sm
+                    flex flex-col justify-between
+                    z-50 lg:z-auto
+                    transform transition-transform duration-300 ease-in-out
+                    ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+                    lg:top-0
+                `}>
+                    <div>
+                        <div className="p-6 flex items-center gap-3 border-b border-slate-100">
+                            <div className="w-10 h-10 bg-blue-600 rounded-lg shadow-sm flex items-center justify-center">
+                                <span className="text-white font-semibold text-lg tracking-tight">PA</span>
+                            </div>
+                            <div>
+                                <h1 className="font-semibold text-lg leading-none text-slate-900">Pasarantar</h1>
+                                <span className="text-xs text-slate-500">Keuangan & Stok</span>
+                            </div>
                         </div>
-                        <div>
-                            <h1 className="font-semibold text-lg leading-none text-slate-900">Pasarantar</h1>
-                            <span className="text-xs text-slate-500">Keuangan & Stok</span>
-                        </div>
+
+                        <nav className="p-4 space-y-2 overflow-y-auto flex-1">
+                            <div className="text-xs font-medium text-slate-400 px-4 mb-2 mt-2 uppercase tracking-wider">Utama</div>
+                            <button
+                                onClick={() => setView('DASHBOARD')}
+                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${view === 'DASHBOARD'
+                                    ? 'bg-blue-600 text-white shadow-md'
+                                    : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600'
+                                    }`}
+                            >
+                                <LayoutDashboard size={20} />
+                                <span>Ringkasan</span>
+                            </button>
+
+                            <button
+                                onClick={() => setView('ORDERS')}
+                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${view === 'ORDERS'
+                                    ? 'bg-blue-600 text-white shadow-md'
+                                    : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600'
+                                    }`}
+                            >
+                                <ShoppingCart size={20} />
+                                <span>Pesanan</span>
+                            </button>
+
+                            <div className="text-xs font-medium text-slate-400 px-4 mb-2 mt-4 uppercase tracking-wider">Manajemen</div>
+                            <button
+                                onClick={() => setView('PRODUCTS')}
+                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${view === 'PRODUCTS'
+                                    ? 'bg-blue-600 text-white shadow-md'
+                                    : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600'
+                                    }`}
+                            >
+                                <Package size={20} />
+                                <span>Data Produk</span>
+                            </button>
+
+                            <button
+                                onClick={() => setView('HPP_CALCULATOR')}
+                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${view === 'HPP_CALCULATOR'
+                                    ? 'bg-blue-600 text-white shadow-md'
+                                    : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600'
+                                    }`}
+                            >
+                                <Calculator size={20} />
+                                <span>Kalkulator HPP</span>
+                            </button>
+
+                            <button
+                                onClick={() => setView('CUSTOMERS')}
+                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${view === 'CUSTOMERS'
+                                    ? 'bg-blue-600 text-white shadow-md'
+                                    : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600'
+                                    }`}
+                            >
+                                <UsersIcon size={20} />
+                                <span>Pelanggan</span>
+                            </button>
+
+                            <button
+                                onClick={() => setView('SHOP_SETTINGS')}
+                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${view === 'SHOP_SETTINGS'
+                                    ? 'bg-blue-600 text-white shadow-md'
+                                    : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600'
+                                    }`}
+                            >
+                                <Settings className="text-orange-500" size={20} />
+                                <span>Pengaturan Toko</span>
+                            </button>
+
+                            <div className="text-xs font-medium text-slate-400 px-4 mb-2 mt-4 uppercase tracking-wider">Keuangan</div>
+                            <button
+                                onClick={() => setView('TRANSACTIONS')}
+                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${view === 'TRANSACTIONS'
+                                    ? 'bg-blue-600 text-white shadow-md'
+                                    : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600'
+                                    }`}
+                            >
+                                <List size={20} />
+                                <span>Buku Transaksi</span>
+                            </button>
+
+                            <button
+                                onClick={() => setView('REPORTS')}
+                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${view === 'REPORTS'
+                                    ? 'bg-blue-600 text-white shadow-md'
+                                    : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600'
+                                    }`}
+                            >
+                                <PieChart size={20} />
+                                <span>Laporan Laba Rugi</span>
+                            </button>
+
+                            {/* User Management - Admin Only */}
+                            {isAdmin && (
+                                <>
+                                    <div className="text-xs font-medium text-slate-400 px-4 mb-2 mt-4 uppercase tracking-wider">Admin</div>
+                                    <button
+                                        onClick={() => setView('BANNER_MANAGEMENT')}
+                                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${view === 'BANNER_MANAGEMENT'
+                                            ? 'bg-blue-600 text-white shadow-md'
+                                            : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600'
+                                            }`}
+                                    >
+                                        <ImageIcon size={20} />
+                                        <span>Banner Promo</span>
+                                    </button>
+                                    <button
+                                        onClick={() => setView('CATEGORY_MANAGEMENT')}
+                                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${view === 'CATEGORY_MANAGEMENT'
+                                            ? 'bg-blue-600 text-white shadow-md'
+                                            : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600'
+                                            }`}
+                                    >
+                                        <Tags size={20} />
+                                        <span>Kategori Produk</span>
+                                    </button>
+                                    <button
+                                        onClick={() => setView('USER_MANAGEMENT')}
+                                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${view === 'USER_MANAGEMENT'
+                                            ? 'bg-blue-600 text-white shadow-md'
+                                            : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600'
+                                            }`}
+                                    >
+                                        <UserCog size={20} />
+                                        <span>User Management</span>
+                                    </button>
+                                </>
+                            )}
+
+                            {/* Profile */}
+                            <div className="text-xs font-medium text-slate-400 px-4 mb-2 mt-4 uppercase tracking-wider">Account</div>
+                            <button
+                                onClick={() => setView('PROFILE')}
+                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${view === 'PROFILE'
+                                    ? 'bg-blue-600 text-white shadow-md'
+                                    : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600'
+                                    }`}
+                            >
+                                <UserIcon size={20} />
+                                <span>Profile</span>
+                            </button>
+
+                            <div className="text-xs font-medium text-slate-400 px-4 mb-2 mt-4 uppercase tracking-wider">Insight</div>
+                            <button
+                                onClick={() => setView('ANALYSIS')}
+                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${view === 'ANALYSIS'
+                                    ? 'bg-blue-600 text-white shadow-md'
+                                    : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600'
+                                    }`}
+                            >
+                                <BrainCircuit size={20} />
+                                <span>Analisis Bisnis</span>
+                            </button>
+                        </nav>
                     </div>
 
-                    <nav className="p-4 space-y-2">
-                        <div className="text-xs font-medium text-slate-400 px-4 mb-2 mt-2 uppercase tracking-wider">Utama</div>
+                    <div className="p-4 border-t border-slate-100 bg-slate-50 space-y-2">
                         <button
-                            onClick={() => setView('DASHBOARD')}
-                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${view === 'DASHBOARD'
-                                ? 'bg-blue-600 text-white shadow-md'
-                                : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600'
-                                }`}
+                            onClick={() => signOut({ callbackUrl: '/login' })}
+                            className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-rose-50 border border-rose-200 rounded-lg text-rose-700 hover:bg-rose-100 text-sm transition-colors font-medium"
                         >
-                            <LayoutDashboard size={20} />
-                            <span>Ringkasan</span>
+                            <LogOut size={16} /> Logout
                         </button>
-
                         <button
-                            onClick={() => setView('ORDERS')}
-                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${view === 'ORDERS'
-                                ? 'bg-blue-600 text-white shadow-md'
-                                : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600'
-                                }`}
+                            onClick={handleBackup}
+                            className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-white border border-slate-300 rounded-lg text-slate-600 hover:bg-slate-100 text-sm transition-colors"
                         >
-                            <ShoppingCart size={20} />
-                            <span>Pesanan</span>
+                            <Download size={16} /> Backup Data
                         </button>
-
-                        <div className="text-xs font-medium text-slate-400 px-4 mb-2 mt-4 uppercase tracking-wider">Manajemen</div>
-                        <button
-                            onClick={() => setView('PRODUCTS')}
-                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${view === 'PRODUCTS'
-                                ? 'bg-blue-600 text-white shadow-md'
-                                : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600'
-                                }`}
-                        >
-                            <Package size={20} />
-                            <span>Data Produk</span>
-                        </button>
-
-                        <button
-                            onClick={() => setView('HPP_CALCULATOR')}
-                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${view === 'HPP_CALCULATOR'
-                                ? 'bg-blue-600 text-white shadow-md'
-                                : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600'
-                                }`}
-                        >
-                            <Calculator size={20} />
-                            <span>Kalkulator HPP</span>
-                        </button>
-
-                        <button
-                            onClick={() => setView('CUSTOMERS')}
-                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${view === 'CUSTOMERS'
-                                ? 'bg-blue-600 text-white shadow-md'
-                                : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600'
-                                }`}
-                        >
-                            <UsersIcon size={20} />
-                            <span>Pelanggan</span>
-                        </button>
-
-                        <button
-                            onClick={() => setView('SHOP_SETTINGS')}
-                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${view === 'SHOP_SETTINGS'
-                                ? 'bg-blue-600 text-white shadow-md'
-                                : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600'
-                                }`}
-                        >
-                            <Settings className="text-orange-500" size={20} />
-                            <span>Pengaturan Toko</span>
-                        </button>
-
-                        <div className="text-xs font-medium text-slate-400 px-4 mb-2 mt-4 uppercase tracking-wider">Keuangan</div>
-                        <button
-                            onClick={() => setView('TRANSACTIONS')}
-                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${view === 'TRANSACTIONS'
-                                ? 'bg-blue-600 text-white shadow-md'
-                                : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600'
-                                }`}
-                        >
-                            <List size={20} />
-                            <span>Buku Transaksi</span>
-                        </button>
-
-                        <button
-                            onClick={() => setView('REPORTS')}
-                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${view === 'REPORTS'
-                                ? 'bg-blue-600 text-white shadow-md'
-                                : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600'
-                                }`}
-                        >
-                            <PieChart size={20} />
-                            <span>Laporan Laba Rugi</span>
-                        </button>
-
-                        {/* User Management - Admin Only */}
-                        {isAdmin && (
-                            <>
-                                <div className="text-xs font-medium text-slate-400 px-4 mb-2 mt-4 uppercase tracking-wider">Admin</div>
-                                <button
-                                    onClick={() => setView('BANNER_MANAGEMENT')}
-                                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${view === 'BANNER_MANAGEMENT'
-                                        ? 'bg-blue-600 text-white shadow-md'
-                                        : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600'
-                                        }`}
-                                >
-                                    <ImageIcon size={20} />
-                                    <span>Banner Promo</span>
-                                </button>
-                                <button
-                                    onClick={() => setView('CATEGORY_MANAGEMENT')}
-                                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${view === 'CATEGORY_MANAGEMENT'
-                                        ? 'bg-blue-600 text-white shadow-md'
-                                        : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600'
-                                        }`}
-                                >
-                                    <Tags size={20} />
-                                    <span>Kategori Produk</span>
-                                </button>
-                                <button
-                                    onClick={() => setView('USER_MANAGEMENT')}
-                                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${view === 'USER_MANAGEMENT'
-                                        ? 'bg-blue-600 text-white shadow-md'
-                                        : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600'
-                                        }`}
-                                >
-                                    <UserCog size={20} />
-                                    <span>User Management</span>
-                                </button>
-                            </>
-                        )}
-
-                        {/* Profile */}
-                        <div className="text-xs font-medium text-slate-400 px-4 mb-2 mt-4 uppercase tracking-wider">Account</div>
-                        <button
-                            onClick={() => setView('PROFILE')}
-                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${view === 'PROFILE'
-                                ? 'bg-blue-600 text-white shadow-md'
-                                : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600'
-                                }`}
-                        >
-                            <UserIcon size={20} />
-                            <span>Profile</span>
-                        </button>
-
-                        <div className="text-xs font-medium text-slate-400 px-4 mb-2 mt-4 uppercase tracking-wider">Insight</div>
-                        <button
-                            onClick={() => setView('ANALYSIS')}
-                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${view === 'ANALYSIS'
-                                ? 'bg-blue-600 text-white shadow-md'
-                                : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600'
-                                }`}
-                        >
-                            <BrainCircuit size={20} />
-                            <span>Analisis Bisnis</span>
-                        </button>
-                    </nav>
-                </div>
-
-                <div className="p-4 border-t border-slate-100 bg-slate-50 space-y-2">
-                    <button
-                        onClick={() => signOut({ callbackUrl: '/login' })}
-                        className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-rose-50 border border-rose-200 rounded-lg text-rose-700 hover:bg-rose-100 text-sm transition-colors font-medium"
-                    >
-                        <LogOut size={16} /> Logout
-                    </button>
-                    <button
-                        onClick={handleBackup}
-                        className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-white border border-slate-300 rounded-lg text-slate-600 hover:bg-slate-100 text-sm transition-colors"
-                    >
-                        <Download size={16} /> Backup Data
-                    </button>
-                    <p className="text-xs text-slate-400 text-center mt-3">
-                        &copy; 2024 Pasarantar v2.0
-                    </p>
-                </div>
-            </aside>
-
-            {/* Main Content */}
-            <main className="flex-1 p-4 md:p-8 overflow-y-auto h-screen bg-slate-50/50">
-                <header className="mb-8 flex justify-between items-center">
-                    <div>
-                        <h2 className="text-2xl font-semibold text-slate-800">
-                            {view === 'DASHBOARD' && 'Dashboard Pasarantar'}
-                            {view === 'REPORTS' && 'Laporan Keuangan Bulanan'}
-                            {view === 'ORDERS' && 'Manajemen Pesanan'}
-                            {view === 'PRODUCTS' && 'Katalog Produk'}
-                            {view === 'HPP_CALCULATOR' && 'Kalkulator & Resep HPP'}
-                            {view === 'CUSTOMERS' && 'Database Pelanggan'}
-                            {view === 'TRANSACTIONS' && 'Buku Kas Harian'}
-                            {view === 'ANALYSIS' && 'Konsultan AI'}
-                            {view === 'USER_MANAGEMENT' && 'User Management'}
-                            {view === 'PROFILE' && 'Profile'}
-                            {view === 'SHOP_SETTINGS' && 'Store Settings'}
-                            {view === 'BANNER_MANAGEMENT' && 'Manajemen Banner Promo'}
-                            {view === 'CATEGORY_MANAGEMENT' && 'Manajemen Kategori Produk'}
-                        </h2>
-                        <p className="text-slate-500 text-sm mt-1">
-                            {view === 'DASHBOARD' && 'Pantau arus kas penjualan protein dan biaya operasional.'}
-                            {view === 'REPORTS' && 'Evaluasi keuntungan bersih, aset, dan performa produk secara mendalam.'}
-                            {view === 'ORDERS' && 'Kelola semua pesanan (manual dan online).'}
-                            {view === 'PRODUCTS' && 'Atur daftar harga, stok (inventory), dan HPP dasar.'}
-                            {view === 'HPP_CALCULATOR' && 'Rakit harga modal detail (Bahan Baku + Kemasan + Ops) sebelum dijual.'}
-                            {view === 'CUSTOMERS' && 'Kelola semua data pelanggan (POS dan online).'}
-                            {view === 'TRANSACTIONS' && 'Catat pembelian pasar, penjualan customer, dan biaya lain.'}
-                            {view === 'ANALYSIS' && 'Evaluasi performa penjualan dan efisiensi pengiriman.'}
-                            {view === 'USER_MANAGEMENT' && 'Manage system users, roles, and permissions.'}
-                            {view === 'PROFILE' && 'Update your account information and change password.'}
-                            {view === 'SHOP_SETTINGS' && 'Update FAQ, jam operasional, dan info pembayaran toko.'}
-                            {view === 'BANNER_MANAGEMENT' && 'Atur visual dan teks banner yang tampil di halaman depan toko.'}
-                            {view === 'CATEGORY_MANAGEMENT' && 'Atur kategori produk untuk mempermudah navigasi di toko online.'}
+                        <p className="text-xs text-slate-400 text-center mt-3">
+                            &copy; 2024 Pasarantar v2.0
                         </p>
                     </div>
-                </header>
+                </aside>
 
-                {view === 'DASHBOARD' && (
-                    <Dashboard
-                        transactions={transactions}
-                        summary={summary}
-                        products={products} // Passed for inventory alerts
-                    />
-                )}
+                {/* Main Content */}
+                <main className="flex-1 p-4 md:p-8 overflow-y-auto h-screen bg-slate-50/50 pb-24 lg:pb-8">
+                    <header className="mb-8 flex justify-between items-center">
+                        <div>
+                            <h2 className="text-2xl font-semibold text-slate-800">
+                                {view === 'DASHBOARD' && 'Dashboard Pasarantar'}
+                                {view === 'REPORTS' && 'Laporan Keuangan Bulanan'}
+                                {view === 'ORDERS' && 'Manajemen Pesanan'}
+                                {view === 'PRODUCTS' && 'Katalog Produk'}
+                                {view === 'HPP_CALCULATOR' && 'Kalkulator & Resep HPP'}
+                                {view === 'CUSTOMERS' && 'Database Pelanggan'}
+                                {view === 'TRANSACTIONS' && 'Buku Kas Harian'}
+                                {view === 'ANALYSIS' && 'Konsultan AI'}
+                                {view === 'USER_MANAGEMENT' && 'User Management'}
+                                {view === 'PROFILE' && 'Profile'}
+                                {view === 'SHOP_SETTINGS' && 'Store Settings'}
+                                {view === 'BANNER_MANAGEMENT' && 'Manajemen Banner Promo'}
+                                {view === 'CATEGORY_MANAGEMENT' && 'Manajemen Kategori Produk'}
+                            </h2>
+                            <p className="text-slate-500 text-sm mt-1">
+                                {view === 'DASHBOARD' && 'Pantau arus kas penjualan protein dan biaya operasional.'}
+                                {view === 'REPORTS' && 'Evaluasi keuntungan bersih, aset, dan performa produk secara mendalam.'}
+                                {view === 'ORDERS' && 'Kelola semua pesanan (manual dan online).'}
+                                {view === 'PRODUCTS' && 'Atur daftar harga, stok (inventory), dan HPP dasar.'}
+                                {view === 'HPP_CALCULATOR' && 'Rakit harga modal detail (Bahan Baku + Kemasan + Ops) sebelum dijual.'}
+                                {view === 'CUSTOMERS' && 'Kelola semua data pelanggan (POS dan online).'}
+                                {view === 'TRANSACTIONS' && 'Catat pembelian pasar, penjualan customer, dan biaya lain.'}
+                                {view === 'ANALYSIS' && 'Evaluasi performa penjualan dan efisiensi pengiriman.'}
+                                {view === 'USER_MANAGEMENT' && 'Manage system users, roles, and permissions.'}
+                                {view === 'PROFILE' && 'Update your account information and change password.'}
+                                {view === 'SHOP_SETTINGS' && 'Update FAQ, jam operasional, dan info pembayaran toko.'}
+                                {view === 'BANNER_MANAGEMENT' && 'Atur visual dan teks banner yang tampil di halaman depan toko.'}
+                                {view === 'CATEGORY_MANAGEMENT' && 'Atur kategori produk untuk mempermudah navigasi di toko online.'}
+                            </p>
+                        </div>
+                    </header>
 
-                {view === 'REPORTS' && (
-                    <ReportManager transactions={transactions} orders={orders} products={products} />
-                )}
+                    {view === 'DASHBOARD' && (
+                        <Dashboard
+                            transactions={transactions}
+                            summary={summary}
+                            products={products} // Passed for inventory alerts
+                        />
+                    )}
 
-                {view === 'ORDERS' && (
-                    <OrderManager
-                        orders={orders}
-                        products={products}
-                        customers={customers}
-                        onAddOrder={addOrder}
-                        onUpdateStatus={updateOrderStatus}
-                        onDeleteOrder={deleteOrder}
-                        initialCustomerId={quickOrderCustomerId} // Pass quick order request
-                        onClearInitialCustomer={() => setQuickOrderCustomerId(null)} // Reset after handling
-                    />
-                )}
+                    {view === 'REPORTS' && (
+                        <ReportManager transactions={transactions} orders={orders} products={products} />
+                    )}
+
+                    {view === 'ORDERS' && (
+                        <OrderManager
+                            orders={orders}
+                            products={products}
+                            customers={customers}
+                            onAddOrder={addOrder}
+                            onUpdateStatus={updateOrderStatus}
+                            onDeleteOrder={deleteOrder}
+                            initialCustomerId={quickOrderCustomerId} // Pass quick order request
+                            onClearInitialCustomer={() => setQuickOrderCustomerId(null)} // Reset after handling
+                        />
+                    )}
 
 
-                {view === 'PRODUCTS' && (
-                    <ProductManager
-                        products={products}
-                        onAddProduct={addProduct}
-                        onUpdateProduct={updateProduct}
-                        onDeleteProduct={deleteProduct}
-                        onAddTransaction={addTransaction}
-                    />
-                )}
+                    {view === 'PRODUCTS' && (
+                        <ProductManager
+                            products={products}
+                            onAddProduct={addProduct}
+                            onUpdateProduct={updateProduct}
+                            onDeleteProduct={deleteProduct}
+                            onAddTransaction={addTransaction}
+                        />
+                    )}
 
-                {view === 'HPP_CALCULATOR' && (
-                    <HPPCalculator
-                        savedComponents={costComponents}
-                        onAddCostComponent={addCostComponent}
-                        onDeleteCostComponent={deleteCostComponent}
-                        onSaveProduct={addProduct}
-                    />
-                )}
+                    {view === 'HPP_CALCULATOR' && (
+                        <HPPCalculator
+                            savedComponents={costComponents}
+                            onAddCostComponent={addCostComponent}
+                            onDeleteCostComponent={deleteCostComponent}
+                            onSaveProduct={addProduct}
+                        />
+                    )}
 
-                {view === 'SHOP_SETTINGS' && (
-                    <ShopSettingsManager />
-                )}
+                    {view === 'SHOP_SETTINGS' && (
+                        <ShopSettingsManager />
+                    )}
 
-                {view === 'BANNER_MANAGEMENT' && isAdmin && (
-                    <BannerManager />
-                )}
+                    {view === 'BANNER_MANAGEMENT' && isAdmin && (
+                        <BannerManager />
+                    )}
 
-                {view === 'CATEGORY_MANAGEMENT' && isAdmin && (
-                    <CategoryManager />
-                )}
+                    {view === 'CATEGORY_MANAGEMENT' && isAdmin && (
+                        <CategoryManager />
+                    )}
 
-                {view === 'USER_MANAGEMENT' && isAdmin && (
-                    <UserManager
-                        users={users}
-                        onCreateUser={async (data) => {
-                            try {
-                                const newUser = await fetch('/api/users', {
-                                    method: 'POST',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify(data),
-                                }).then(r => r.json());
-                                setUsers([...users, newUser]);
-                                alert('User berhasil dibuat!');
-                            } catch (error: any) {
-                                alert(error.message || 'Gagal membuat user');
-                            }
-                        }}
-                        onUpdateUser={async (id, data) => {
-                            try {
-                                const updated = await fetch(`/api/users/${id}`, {
+                    {view === 'USER_MANAGEMENT' && isAdmin && (
+                        <UserManager
+                            users={users}
+                            onCreateUser={async (data) => {
+                                try {
+                                    const newUser = await fetch('/api/users', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify(data),
+                                    }).then(r => r.json());
+                                    setUsers([...users, newUser]);
+                                    alert('User berhasil dibuat!');
+                                } catch (error: any) {
+                                    alert(error.message || 'Gagal membuat user');
+                                }
+                            }}
+                            onUpdateUser={async (id, data) => {
+                                try {
+                                    const updated = await fetch(`/api/users/${id}`, {
+                                        method: 'PUT',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify(data),
+                                    }).then(r => r.json());
+                                    setUsers(users.map(u => u.id === id ? updated : u));
+                                    alert('User berhasil diupdate!');
+                                } catch (error: any) {
+                                    alert(error.message || 'Gagal update user');
+                                }
+                            }}
+                            onDeleteUser={async (id) => {
+                                try {
+                                    await fetch(`/api/users/${id}`, { method: 'DELETE' });
+                                    setUsers(users.filter(u => u.id !== id));
+                                    alert('User berhasil dihapus!');
+                                } catch (error: any) {
+                                    alert(error.message || 'Gagal hapus user');
+                                }
+                            }}
+                        />
+                    )}
+
+                    {view === 'PROFILE' && session?.user && (
+                        <Profile
+                            user={{
+                                id: (session.user as any).id,
+                                email: session.user.email || '',
+                                name: session.user.name || '',
+                                role: (session.user as any).role || 'user',
+                            }}
+                            onChangePassword={async (oldPassword, newPassword) => {
+                                const response = await fetch('/api/users/change-password', {
                                     method: 'PUT',
                                     headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify(data),
-                                }).then(r => r.json());
-                                setUsers(users.map(u => u.id === id ? updated : u));
-                                alert('User berhasil diupdate!');
-                            } catch (error: any) {
-                                alert(error.message || 'Gagal update user');
-                            }
-                        }}
-                        onDeleteUser={async (id) => {
-                            try {
-                                await fetch(`/api/users/${id}`, { method: 'DELETE' });
-                                setUsers(users.filter(u => u.id !== id));
-                                alert('User berhasil dihapus!');
-                            } catch (error: any) {
-                                alert(error.message || 'Gagal hapus user');
-                            }
-                        }}
-                    />
-                )}
+                                    body: JSON.stringify({ oldPassword, newPassword }),
+                                });
 
-                {view === 'PROFILE' && session?.user && (
-                    <Profile
-                        user={{
-                            id: (session.user as any).id,
-                            email: session.user.email || '',
-                            name: session.user.name || '',
-                            role: (session.user as any).role || 'user',
-                        }}
-                        onChangePassword={async (oldPassword, newPassword) => {
-                            const response = await fetch('/api/users/change-password', {
-                                method: 'PUT',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ oldPassword, newPassword }),
-                            });
+                                if (!response.ok) {
+                                    const error = await response.json();
+                                    throw new Error(error.error || 'Failed to change password');
+                                }
+                            }}
+                        />
+                    )}
 
-                            if (!response.ok) {
-                                const error = await response.json();
-                                throw new Error(error.error || 'Failed to change password');
-                            }
-                        }}
-                    />
-                )}
+                    {view === 'CUSTOMERS' && (
+                        <CustomerManager
+                            customers={customers}
+                            onAddCustomer={addCustomer}
+                            onUpdateCustomer={updateCustomer}
+                            onDeleteCustomer={deleteCustomer}
+                            onQuickOrder={handleQuickOrder}
+                        />
+                    )}
 
-                {view === 'CUSTOMERS' && (
-                    <CustomerManager
-                        customers={customers}
-                        onAddCustomer={addCustomer}
-                        onUpdateCustomer={updateCustomer}
-                        onDeleteCustomer={deleteCustomer}
-                        onQuickOrder={handleQuickOrder}
-                    />
-                )}
+                    {view === 'TRANSACTIONS' && (
+                        <TransactionManager
+                            transactions={transactions}
+                            onAddTransaction={addTransaction}
+                            onDeleteTransaction={deleteTransaction}
+                        />
+                    )}
 
-                {view === 'TRANSACTIONS' && (
-                    <TransactionManager
-                        transactions={transactions}
-                        onAddTransaction={addTransaction}
-                        onDeleteTransaction={deleteTransaction}
-                    />
-                )}
+                    {view === 'ANALYSIS' && (
+                        <AIAdvisor transactions={transactions} />
+                    )}
+                </main>
+            </div>
 
-                {view === 'ANALYSIS' && (
-                    <AIAdvisor transactions={transactions} />
-                )}
-            </main>
+            {/* Mobile Bottom Navigation */}
+            <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-40 safe-area-pb">
+                <div className="grid grid-cols-5 gap-1 px-2 py-2">
+                    <button
+                        onClick={() => { setView('DASHBOARD'); setMobileMenuOpen(false); }}
+                        className={`flex flex-col items-center justify-center py-2 px-1 rounded-lg transition-colors ${view === 'DASHBOARD' ? 'bg-blue-50 text-blue-600' : 'text-slate-600'}`}
+                    >
+                        <LayoutDashboard size={20} />
+                        <span className="text-[10px] mt-1 font-medium">Dashboard</span>
+                    </button>
+                    <button
+                        onClick={() => { setView('ORDERS'); setMobileMenuOpen(false); }}
+                        className={`flex flex-col items-center justify-center py-2 px-1 rounded-lg transition-colors ${view === 'ORDERS' ? 'bg-blue-50 text-blue-600' : 'text-slate-600'}`}
+                    >
+                        <ShoppingCart size={20} />
+                        <span className="text-[10px] mt-1 font-medium">Pesanan</span>
+                    </button>
+                    <button
+                        onClick={() => { setView('PRODUCTS'); setMobileMenuOpen(false); }}
+                        className={`flex flex-col items-center justify-center py-2 px-1 rounded-lg transition-colors ${view === 'PRODUCTS' ? 'bg-blue-50 text-blue-600' : 'text-slate-600'}`}
+                    >
+                        <Package size={20} />
+                        <span className="text-[10px] mt-1 font-medium">Produk</span>
+                    </button>
+                    <button
+                        onClick={() => { setView('TRANSACTIONS'); setMobileMenuOpen(false); }}
+                        className={`flex flex-col items-center justify-center py-2 px-1 rounded-lg transition-colors ${view === 'TRANSACTIONS' ? 'bg-blue-50 text-blue-600' : 'text-slate-600'}`}
+                    >
+                        <List size={20} />
+                        <span className="text-[10px] mt-1 font-medium">Transaksi</span>
+                    </button>
+                    <button
+                        onClick={() => { setMobileMenuOpen(true); }}
+                        className="flex flex-col items-center justify-center py-2 px-1 rounded-lg transition-colors text-slate-600"
+                    >
+                        <Menu size={20} />
+                        <span className="text-[10px] mt-1 font-medium">Menu</span>
+                    </button>
+                </div>
+            </nav>
         </div>
     );
 };
