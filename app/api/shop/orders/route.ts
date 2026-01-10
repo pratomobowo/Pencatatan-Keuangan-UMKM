@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { jwtVerify } from 'jose';
 import { auth } from '@/lib/auth';
+import { generateOrderNumber } from '@/lib/utils';
 
 const JWT_SECRET = new TextEncoder().encode(
     process.env.JWT_SECRET || 'shop-customer-secret-key-change-in-production'
@@ -144,6 +145,8 @@ export async function POST(request: NextRequest) {
             notes,
         } = body;
 
+        const orderNumber = generateOrderNumber();
+
         // Validate items
         if (!items || items.length === 0) {
             return NextResponse.json(
@@ -165,6 +168,7 @@ export async function POST(request: NextRequest) {
         // Create order with items
         const order = await prisma.order.create({
             data: {
+                orderNumber: orderNumber,
                 customerId: customerId,
                 // Map Address fields to new Order model
                 recipientName: addressName,

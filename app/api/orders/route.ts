@@ -1,37 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { generateOrderNumber } from '@/lib/utils';
 
 // GET /api/orders - Get all orders
-export async function GET() {
+export async function GET(request: NextRequest) {
     try {
+        const { searchParams } = new URL(request.url);
+        const status = searchParams.get('status');
+        const customerId = searchParams.get('customerId');
+
+        const where: any = {};
+        if (status) where.status = status;
+        if (customerId) where.customerId = customerId;
+
         const orders = await prisma.order.findMany({
+            where,
             include: {
-                items: {
-                    include: {
-                        product: true,
-                    },
-                },
-                customer: true,
+                items: true,
+                customer: {
+                    select: {
+                        name: true,
+                        phone: true,
+                    }
+                }
             },
-            orderBy: { createdAt: 'desc' },
+            orderBy: {
+                createdAt: 'desc'
+            }
         });
 
-        // Transform orders: add date field and convert Decimals to numbers
-        const transformedOrders = orders.map((order: any) => ({
-            ...order,
-            date: order.createdAt, // Add date field for frontend compatibility
-            subtotal: Number(order.subtotal),
-            shippingFee: Number(order.shippingFee),
-            grandTotal: Number(order.grandTotal),
-            items: order.items.map((item: any) => ({
-                ...item,
-                price: Number(item.price),
-                costPrice: item.costPrice ? Number(item.costPrice) : null,
-                total: Number(item.total),
-            })),
-        }));
-
-        return NextResponse.json(transformedOrders);
+        return NextResponse.json(orders);
     } catch (error) {
         console.error('Error fetching orders:', error);
         return NextResponse.json(
@@ -58,9 +56,13 @@ export async function POST(request: NextRequest) {
             notes,
         } = body;
 
+        // Generate professional order number
+        const orderNumber = generateOrderNumber();
+
         // Create order with items in a transaction
         const order = await prisma.order.create({
             data: {
+                orderNumber,
                 customerId,
                 customerName,
                 customerAddress,
@@ -78,34 +80,50 @@ export async function POST(request: NextRequest) {
                         unit: item.unit,
                         price: item.price,
                         costPrice: item.costPrice,
-                        total: item.total,
-                    })),
-                },
+                        total: item.price * item.qty
+                    }))
+                }
             },
             include: {
-                items: true,
-            },
+                items: true
+            }
         });
 
-        // Update product stock
-        for (const item of items) {
-            if (item.productId) {
-                await prisma.product.update({
-                    where: { id: item.productId },
-                    data: {
-                        stock: {
-                            decrement: item.qty,
-                        },
-                    },
-                });
-            }
-        }
-
-        return NextResponse.json(order, { status: 201 });
+        return NextResponse.json(order);
     } catch (error) {
         console.error('Error creating order:', error);
         return NextResponse.json(
             { error: 'Failed to create order' },
+            { status: 500 }
+        );
+    }
+}
+
+// DELETE /api/orders - Bulk delete orders (admin only)
+export async function DELETE(request: NextRequest) {
+    try {
+        const { ids } = await request.json();
+
+        if (!ids || !Array.isArray(ids)) {
+            return NextResponse.json(
+                { error: 'Invalid IDs provided' },
+                { status: 400 }
+            );
+        }
+
+        await prisma.order.deleteMany({
+            where: {
+                id: {
+                    in: ids
+                }
+            }
+        });
+
+        return NextResponse.json({ message: 'Orders deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting orders:', error);
+        return NextResponse.json(
+            { error: 'Failed to delete orders' },
             { status: 500 }
         );
     }

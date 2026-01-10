@@ -163,7 +163,7 @@ model Address {
 
 model Order {
   id              String      @id @default(uuid())
-  orderNumber     String      @unique @default(cuid())
+  orderNumber     String      @unique
   customerId      String?
   customerName    String
   customerAddress String?
