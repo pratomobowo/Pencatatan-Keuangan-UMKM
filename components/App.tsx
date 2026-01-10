@@ -364,174 +364,175 @@ const App: React.FC = () => {
                     ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
                     lg:top-0
                 `}>
-                    <div>
-                        <div className="p-6 flex items-center gap-3 border-b border-slate-100">
-                            <div className="w-10 h-10 bg-blue-600 rounded-lg shadow-sm flex items-center justify-center">
-                                <span className="text-white font-semibold text-lg tracking-tight">PA</span>
-                            </div>
-                            <div>
-                                <h1 className="font-semibold text-lg leading-none text-slate-900">Pasarantar</h1>
-                                <span className="text-xs text-slate-500">Keuangan & Stok</span>
-                            </div>
+                    {/* Logo Header - Fixed */}
+                    <div className="p-6 flex items-center gap-3 border-b border-slate-100 flex-shrink-0">
+                        <div className="w-10 h-10 bg-blue-600 rounded-lg shadow-sm flex items-center justify-center">
+                            <span className="text-white font-semibold text-lg tracking-tight">PA</span>
                         </div>
-
-                        <nav className="p-4 space-y-2 overflow-y-auto flex-1">
-                            <div className="text-xs font-medium text-slate-400 px-4 mb-2 mt-2 uppercase tracking-wider">Utama</div>
-                            <button
-                                onClick={() => setView('DASHBOARD')}
-                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${view === 'DASHBOARD'
-                                    ? 'bg-blue-600 text-white shadow-md'
-                                    : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600'
-                                    }`}
-                            >
-                                <LayoutDashboard size={20} />
-                                <span>Ringkasan</span>
-                            </button>
-
-                            <button
-                                onClick={() => setView('ORDERS')}
-                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${view === 'ORDERS'
-                                    ? 'bg-blue-600 text-white shadow-md'
-                                    : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600'
-                                    }`}
-                            >
-                                <ShoppingCart size={20} />
-                                <span>Pesanan</span>
-                            </button>
-
-                            <div className="text-xs font-medium text-slate-400 px-4 mb-2 mt-4 uppercase tracking-wider">Manajemen</div>
-                            <button
-                                onClick={() => setView('PRODUCTS')}
-                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${view === 'PRODUCTS'
-                                    ? 'bg-blue-600 text-white shadow-md'
-                                    : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600'
-                                    }`}
-                            >
-                                <Package size={20} />
-                                <span>Data Produk</span>
-                            </button>
-
-                            <button
-                                onClick={() => setView('HPP_CALCULATOR')}
-                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${view === 'HPP_CALCULATOR'
-                                    ? 'bg-blue-600 text-white shadow-md'
-                                    : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600'
-                                    }`}
-                            >
-                                <Calculator size={20} />
-                                <span>Kalkulator HPP</span>
-                            </button>
-
-                            <button
-                                onClick={() => setView('CUSTOMERS')}
-                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${view === 'CUSTOMERS'
-                                    ? 'bg-blue-600 text-white shadow-md'
-                                    : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600'
-                                    }`}
-                            >
-                                <UsersIcon size={20} />
-                                <span>Pelanggan</span>
-                            </button>
-
-                            <button
-                                onClick={() => setView('SHOP_SETTINGS')}
-                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${view === 'SHOP_SETTINGS'
-                                    ? 'bg-blue-600 text-white shadow-md'
-                                    : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600'
-                                    }`}
-                            >
-                                <Settings className="text-orange-500" size={20} />
-                                <span>Pengaturan Toko</span>
-                            </button>
-
-                            <div className="text-xs font-medium text-slate-400 px-4 mb-2 mt-4 uppercase tracking-wider">Keuangan</div>
-                            <button
-                                onClick={() => setView('TRANSACTIONS')}
-                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${view === 'TRANSACTIONS'
-                                    ? 'bg-blue-600 text-white shadow-md'
-                                    : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600'
-                                    }`}
-                            >
-                                <List size={20} />
-                                <span>Buku Transaksi</span>
-                            </button>
-
-                            <button
-                                onClick={() => setView('REPORTS')}
-                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${view === 'REPORTS'
-                                    ? 'bg-blue-600 text-white shadow-md'
-                                    : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600'
-                                    }`}
-                            >
-                                <PieChart size={20} />
-                                <span>Laporan Laba Rugi</span>
-                            </button>
-
-                            {/* User Management - Admin Only */}
-                            {isAdmin && (
-                                <>
-                                    <div className="text-xs font-medium text-slate-400 px-4 mb-2 mt-4 uppercase tracking-wider">Admin</div>
-                                    <button
-                                        onClick={() => setView('BANNER_MANAGEMENT')}
-                                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${view === 'BANNER_MANAGEMENT'
-                                            ? 'bg-blue-600 text-white shadow-md'
-                                            : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600'
-                                            }`}
-                                    >
-                                        <ImageIcon size={20} />
-                                        <span>Banner Promo</span>
-                                    </button>
-                                    <button
-                                        onClick={() => setView('CATEGORY_MANAGEMENT')}
-                                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${view === 'CATEGORY_MANAGEMENT'
-                                            ? 'bg-blue-600 text-white shadow-md'
-                                            : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600'
-                                            }`}
-                                    >
-                                        <Tags size={20} />
-                                        <span>Kategori Produk</span>
-                                    </button>
-                                    <button
-                                        onClick={() => setView('USER_MANAGEMENT')}
-                                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${view === 'USER_MANAGEMENT'
-                                            ? 'bg-blue-600 text-white shadow-md'
-                                            : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600'
-                                            }`}
-                                    >
-                                        <UserCog size={20} />
-                                        <span>User Management</span>
-                                    </button>
-                                </>
-                            )}
-
-                            {/* Profile */}
-                            <div className="text-xs font-medium text-slate-400 px-4 mb-2 mt-4 uppercase tracking-wider">Account</div>
-                            <button
-                                onClick={() => setView('PROFILE')}
-                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${view === 'PROFILE'
-                                    ? 'bg-blue-600 text-white shadow-md'
-                                    : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600'
-                                    }`}
-                            >
-                                <UserIcon size={20} />
-                                <span>Profile</span>
-                            </button>
-
-                            <div className="text-xs font-medium text-slate-400 px-4 mb-2 mt-4 uppercase tracking-wider">Insight</div>
-                            <button
-                                onClick={() => setView('ANALYSIS')}
-                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${view === 'ANALYSIS'
-                                    ? 'bg-blue-600 text-white shadow-md'
-                                    : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600'
-                                    }`}
-                            >
-                                <BrainCircuit size={20} />
-                                <span>Analisis Bisnis</span>
-                            </button>
-                        </nav>
+                        <div>
+                            <h1 className="font-semibold text-lg leading-none text-slate-900">Pasarantar</h1>
+                            <span className="text-xs text-slate-500">Keuangan & Stok</span>
+                        </div>
                     </div>
 
-                    <div className="p-4 border-t border-slate-100 bg-slate-50 space-y-2">
+                    {/* Scrollable Navigation */}
+                    <nav className="p-4 space-y-2 overflow-y-auto flex-1 hide-scrollbar">
+                        <div className="text-xs font-medium text-slate-400 px-4 mb-2 mt-2 uppercase tracking-wider">Utama</div>
+                        <button
+                            onClick={() => setView('DASHBOARD')}
+                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${view === 'DASHBOARD'
+                                ? 'bg-blue-600 text-white shadow-md'
+                                : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600'
+                                }`}
+                        >
+                            <LayoutDashboard size={20} />
+                            <span>Ringkasan</span>
+                        </button>
+
+                        <button
+                            onClick={() => setView('ORDERS')}
+                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${view === 'ORDERS'
+                                ? 'bg-blue-600 text-white shadow-md'
+                                : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600'
+                                }`}
+                        >
+                            <ShoppingCart size={20} />
+                            <span>Pesanan</span>
+                        </button>
+
+                        <div className="text-xs font-medium text-slate-400 px-4 mb-2 mt-4 uppercase tracking-wider">Manajemen</div>
+                        <button
+                            onClick={() => setView('PRODUCTS')}
+                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${view === 'PRODUCTS'
+                                ? 'bg-blue-600 text-white shadow-md'
+                                : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600'
+                                }`}
+                        >
+                            <Package size={20} />
+                            <span>Data Produk</span>
+                        </button>
+
+                        <button
+                            onClick={() => setView('HPP_CALCULATOR')}
+                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${view === 'HPP_CALCULATOR'
+                                ? 'bg-blue-600 text-white shadow-md'
+                                : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600'
+                                }`}
+                        >
+                            <Calculator size={20} />
+                            <span>Kalkulator HPP</span>
+                        </button>
+
+                        <button
+                            onClick={() => setView('CUSTOMERS')}
+                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${view === 'CUSTOMERS'
+                                ? 'bg-blue-600 text-white shadow-md'
+                                : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600'
+                                }`}
+                        >
+                            <UsersIcon size={20} />
+                            <span>Pelanggan</span>
+                        </button>
+
+                        <button
+                            onClick={() => setView('SHOP_SETTINGS')}
+                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${view === 'SHOP_SETTINGS'
+                                ? 'bg-blue-600 text-white shadow-md'
+                                : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600'
+                                }`}
+                        >
+                            <Settings className="text-orange-500" size={20} />
+                            <span>Pengaturan Toko</span>
+                        </button>
+
+                        <div className="text-xs font-medium text-slate-400 px-4 mb-2 mt-4 uppercase tracking-wider">Keuangan</div>
+                        <button
+                            onClick={() => setView('TRANSACTIONS')}
+                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${view === 'TRANSACTIONS'
+                                ? 'bg-blue-600 text-white shadow-md'
+                                : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600'
+                                }`}
+                        >
+                            <List size={20} />
+                            <span>Buku Transaksi</span>
+                        </button>
+
+                        <button
+                            onClick={() => setView('REPORTS')}
+                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${view === 'REPORTS'
+                                ? 'bg-blue-600 text-white shadow-md'
+                                : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600'
+                                }`}
+                        >
+                            <PieChart size={20} />
+                            <span>Laporan Laba Rugi</span>
+                        </button>
+
+                        {/* User Management - Admin Only */}
+                        {isAdmin && (
+                            <>
+                                <div className="text-xs font-medium text-slate-400 px-4 mb-2 mt-4 uppercase tracking-wider">Admin</div>
+                                <button
+                                    onClick={() => setView('BANNER_MANAGEMENT')}
+                                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${view === 'BANNER_MANAGEMENT'
+                                        ? 'bg-blue-600 text-white shadow-md'
+                                        : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600'
+                                        }`}
+                                >
+                                    <ImageIcon size={20} />
+                                    <span>Banner Promo</span>
+                                </button>
+                                <button
+                                    onClick={() => setView('CATEGORY_MANAGEMENT')}
+                                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${view === 'CATEGORY_MANAGEMENT'
+                                        ? 'bg-blue-600 text-white shadow-md'
+                                        : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600'
+                                        }`}
+                                >
+                                    <Tags size={20} />
+                                    <span>Kategori Produk</span>
+                                </button>
+                                <button
+                                    onClick={() => setView('USER_MANAGEMENT')}
+                                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${view === 'USER_MANAGEMENT'
+                                        ? 'bg-blue-600 text-white shadow-md'
+                                        : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600'
+                                        }`}
+                                >
+                                    <UserCog size={20} />
+                                    <span>User Management</span>
+                                </button>
+                            </>
+                        )}
+
+                        {/* Profile */}
+                        <div className="text-xs font-medium text-slate-400 px-4 mb-2 mt-4 uppercase tracking-wider">Account</div>
+                        <button
+                            onClick={() => setView('PROFILE')}
+                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${view === 'PROFILE'
+                                ? 'bg-blue-600 text-white shadow-md'
+                                : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600'
+                                }`}
+                        >
+                            <UserIcon size={20} />
+                            <span>Profile</span>
+                        </button>
+
+                        <div className="text-xs font-medium text-slate-400 px-4 mb-2 mt-4 uppercase tracking-wider">Insight</div>
+                        <button
+                            onClick={() => setView('ANALYSIS')}
+                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${view === 'ANALYSIS'
+                                ? 'bg-blue-600 text-white shadow-md'
+                                : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600'
+                                }`}
+                        >
+                            <BrainCircuit size={20} />
+                            <span>Analisis Bisnis</span>
+                        </button>
+                    </nav>
+
+                    {/* Footer - Fixed */}
+                    <div className="p-4 border-t border-slate-100 bg-slate-50 space-y-2 flex-shrink-0">
                         <button
                             onClick={() => signOut({ callbackUrl: '/login' })}
                             className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-rose-50 border border-rose-200 rounded-lg text-rose-700 hover:bg-rose-100 text-sm transition-colors font-medium"
@@ -730,10 +731,10 @@ const App: React.FC = () => {
                         <AIAdvisor transactions={transactions} />
                     )}
                 </main>
-            </div>
+            </div >
 
             {/* Mobile Bottom Navigation */}
-            <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-40 safe-area-pb">
+            < nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-40 safe-area-pb" >
                 <div className="grid grid-cols-5 gap-1 px-2 py-2">
                     <button
                         onClick={() => { setView('DASHBOARD'); setMobileMenuOpen(false); }}
@@ -771,8 +772,8 @@ const App: React.FC = () => {
                         <span className="text-[10px] mt-1 font-medium">Menu</span>
                     </button>
                 </div>
-            </nav>
-        </div>
+            </nav >
+        </div >
     );
 };
 
