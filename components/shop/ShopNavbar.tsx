@@ -82,7 +82,7 @@ export const ShopNavbar = () => {
             {/* Logo & Notification */}
             <div className="flex items-center justify-between p-4 pb-2">
                 <Link href="/" className="flex items-center group">
-                    <div className="relative size-18 shrink-0 transform group-hover:scale-105 transition-transform duration-300">
+                    <div className="relative w-40 h-12 shrink-0 transform group-hover:scale-105 transition-transform duration-300">
                         <Image
                             src="/logo.webp"
                             alt="Pasarantar Logo"
