@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
 
             userId = customer.id;
             userName = customer.name;
-            userIdentifier = customer.phone;
+            userIdentifier = customer.phone || customer.email || customer.id;
             hashedPassword = customer.password;
         }
 

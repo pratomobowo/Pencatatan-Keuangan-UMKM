@@ -75,7 +75,7 @@ export const OrderManager: React.FC<OrderManagerProps> = ({
           ...prev,
           customerId: customer.id,
           customerName: customer.name,
-          customerPhone: customer.phone,
+          customerPhone: customer.phone || '',
           customerAddress: customer.address || '',
         }));
         setShowFormModal(true);
@@ -91,7 +91,7 @@ export const OrderManager: React.FC<OrderManagerProps> = ({
         ...prev,
         customerId: customer.id,
         customerName: customer.name,
-        customerPhone: customer.phone,
+        customerPhone: customer.phone || '',
         customerAddress: customer.address || '',
       }));
     }
@@ -395,7 +395,7 @@ export const OrderManager: React.FC<OrderManagerProps> = ({
                     >
                       <option value="">-- Pelanggan Baru --</option>
                       {customers.map(c => (
-                        <option key={c.id} value={c.id}>{c.name} ({c.phone})</option>
+                        <option key={c.id} value={c.id}>{c.name} {c.phone ? `(${c.phone})` : ''}</option>
                       ))}
                     </select>
                   </div>
