@@ -1,19 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { GoogleGenAI } from "@google/genai";
-
-const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY || '';
-const ai = new GoogleGenAI({ apiKey });
+import { ChatbotService } from '@/services/chatbotService';
 
 export async function POST(request: NextRequest) {
     try {
-        // 1. Fetch Transactions
+        // ... (data fetching remains the same)
         const transactions = await prisma.transaction.findMany({
             orderBy: { date: 'desc' },
             take: 100,
         });
 
-        // 2. Fetch Best Selling Products
         const bestSellers = await prisma.orderItem.groupBy({
             by: ['productName', 'unit'],
             _sum: {
@@ -28,7 +24,6 @@ export async function POST(request: NextRequest) {
             take: 10,
         });
 
-        // 3. Fetch Low Stock Products
         const lowStock = await prisma.product.findMany({
             where: {
                 stock: {
@@ -44,7 +39,6 @@ export async function POST(request: NextRequest) {
             take: 10,
         });
 
-        // 4. Fetch Customer Stats
         const totalCustomers = await prisma.customer.count();
         const repeatCustomers = await prisma.customer.count({
             where: {
@@ -54,7 +48,6 @@ export async function POST(request: NextRequest) {
             },
         });
 
-        // 5. Build Aggregated Summary
         const summary = transactions.reduce((acc, curr) => {
             const type = curr.type.toString();
             if (!acc[type]) acc[type] = 0;
@@ -62,7 +55,6 @@ export async function POST(request: NextRequest) {
             return acc;
         }, {} as Record<string, number>);
 
-        // 6. Construct Prompt
         const prompt = `
             Bertindaklah sebagai konsultan bisnis profesional untuk 'Pasarantar', sebuah bisnis UMKM yang bergerak di bidang penjualan dan pengiriman protein segar (Ikan, Seafood, Ayam, Daging) dari pasar ke rumah pelanggan.
             
@@ -89,11 +81,7 @@ export async function POST(request: NextRequest) {
             Berikan analisis yang tajam dan "to the point" agar owner bisa langsung mengambil keputusan.
         `;
 
-        const result = await ai.models.generateContent({
-            model: "gemini-2.0-flash",
-            contents: prompt,
-        });
-        const responseText = result.text || "Gagal menghasilkan analisis.";
+        const responseText = await ChatbotService.getGenericCompletion(prompt, "Anda adalah konsultan bisnis UMKM profesional untuk Pasarantar.");
 
         return NextResponse.json({ analysis: responseText });
 

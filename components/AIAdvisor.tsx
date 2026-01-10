@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Transaction } from '@/lib/types';
-import { analyzeBusiness } from '@/services/geminiService';
 import { Card } from './ui/Card';
 import { Sparkles, RefreshCw, AlertCircle } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
@@ -70,7 +69,7 @@ export const AIAdvisor: React.FC<AIAdvisorProps> = ({ transactions }) => {
           </div>
           <div className="mt-8 pt-4 border-t border-slate-100 flex items-center gap-2 text-sm text-slate-400 italic">
             <AlertCircle className="w-4 h-4" />
-            <span>Analisis ini dibuat oleh AI (Gemini) berdasarkan data yang Anda masukkan. Gunakan sebagai referensi, bukan satu-satunya dasar pengambilan keputusan.</span>
+            <span>Analisis ini dibuat oleh AI (Deepseek) berdasarkan data yang Anda masukkan. Gunakan sebagai referensi, bukan satu-satunya dasar pengambilan keputusan.</span>
           </div>
         </Card>
       )}

@@ -137,4 +137,43 @@ export class ChatbotService {
             throw error;
         }
     }
+
+    static async getGenericCompletion(prompt: string, systemPromptText: string = "Anda adalah asisten AI profesional Pasarantar."): Promise<string> {
+        if (!ARK_API_KEY) {
+            console.error("ARK_API_KEY is not defined in environment variables");
+            throw new Error("Konfigurasi AI belum lengkap.");
+        }
+
+        const payload = {
+            model: MODEL_ID,
+            messages: [
+                { role: 'system', content: systemPromptText },
+                { role: 'user', content: prompt }
+            ],
+            temperature: 0.7,
+        };
+
+        try {
+            const response = await fetch(ARK_ENDPOINT, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${ARK_API_KEY}`,
+                },
+                body: JSON.stringify(payload),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error("BytePlus API Error (Generic Completion):", errorData);
+                throw new Error("Gagal mendapatkan respon dari AI.");
+            }
+
+            const data = await response.json();
+            return data.choices[0]?.message?.content || "Gagal menghasilkan respon.";
+        } catch (error) {
+            console.error("ChatbotService Error (Generic Completion):", error);
+            throw error;
+        }
+    }
 }
