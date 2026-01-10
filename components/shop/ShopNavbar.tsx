@@ -81,12 +81,18 @@ export const ShopNavbar = () => {
         <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md shadow-sm w-full">
             {/* Logo & Notification */}
             <div className="flex items-center justify-between p-4 pb-2">
-                <div className="flex items-center gap-2">
-                    <div className="size-10 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center shadow-lg shadow-orange-200">
-                        <span className="text-white text-lg font-black">PA</span>
+                <Link href="/" className="flex items-center gap-2 group">
+                    <div className="relative size-10 shrink-0 transform group-hover:scale-105 transition-transform duration-300">
+                        <Image
+                            src="/logo.webp"
+                            alt="Pasarantar Logo"
+                            fill
+                            className="object-contain"
+                            priority
+                        />
                     </div>
-                    <span className="text-stone-900 text-xl font-semibold">Pasarantar</span>
-                </div>
+                    <span className="text-stone-900 text-xl font-bold tracking-tight">Pasarantar</span>
+                </Link>
                 <div className="relative" ref={notificationsRef}>
                     <button
                         onClick={handleToggleNotifications}

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Eye, EyeOff, Loader2 } from 'lucide-react';
@@ -61,8 +62,13 @@ export default function LoginPage() {
 
                     {/* Logo & Title */}
                     <div className="px-6 pt-4 pb-8 text-center">
-                        <div className="size-16 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center mx-auto mb-4 shadow-lg">
-                            <span className="text-white text-2xl font-black">PA</span>
+                        <div className="relative size-16 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center mx-auto mb-4 shadow-lg overflow-hidden p-2">
+                            <Image
+                                src="/logo.webp"
+                                alt="Pasarantar Logo"
+                                fill
+                                className="object-contain p-2"
+                            />
                         </div>
                         <h1 className="text-3xl font-bold text-white mb-2">Selamat Datang!</h1>
                         <p className="text-white/80">Masuk ke akun Anda</p>
