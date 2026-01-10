@@ -11,6 +11,7 @@ export interface CartItem {
     originalPrice?: number;
     quantity: number;
     image: string;
+    note?: string;
 }
 
 interface CartContextType {
@@ -18,6 +19,7 @@ interface CartContextType {
     addItem: (item: Omit<CartItem, 'quantity'>, quantity?: number) => void;
     removeItem: (id: string, variant: string) => void;
     updateQuantity: (id: string, variant: string, quantity: number) => void;
+    updateNote: (id: string, variant: string, note: string) => void;
     clearCart: () => void;
     itemCount: number;
     subtotal: number;
@@ -85,6 +87,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
         );
     };
 
+    const updateNote = (id: string, variant: string, note: string) => {
+        setItems(currentItems =>
+            currentItems.map(item =>
+                item.id === id && item.variant === variant ? { ...item, note } : item
+            )
+        );
+    };
+
     const clearCart = () => {
         setItems([]);
         if (typeof window !== 'undefined') {
@@ -107,6 +117,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
             addItem,
             removeItem,
             updateQuantity,
+            updateNote,
             clearCart,
             itemCount,
             subtotal,

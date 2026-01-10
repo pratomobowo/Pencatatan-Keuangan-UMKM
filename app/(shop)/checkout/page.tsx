@@ -325,6 +325,7 @@ export default function CheckoutPage() {
                     quantity: item.quantity,
                     price: item.price,
                     originalPrice: item.originalPrice || item.price,
+                    note: item.note || null,
                 })),
                 addressLabel: isAuthenticated ? selectedAddress?.label : 'Guest Order',
                 addressName: isAuthenticated ? selectedAddress?.name : guestInfo.name,

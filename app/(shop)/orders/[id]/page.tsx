@@ -4,7 +4,7 @@ import { useState, useEffect, use } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Package, Truck, CheckCircle, Clock, MapPin, Phone, Copy, Check, Loader2, Building2 } from 'lucide-react';
+import { ArrowLeft, Package, Truck, CheckCircle, Clock, MapPin, Phone, Copy, Check, Loader2, Building2, MessageSquare } from 'lucide-react';
 import { useShopAuth } from '@/contexts/ShopAuthContext';
 
 type OrderStatus = 'pending' | 'confirmed' | 'preparing' | 'shipping' | 'delivered' | 'cancelled';
@@ -14,7 +14,7 @@ interface OrderDetail {
     orderNumber: string;
     date: string;
     status: OrderStatus;
-    items: { name: string; quantity: number; price: number; originalPrice?: number; image: string }[];
+    items: { name: string; quantity: number; price: number; originalPrice?: number; image: string; note?: string }[];
     subtotal: number;
     shippingFee: number;
     serviceFee?: number;
@@ -231,17 +231,25 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                     <h3 className="text-base font-bold text-stone-900 mb-3">Produk Dipesan</h3>
                     <div className="flex flex-col gap-3">
                         {order.items.map((item, index) => (
-                            <div key={index} className="flex gap-3 items-center">
-                                <div className="size-16 rounded-lg bg-gray-100 overflow-hidden relative shrink-0">
-                                    <Image src={item.image} alt={item.name} fill className="object-cover" />
+                            <div key={index} className="flex flex-col gap-2">
+                                <div className="flex gap-3 items-center">
+                                    <div className="size-16 rounded-lg bg-gray-100 overflow-hidden relative shrink-0">
+                                        <Image src={item.image} alt={item.name} fill className="object-cover" />
+                                    </div>
+                                    <div className="flex-1">
+                                        <p className="font-medium text-stone-900">{item.name}</p>
+                                        <p className="text-sm text-gray-500">x{item.quantity}</p>
+                                    </div>
+                                    <p className="font-medium text-stone-900">
+                                        Rp {((item.price || 0) * (item.quantity || 0)).toLocaleString('id-ID')}
+                                    </p>
                                 </div>
-                                <div className="flex-1">
-                                    <p className="font-medium text-stone-900">{item.name}</p>
-                                    <p className="text-sm text-gray-500">x{item.quantity}</p>
-                                </div>
-                                <p className="font-medium text-stone-900">
-                                    Rp {((item.price || 0) * (item.quantity || 0)).toLocaleString('id-ID')}
-                                </p>
+                                {item.note && (
+                                    <div className="flex items-start gap-2 bg-amber-50 p-2 rounded-lg ml-0">
+                                        <MessageSquare size={14} className="text-amber-600 shrink-0 mt-0.5" />
+                                        <p className="text-xs text-amber-800">{item.note}</p>
+                                    </div>
+                                )}
                             </div>
                         ))}
                     </div>

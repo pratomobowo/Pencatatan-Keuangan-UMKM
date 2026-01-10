@@ -105,6 +105,7 @@ export async function GET(
                 price: Number(item.price),
                 originalPrice: item.originalPrice ? Number(item.originalPrice) : Number(item.price),
                 image: item.productImage || '/images/coming-soon.jpg',
+                note: item.note || null,
             })),
             subtotal: Number(order.subtotal),
             shippingFee: Number(order.shippingFee),

@@ -208,6 +208,7 @@ model OrderItem {
   total        Decimal  @db.Decimal(10, 2)
   productImage String?
   variant      String?
+  note         String?
   order        Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
   product      Product? @relation(fields: [productId], references: [id])
 

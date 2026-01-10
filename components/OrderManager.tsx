@@ -596,12 +596,24 @@ export const OrderManager: React.FC<OrderManagerProps> = ({
                 </thead>
                 <tbody>
                   {selectedOrder.items.map((item, idx) => (
-                    <tr key={idx} className="border-b border-slate-200">
-                      <td className="py-2 text-slate-900">{item.productName}</td>
-                      <td className="py-2 text-center text-slate-600">{item.qty} {item.unit}</td>
-                      <td className="py-2 text-right text-slate-600">{formatCurrency(item.price)}</td>
-                      <td className="py-2 text-right font-semibold text-slate-900">{formatCurrency(item.total)}</td>
-                    </tr>
+                    <React.Fragment key={idx}>
+                      <tr className="border-b border-slate-200">
+                        <td className="py-2 text-slate-900">{item.productName}</td>
+                        <td className="py-2 text-center text-slate-600">{item.qty} {item.unit}</td>
+                        <td className="py-2 text-right text-slate-600">{formatCurrency(item.price)}</td>
+                        <td className="py-2 text-right font-semibold text-slate-900">{formatCurrency(item.total)}</td>
+                      </tr>
+                      {(item as any).note && (
+                        <tr className="border-b border-slate-100">
+                          <td colSpan={4} className="py-1 px-2">
+                            <div className="flex items-start gap-2 bg-amber-50 p-2 rounded text-xs text-amber-800">
+                              <MessageSquare size={12} className="shrink-0 mt-0.5" />
+                              <span>{(item as any).note}</span>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
                   ))}
                 </tbody>
               </table>

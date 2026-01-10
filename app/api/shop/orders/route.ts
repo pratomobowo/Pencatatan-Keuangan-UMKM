@@ -207,6 +207,7 @@ export async function POST(request: NextRequest) {
                         originalPrice: item.originalPrice || item.price,
                         costPrice: item.costPrice || 0, // Fallback
                         total: item.price * item.quantity,
+                        note: item.note || null,
                     })),
                 },
             } as any, // Cast to any to bypass TS error until schema push
