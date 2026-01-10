@@ -17,6 +17,7 @@ interface ProductCardProps {
     discount?: number;
     image: string;
     badge?: string;
+    description?: string;
     isGrid?: boolean; // For grid layout (full width)
     layout?: 'grid' | 'horizontal';
     variants?: ProductVariant[];
@@ -32,6 +33,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     discount,
     image,
     badge,
+    description,
     isGrid = false,
     layout = 'grid',
     variants = []
@@ -89,6 +91,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                         <Link href={`/products/${slug || id}`}>
                             <h3 className="text-sm font-bold text-stone-900 truncate">{name}</h3>
                         </Link>
+                        <p className={`text-[10px] line-clamp-2 ${description ? 'text-stone-500 font-medium' : 'text-stone-400 italic'}`}>
+                            {description || "Deskripsi produk belum ditambahkan minsar, maaf ya buibu"}
+                        </p>
                     </div>
 
                     <div className="flex items-end justify-between gap-2">
@@ -153,6 +158,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                 <Link href={`/products/${slug || id}`}>
                     <h3 className="text-sm font-semibold text-stone-900 line-clamp-2 min-h-[40px]">{name}</h3>
                 </Link>
+
+                <p className={`text-[10px] line-clamp-2 mb-1 ${description ? 'text-stone-500 font-medium' : 'text-stone-400 italic'}`}>
+                    {description || "Deskripsi produk belum ditambahkan minsar, maaf ya buibu"}
+                </p>
 
                 {/* Price & Unit */}
                 <div className="flex flex-col mt-auto pt-2">

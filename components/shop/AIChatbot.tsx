@@ -63,6 +63,9 @@ const ChatProductCard = ({ productId }: { productId: string }) => {
             </div>
             <div className="flex-1 min-w-0">
                 <h4 className="text-xs font-bold text-stone-900 truncate">{product.name}</h4>
+                <p className={`text-[9px] line-clamp-1 truncate ${product.description ? 'text-stone-500 font-medium' : 'text-stone-400 italic'}`}>
+                    {product.description || "Deskripsi belum ada, maaf ya buibu"}
+                </p>
                 <div className="flex items-center gap-2 mt-0.5">
                     <span className="text-sm font-bold text-orange-600">Rp {Number(currentPrice).toLocaleString('id-ID')}</span>
                     {product.isPromo && (

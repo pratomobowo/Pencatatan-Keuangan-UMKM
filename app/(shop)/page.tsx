@@ -185,6 +185,7 @@ export default function ShopHomepage() {
                                         originalPrice={product.originalPrice || undefined}
                                         discount={product.discount || undefined}
                                         image={product.image || DEFAULT_IMAGE}
+                                        description={product.description || undefined}
                                         isGrid={true}
                                         variants={product.variants}
                                     />
@@ -220,6 +221,7 @@ export default function ShopHomepage() {
                                         originalPrice={product.originalPrice || undefined}
                                         discount={product.discount || undefined}
                                         image={product.image || DEFAULT_IMAGE}
+                                        description={product.description || undefined}
                                         layout="horizontal"
                                         variants={product.variants}
                                     />
