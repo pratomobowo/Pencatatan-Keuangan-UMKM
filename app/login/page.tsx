@@ -61,17 +61,11 @@ export default function LoginPage() {
                     </header>
 
                     {/* Logo & Title */}
-                    <div className="px-6 pt-4 pb-8 text-center flex flex-col items-center">
-                        <div className="relative w-[420px] h-[200px] rounded-3xl bg-white/10 backdrop-blur flex items-center justify-center mx-auto mb-6 shadow-2xl overflow-hidden p-2">
-                            <Image
-                                src="/logo.webp"
-                                alt="Pasarantar Logo"
-                                fill
-                                className="object-contain p-2"
-                            />
-                        </div>
-                        <h1 className="text-3xl font-bold text-white mb-2">Selamat Datang!</h1>
-                        <p className="text-white/80">Masuk ke akun Anda untuk belanja</p>
+                    <div className="px-6 pt-12 pb-8 text-center flex flex-col items-center">
+                        <h1 className="text-5xl font-extrabold text-white tracking-tighter mb-2 drop-shadow-sm">
+                            pasarantar
+                        </h1>
+                        <p className="text-white/90 font-medium text-lg">Masuk Akun</p>
                     </div>
 
                     {/* Form Card */}

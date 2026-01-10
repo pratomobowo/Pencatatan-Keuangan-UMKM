@@ -82,9 +82,11 @@ export default function RegisterPage() {
                     </header>
 
                     {/* Title */}
-                    <div className="px-6 pt-4 pb-8 text-center">
-                        <h1 className="text-3xl font-bold text-white mb-2">Buat Akun</h1>
-                        <p className="text-white/80">Daftar untuk mulai belanja</p>
+                    <div className="px-6 pt-12 pb-8 text-center flex flex-col items-center">
+                        <h1 className="text-5xl font-extrabold text-white tracking-tighter mb-2 drop-shadow-sm">
+                            pasarantar
+                        </h1>
+                        <p className="text-white/90 font-medium text-lg">Daftar Akun</p>
                     </div>
 
                     {/* Form Card */}
