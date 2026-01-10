@@ -281,6 +281,11 @@ export default function AIChatbot() {
                                 type="text"
                                 value={input}
                                 onChange={(e) => setInput(e.target.value)}
+                                onFocus={(e) => {
+                                    setTimeout(() => {
+                                        e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                    }, 300);
+                                }}
                                 placeholder="Tanya apa saja ke Minsar..."
                                 className="flex-1 min-w-0 px-5 py-4 bg-orange-50/30 border border-orange-100 rounded-2xl text-stone-800 focus:ring-2 focus:ring-orange-500 focus:bg-white outline-none transition-all"
                                 disabled={isLoading}
