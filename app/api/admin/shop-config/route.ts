@@ -28,6 +28,7 @@ export async function GET() {
             storeLongitude: config.storeLongitude ? Number(config.storeLongitude) : null,
             faq: JSON.parse(config.faq || '[]'),
             paymentMethods: JSON.parse(config.paymentMethods || '[]'),
+            qrisImage: config.qrisImage,
             operationalHours: JSON.parse(config.operationalHours || '{}'),
             contactInfo: JSON.parse(config.contactInfo || '{}'),
         });
@@ -76,6 +77,7 @@ export async function POST(request: Request) {
                 paymentMethods: typeof data.paymentMethods === 'string'
                     ? data.paymentMethods
                     : JSON.stringify(data.paymentMethods || []),
+                qrisImage: data.qrisImage,
 
                 // Operational Hours (Tab 5)
                 operationalHours: typeof data.operationalHours === 'string'

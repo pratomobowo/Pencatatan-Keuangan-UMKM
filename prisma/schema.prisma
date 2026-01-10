@@ -291,6 +291,7 @@ model ShopConfig {
   
   // Payment (Tab 4)
   paymentMethods       String   @default("[]")
+  qrisImage            String?  // QRIS QR Code image URL
   
   // Operational Hours (Tab 5)
   operationalHours     String   @default("{}")

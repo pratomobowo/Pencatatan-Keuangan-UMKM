@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
     ArrowLeft, MapPin, Banknote, Building2, ShieldCheck, ArrowRight,
-    Loader2, Navigation, CheckCircle2, AlertCircle, HelpCircle, Copy, Check
+    Loader2, Navigation, CheckCircle2, AlertCircle, HelpCircle, Copy, Check, QrCode
 } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useShopAuth } from '@/contexts/ShopAuthContext';
@@ -46,6 +46,7 @@ export default function CheckoutPage() {
 
     const [selectedPayment, setSelectedPayment] = useState('cod');
     const [shopPaymentMethods, setShopPaymentMethods] = useState<any[]>([]);
+    const [qrisImage, setQrisImage] = useState<string | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
     const [orderPlaced, setOrderPlaced] = useState(false);
     const [orderNumber, setOrderNumber] = useState('');
@@ -101,6 +102,7 @@ export default function CheckoutPage() {
             if (res.ok) {
                 const data = await res.json();
                 setShopPaymentMethods(data.paymentMethods || []);
+                setQrisImage(data.qrisImage || null);
             }
         } catch (err) {
             console.error('Error fetching shop config:', err);
@@ -577,6 +579,37 @@ export default function CheckoutPage() {
                                 {selectedPayment === 'cod' && <CheckCircle2 size={20} className="text-orange-500" />}
                             </div>
                         </div>
+
+                        {/* QRIS Option */}
+                        {qrisImage && (
+                            <div
+                                onClick={() => setSelectedPayment('qris')}
+                                className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${selectedPayment === 'qris' ? 'border-orange-500 bg-orange-50' : 'border-gray-200 bg-white hover:border-orange-300'}`}
+                            >
+                                <div className="flex flex-col gap-3">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 rounded-lg bg-purple-100 text-purple-600"><QrCode size={20} /></div>
+                                        <div className="flex-1">
+                                            <p className="font-semibold text-sm text-stone-900">QRIS</p>
+                                            <p className="text-xs text-gray-500">Scan QR untuk bayar</p>
+                                        </div>
+                                        {selectedPayment === 'qris' && <CheckCircle2 size={20} className="text-orange-500" />}
+                                    </div>
+
+                                    {selectedPayment === 'qris' && (
+                                        <div className="mt-2 p-4 bg-white rounded-lg border border-orange-200 border-dashed animate-in fade-in slide-in-from-top-1 duration-200 flex flex-col items-center">
+                                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Scan QR Code</p>
+                                            <img
+                                                src={qrisImage}
+                                                alt="QRIS Payment"
+                                                className="w-full max-w-[220px] rounded-lg border border-gray-200 shadow-sm"
+                                            />
+                                            <p className="text-xs text-gray-500 mt-3 text-center">Scan menggunakan aplikasi e-wallet / mobile banking</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
 
                         {/* Bank Transfer Options */}
                         {shopPaymentMethods.map((method, idx) => {

@@ -50,6 +50,7 @@ export async function GET() {
             minimumOrder: config.minimumOrder,
             serviceFee: config.serviceFee,
             paymentMethods: JSON.parse(config.paymentMethods || '[]'),
+            qrisImage: config.qrisImage,
             operationalHours: JSON.parse(config.operationalHours || '{}'),
             holidayMode: config.holidayMode,
             holidayMessage: config.holidayMessage,
