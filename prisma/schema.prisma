@@ -266,12 +266,40 @@ model Notification {
 }
 
 model ShopConfig {
-  id               String   @id @default("global")
-  faq              String   @default("[]")
-  paymentMethods   String   @default("[]")
-  operationalHours String   @default("{}")
-  contactInfo      String   @default("{}")
-  updatedAt        DateTime @updatedAt
+  id                   String   @id @default("global")
+  
+  // Store Info (Tab 1)
+  storeName            String   @default("Pasarantar")
+  storeTagline         String   @default("Protein Segar ke Rumah")
+  storeLogo            String?
+  storeDescription     String?
+  
+  // Contact & Location (Tab 2)
+  contactInfo          String   @default("{}")
+  storeLatitude        Decimal? @db.Decimal(10, 8)
+  storeLongitude       Decimal? @db.Decimal(11, 8)
+  googleMapsUrl        String?
+  
+  // Shipping - Distance Based (Tab 3)
+  pricePerKm           Int      @default(2000)
+  baseShippingFee      Int      @default(5000)
+  maxDeliveryDistance  Int      @default(0)
+  freeShippingMinimum  Int      @default(0)
+  minimumOrder         Int      @default(0)
+  serviceFee           Int      @default(0)
+  
+  // Payment (Tab 4)
+  paymentMethods       String   @default("[]")
+  
+  // Operational Hours (Tab 5)
+  operationalHours     String   @default("{}")
+  holidayMode          Boolean  @default(false)
+  holidayMessage       String?
+  
+  // FAQ (Tab 6)
+  faq                  String   @default("[]")
+  
+  updatedAt            DateTime @updatedAt
 }
 
 model PromoBanner {
