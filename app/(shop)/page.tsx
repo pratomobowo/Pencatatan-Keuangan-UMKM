@@ -57,11 +57,20 @@ export default function ShopHomepage() {
         }
     };
 
+    const fetchingRef = useRef(false);
+    const hasMoreRef = useRef(true);
+
+    // Sync hasMoreRef with hasMore state for guarding
+    useEffect(() => {
+        hasMoreRef.current = hasMore;
+    }, [hasMore]);
+
     const fetchProducts = useCallback(async (pageNum: number) => {
         try {
-            // Guard against duplicate fetches or fetching beyond available data
-            if (loading || loadingMore || (pageNum > 1 && !hasMore)) return;
+            // Guard using ref to avoid circular dependency in useCallback
+            if (fetchingRef.current || (pageNum > 1 && !hasMoreRef.current)) return;
 
+            fetchingRef.current = true;
             if (pageNum === 1) setLoading(true);
             else setLoadingMore(true);
 
@@ -72,7 +81,6 @@ export default function ShopHomepage() {
 
             setProducts(prev => {
                 const combined = pageNum === 1 ? data.products : [...prev, ...data.products];
-                // Deduplicate items by ID to prevent key errors
                 const uniqueIds = new Set();
                 return (combined as ShopProduct[]).filter(item => {
                     if (uniqueIds.has(item.id)) return false;
@@ -87,8 +95,9 @@ export default function ShopHomepage() {
         } finally {
             setLoading(false);
             setLoadingMore(false);
+            fetchingRef.current = false;
         }
-    }, [loading, loadingMore]);
+    }, []); // No dependencies - stable identity!
 
     useEffect(() => {
         fetchProducts(page);
