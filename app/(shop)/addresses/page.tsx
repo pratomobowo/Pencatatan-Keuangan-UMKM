@@ -370,6 +370,11 @@ export default function AddressesPage() {
                                 placeholder="Alamat Lengkap"
                                 value={formData.address}
                                 onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                                onFocus={(e) => {
+                                    setTimeout(() => {
+                                        e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                    }, 300);
+                                }}
                                 rows={3}
                                 className="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none focus:border-orange-500 resize-none"
                                 required

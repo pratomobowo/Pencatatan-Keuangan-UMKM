@@ -198,6 +198,12 @@ export default function CartPage() {
                         <textarea
                             value={tempNote}
                             onChange={(e) => setTempNote(e.target.value)}
+                            onFocus={(e) => {
+                                // Scroll into view after keyboard appears
+                                setTimeout(() => {
+                                    e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                }, 300);
+                            }}
                             placeholder="Tulis catatan di sini..."
                             rows={3}
                             className="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none focus:border-orange-500 resize-none text-sm"
