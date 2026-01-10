@@ -152,6 +152,8 @@ model Address {
   name       String
   phone      String
   address    String
+  latitude   Decimal? @db.Decimal(10, 8)
+  longitude  Decimal? @db.Decimal(11, 8)
   isDefault  Boolean  @default(false)
   type       String   @default("home")
   createdAt  DateTime @default(now())

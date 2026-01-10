@@ -111,7 +111,7 @@ export async function POST(request: NextRequest) {
         }
 
         const body = await request.json();
-        const { label, name, phone, address, type, isDefault } = body;
+        const { label, name, phone, address, type, isDefault, latitude, longitude } = body;
 
         // If this is default, unset other defaults
         if (isDefault) {
@@ -133,6 +133,8 @@ export async function POST(request: NextRequest) {
                 name,
                 phone,
                 address,
+                latitude: latitude || null,
+                longitude: longitude || null,
                 type: type || 'home',
                 isDefault: isDefault || addressCount === 0,
             },

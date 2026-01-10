@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Plus, MapPin, Edit2, Trash2, Check, Home, Building2, Loader2 } from 'lucide-react';
+import { ArrowLeft, Plus, MapPin, Edit2, Trash2, Check, Home, Building2, Loader2, Navigation, CheckCircle2 } from 'lucide-react';
 import { useShopAuth } from '@/contexts/ShopAuthContext';
 
 interface Address {
@@ -12,6 +12,8 @@ interface Address {
     name: string;
     phone: string;
     address: string;
+    latitude?: number;
+    longitude?: number;
     isDefault: boolean;
     type: 'home' | 'office';
 }
@@ -25,11 +27,15 @@ export default function AddressesPage() {
     const [showForm, setShowForm] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
     const [saving, setSaving] = useState(false);
+    const [gettingLocation, setGettingLocation] = useState(false);
+    const [locationError, setLocationError] = useState<string | null>(null);
     const [formData, setFormData] = useState({
         label: '',
         name: '',
         phone: '',
         address: '',
+        latitude: null as number | null,
+        longitude: null as number | null,
         type: 'home' as 'home' | 'office',
     });
 
@@ -98,9 +104,54 @@ export default function AddressesPage() {
             name: addr.name,
             phone: addr.phone,
             address: addr.address,
+            latitude: addr.latitude || null,
+            longitude: addr.longitude || null,
             type: addr.type,
         });
+        setLocationError(null);
         setShowForm(true);
+    };
+
+    const handleGetLocation = () => {
+        if (!navigator.geolocation) {
+            setLocationError('Browser tidak mendukung GPS');
+            return;
+        }
+
+        setGettingLocation(true);
+        setLocationError(null);
+
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                setFormData({
+                    ...formData,
+                    latitude: position.coords.latitude,
+                    longitude: position.coords.longitude,
+                });
+                setGettingLocation(false);
+            },
+            (error) => {
+                setGettingLocation(false);
+                switch (error.code) {
+                    case error.PERMISSION_DENIED:
+                        setLocationError('Akses lokasi ditolak. Izinkan akses di pengaturan browser.');
+                        break;
+                    case error.POSITION_UNAVAILABLE:
+                        setLocationError('Lokasi tidak tersedia.');
+                        break;
+                    case error.TIMEOUT:
+                        setLocationError('Timeout mendapatkan lokasi.');
+                        break;
+                    default:
+                        setLocationError('Gagal mendapatkan lokasi.');
+                }
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 0,
+            }
+        );
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -108,23 +159,31 @@ export default function AddressesPage() {
         setSaving(true);
 
         try {
+            const payload = {
+                label: formData.label,
+                name: formData.name,
+                phone: formData.phone,
+                address: formData.address,
+                type: formData.type,
+                latitude: formData.latitude,
+                longitude: formData.longitude,
+            };
+
             if (editingId) {
-                // Update existing
                 const response = await fetch(`/api/shop/customers/me/addresses/${editingId}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(formData),
+                    body: JSON.stringify(payload),
                 });
 
                 if (response.ok) {
                     fetchAddresses();
                 }
             } else {
-                // Add new
                 const response = await fetch('/api/shop/customers/me/addresses', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(formData),
+                    body: JSON.stringify(payload),
                 });
 
                 if (response.ok) {
@@ -134,7 +193,8 @@ export default function AddressesPage() {
 
             setShowForm(false);
             setEditingId(null);
-            setFormData({ label: '', name: '', phone: '', address: '', type: 'home' });
+            setFormData({ label: '', name: '', phone: '', address: '', latitude: null, longitude: null, type: 'home' });
+            setLocationError(null);
         } catch (err) {
             console.error('Error saving address:', err);
         } finally {
@@ -163,7 +223,8 @@ export default function AddressesPage() {
                         onClick={() => {
                             setShowForm(true);
                             setEditingId(null);
-                            setFormData({ label: '', name: '', phone: '', address: '', type: 'home' });
+                            setFormData({ label: '', name: '', phone: '', address: '', latitude: null, longitude: null, type: 'home' });
+                            setLocationError(null);
                         }}
                         className="flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-orange-50 text-orange-500"
                     >
@@ -173,7 +234,6 @@ export default function AddressesPage() {
             </header>
 
             <main className="p-4 pb-24 flex flex-col gap-4">
-                {/* Address List */}
                 {addresses.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-20 text-center">
                         <MapPin size={64} className="text-gray-300 mb-4" />
@@ -189,20 +249,23 @@ export default function AddressesPage() {
                     addresses.map((addr) => (
                         <div
                             key={addr.id}
-                            className={`bg-white rounded-2xl shadow-sm border-2 p-4 transition-all ${addr.isDefault ? 'border-orange-500' : 'border-orange-50'
-                                }`}
+                            className={`bg-white rounded-2xl shadow-sm border-2 p-4 transition-all ${addr.isDefault ? 'border-orange-500' : 'border-orange-50'}`}
                         >
                             <div className="flex items-start gap-3">
-                                <div className={`size-10 rounded-full shrink-0 flex items-center justify-center ${addr.type === 'home' ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-blue-600'
-                                    }`}>
+                                <div className={`size-10 rounded-full shrink-0 flex items-center justify-center ${addr.type === 'home' ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-blue-600'}`}>
                                     {addr.type === 'home' ? <Home size={20} /> : <Building2 size={20} />}
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-2 flex-wrap">
                                         <p className="font-bold text-stone-900">{addr.label}</p>
                                         {addr.isDefault && (
                                             <span className="px-2 py-0.5 bg-orange-100 text-orange-600 text-xs font-medium rounded-full">
                                                 Utama
+                                            </span>
+                                        )}
+                                        {addr.latitude && addr.longitude && (
+                                            <span className="px-2 py-0.5 bg-emerald-100 text-emerald-600 text-xs font-medium rounded-full flex items-center gap-1">
+                                                <Navigation size={10} /> GPS
                                             </span>
                                         )}
                                     </div>
@@ -244,7 +307,7 @@ export default function AddressesPage() {
             {/* Add/Edit Form Modal */}
             {showForm && (
                 <div className="fixed inset-0 z-50 bg-black/50 flex items-end">
-                    <div className="w-full max-w-md mx-auto bg-white rounded-t-3xl p-6 pb-8 animate-slide-up">
+                    <div className="w-full max-w-md mx-auto bg-white rounded-t-3xl p-6 pb-8 animate-slide-up max-h-[90vh] overflow-y-auto">
                         <div className="flex items-center justify-between mb-6">
                             <h3 className="text-lg font-bold text-stone-900">
                                 {editingId ? 'Edit Alamat' : 'Tambah Alamat'}
@@ -253,6 +316,7 @@ export default function AddressesPage() {
                                 onClick={() => {
                                     setShowForm(false);
                                     setEditingId(null);
+                                    setLocationError(null);
                                 }}
                                 className="text-gray-500"
                             >
@@ -261,25 +325,18 @@ export default function AddressesPage() {
                         </div>
 
                         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-                            {/* Type Selector */}
                             <div className="flex gap-3">
                                 <button
                                     type="button"
                                     onClick={() => setFormData({ ...formData, type: 'home' })}
-                                    className={`flex-1 py-3 rounded-xl border-2 font-medium transition-all ${formData.type === 'home'
-                                        ? 'border-orange-500 bg-orange-50 text-orange-600'
-                                        : 'border-gray-200 text-gray-500'
-                                        }`}
+                                    className={`flex-1 py-3 rounded-xl border-2 font-medium transition-all ${formData.type === 'home' ? 'border-orange-500 bg-orange-50 text-orange-600' : 'border-gray-200 text-gray-500'}`}
                                 >
                                     🏠 Rumah
                                 </button>
                                 <button
                                     type="button"
                                     onClick={() => setFormData({ ...formData, type: 'office' })}
-                                    className={`flex-1 py-3 rounded-xl border-2 font-medium transition-all ${formData.type === 'office'
-                                        ? 'border-orange-500 bg-orange-50 text-orange-600'
-                                        : 'border-gray-200 text-gray-500'
-                                        }`}
+                                    className={`flex-1 py-3 rounded-xl border-2 font-medium transition-all ${formData.type === 'office' ? 'border-orange-500 bg-orange-50 text-orange-600' : 'border-gray-200 text-gray-500'}`}
                                 >
                                     🏢 Kantor
                                 </button>
@@ -317,6 +374,47 @@ export default function AddressesPage() {
                                 className="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none focus:border-orange-500 resize-none"
                                 required
                             />
+
+                            {/* GPS Location Section */}
+                            <div className="bg-slate-50 p-4 rounded-xl space-y-3">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-sm font-bold text-slate-700">Lokasi GPS</p>
+                                        <p className="text-xs text-slate-500">Untuk perhitungan ongkir akurat</p>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={handleGetLocation}
+                                        disabled={gettingLocation}
+                                        className="flex items-center gap-2 px-4 py-2 bg-slate-800 text-white text-sm font-medium rounded-lg hover:bg-black transition-colors disabled:opacity-50"
+                                    >
+                                        {gettingLocation ? (
+                                            <Loader2 size={16} className="animate-spin" />
+                                        ) : (
+                                            <Navigation size={16} />
+                                        )}
+                                        {gettingLocation ? 'Mencari...' : 'Gunakan Lokasi'}
+                                    </button>
+                                </div>
+
+                                {formData.latitude && formData.longitude && (
+                                    <div className="flex items-center gap-2 p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
+                                        <CheckCircle2 size={18} className="text-emerald-600 shrink-0" />
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-xs font-bold text-emerald-700">Koordinat Tersimpan</p>
+                                            <p className="text-xs text-emerald-600 font-mono truncate">
+                                                {formData.latitude.toFixed(6)}, {formData.longitude.toFixed(6)}
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {locationError && (
+                                    <div className="p-3 bg-rose-50 border border-rose-200 rounded-lg">
+                                        <p className="text-xs text-rose-600">{locationError}</p>
+                                    </div>
+                                )}
+                            </div>
 
                             <button
                                 type="submit"

@@ -80,7 +80,7 @@ export async function PUT(
         }
 
         const body = await request.json();
-        const { label, name, phone, address, type, isDefault } = body;
+        const { label, name, phone, address, type, isDefault, latitude, longitude } = body;
 
         // If setting as default, unset others
         if (isDefault) {
@@ -97,6 +97,8 @@ export async function PUT(
                 name: name || undefined,
                 phone: phone || undefined,
                 address: address || undefined,
+                latitude: latitude !== undefined ? latitude : undefined,
+                longitude: longitude !== undefined ? longitude : undefined,
                 type: type || undefined,
                 isDefault: isDefault,
             },

@@ -3,8 +3,8 @@ import './globals.css';
 import { Providers } from './providers';
 
 export const metadata: Metadata = {
-    title: 'Pasarantar Finance',
-    description: 'Aplikasi keuangan khusus Pasarantar untuk mencatat penjualan protein segar, belanja pasar, dan analisis profit margin.',
+    title: 'Pasarantar E-Grocery',
+    description: 'Aplikasi e-commerce khusus Pasarantar untuk belanja protein segar, belanja pasar, dan analisis profit margin.',
     keywords: ['UMKM', 'keuangan', 'pasarantar', 'seafood', 'ikan', 'ayam', 'daging'],
     authors: [{ name: 'Pasarantar' }],
 };

@@ -1,6 +1,6 @@
-# Pasarantar Finance v2.0
+# Pasarantar E-Grocery v2.0
 
-Aplikasi keuangan khusus Pasarantar untuk mencatat penjualan protein segar, belanja pasar, dan analisis profit margin.
+Aplikasi e-commerce khusus Pasarantar untuk belanja protein segar, belanja pasar, dan analisis profit margin.
 
 ## Tech Stack
 

@@ -46,8 +46,8 @@ export default function LoginPage() {
                     <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-2xl shadow-lg mb-4">
                         <span className="text-white font-bold text-2xl">PA</span>
                     </div>
-                    <h1 className="text-3xl font-bold text-slate-900 mb-2">Pasarantar Finance</h1>
-                    <p className="text-slate-600">Sistem Manajemen Keuangan & Stok</p>
+                    <h1 className="text-3xl font-bold text-slate-900 mb-2">Pasarantar E-Grocery</h1>
+                    <p className="text-slate-600">Sistem Manajemen E-Grocery</p>
                 </div>
 
                 {/* Login Card */}
@@ -123,7 +123,7 @@ export default function LoginPage() {
 
                 {/* Footer */}
                 <p className="text-center text-sm text-slate-500 mt-6">
-                    © 2024 Pasarantar Finance v2.0
+                    © 2024 Pasarantar E-Grocery v2.0
                 </p>
             </div>
         </div>
