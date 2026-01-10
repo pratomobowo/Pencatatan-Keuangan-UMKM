@@ -413,3 +413,13 @@ model Voucher {
   @@index([customerId])
   @@index([code])
 }
+model LoyaltyConfig {
+  id                String   @id @default("global")
+  pointsPerAmount   Int      @default(10000) // Rp 10.000 = 1 Point
+  pointMultiplier   Decimal  @default(1.0) @db.Decimal(3, 2)
+  minSpentSilver    Int      @default(1000000)
+  minSpentGold      Int      @default(5000000)
+  multiplierSilver  Decimal  @default(1.2) @db.Decimal(3, 2)
+  multiplierGold    Decimal  @default(1.5) @db.Decimal(3, 2)
+  updatedAt         DateTime @updatedAt
+}

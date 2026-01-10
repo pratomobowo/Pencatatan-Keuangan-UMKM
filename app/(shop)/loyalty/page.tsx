@@ -50,10 +50,10 @@ interface Voucher {
     product?: { name: string };
 }
 
-const TIERS = {
-    BRONZE: { name: 'Bronze', color: 'text-orange-700', bg: 'bg-orange-100', minSpent: 0, next: 'SILVER' },
-    SILVER: { name: 'Silver', color: 'text-slate-500', bg: 'bg-slate-100', minSpent: 1000000, next: 'GOLD' },
-    GOLD: { name: 'Gold', color: 'text-yellow-600', bg: 'bg-yellow-100', minSpent: 5000000, next: null },
+const TIER_GROUPS = {
+    BRONZE: { name: 'Bronze', color: 'text-orange-700', bg: 'bg-orange-100' },
+    SILVER: { name: 'Silver', color: 'text-slate-500', bg: 'bg-slate-100' },
+    GOLD: { name: 'Gold', color: 'text-yellow-600', bg: 'bg-yellow-100' },
 };
 
 export default function LoyaltyPage() {
@@ -66,6 +66,7 @@ export default function LoyaltyPage() {
     const [loading, setLoading] = useState(true);
     const [redeeming, setRedeeming] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<'REWARDS' | 'VOUCHERS' | 'HISTORY'>('REWARDS');
+    const [config, setConfig] = useState<any>(null);
 
     useEffect(() => {
         if (!authLoading && !isAuthenticated) {
@@ -80,12 +81,14 @@ export default function LoyaltyPage() {
     const fetchLoyaltyData = async () => {
         try {
             setLoading(true);
-            const [rewardsRes, profileRes] = await Promise.all([
+            const [rewardsRes, profileRes, configRes] = await Promise.all([
                 fetch('/api/shop/loyalty/rewards'),
-                fetch('/api/shop/loyalty/profile')
+                fetch('/api/shop/loyalty/profile'),
+                fetch('/api/shop/loyalty/config')
             ]);
 
             if (rewardsRes.ok) setRewards(await rewardsRes.json());
+            if (configRes.ok) setConfig(await configRes.json());
             if (profileRes.ok) {
                 const data = await profileRes.json();
                 setHistory(data.transactions);
@@ -139,9 +142,16 @@ export default function LoyaltyPage() {
         );
     }
 
-    const currentTier = (customer?.tier as keyof typeof TIERS) || 'BRONZE';
-    const tierData = TIERS[currentTier];
-    const nextTier = tierData.next ? TIERS[tierData.next as keyof typeof TIERS] : null;
+    const currentTier = (customer?.tier as keyof typeof TIER_GROUPS) || 'BRONZE';
+    const tierData = TIER_GROUPS[currentTier];
+
+    // Compute next tier based on config
+    const nextTier = config ? (
+        currentTier === 'BRONZE' ? { name: 'Silver', minSpent: config.minSpentSilver, id: 'SILVER' } :
+            currentTier === 'SILVER' ? { name: 'Gold', minSpent: config.minSpentGold, id: 'GOLD' } :
+                null
+    ) : null;
+
     const progress = nextTier
         ? Math.min(100, (totalSpent / nextTier.minSpent) * 100)
         : 100;

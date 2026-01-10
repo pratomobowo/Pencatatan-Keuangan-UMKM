@@ -1,14 +1,35 @@
 import { prisma } from './prisma';
 
-export const TIERS = {
-    BRONZE: { name: 'BRONZE', minSpent: 0, multiplier: 1 },
-    SILVER: { name: 'SILVER', minSpent: 1000000, multiplier: 1.2 },
-    GOLD: { name: 'GOLD', minSpent: 5000000, multiplier: 1.5 },
-};
+export async function getLoyaltyConfig() {
+    let config = await (prisma as any).loyaltyConfig.findUnique({
+        where: { id: 'global' }
+    });
 
-export function calculatePoints(amount: number, tier: string = 'BRONZE'): number {
-    const basePoints = Math.floor(amount / 10000);
-    const multiplier = TIERS[tier as keyof typeof TIERS]?.multiplier || 1;
+    if (!config) {
+        config = await (prisma as any).loyaltyConfig.create({
+            data: {
+                id: 'global',
+                pointsPerAmount: 10000,
+                pointMultiplier: 1.0,
+                minSpentSilver: 1000000,
+                minSpentGold: 5000000,
+                multiplierSilver: 1.2,
+                multiplierGold: 1.5,
+            }
+        });
+    }
+
+    return config;
+}
+
+export async function calculatePoints(amount: number, tier: string = 'BRONZE'): Promise<number> {
+    const config = await getLoyaltyConfig();
+    const basePoints = Math.floor(amount / config.pointsPerAmount);
+
+    let multiplier = Number(config.pointMultiplier);
+    if (tier === 'SILVER') multiplier = Number(config.multiplierSilver);
+    if (tier === 'GOLD') multiplier = Number(config.multiplierGold);
+
     return Math.floor(basePoints * multiplier);
 }
 
@@ -20,13 +41,14 @@ export async function processLoyaltyPoints(customerId: string, orderAmount: numb
 
     if (!customer) return;
 
-    const pointsEarned = calculatePoints(orderAmount, customer.tier);
+    const config = await getLoyaltyConfig();
+    const pointsEarned = await calculatePoints(orderAmount, customer.tier);
     const newTotalSpent = Number(customer.totalSpent) + orderAmount;
 
     let newTier = 'BRONZE';
-    if (newTotalSpent >= TIERS.GOLD.minSpent) {
+    if (newTotalSpent >= config.minSpentGold) {
         newTier = 'GOLD';
-    } else if (newTotalSpent >= TIERS.SILVER.minSpent) {
+    } else if (newTotalSpent >= config.minSpentSilver) {
         newTier = 'SILVER';
     }
 
