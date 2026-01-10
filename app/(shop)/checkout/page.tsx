@@ -458,7 +458,7 @@ export default function CheckoutPage() {
                                     <p className="text-xs text-gray-500 mt-1">{addr.phone}</p>
                                 </div>
                             ))}
-                            <Link href="/settings" className="block w-full py-3 border-2 border-dashed border-gray-200 rounded-xl text-center text-sm font-medium text-gray-500 hover:bg-gray-50">
+                            <Link href="/addresses" className="block w-full py-3 border-2 border-dashed border-gray-200 rounded-xl text-center text-sm font-medium text-gray-500 hover:bg-gray-50">
                                 + Tambah Alamat Baru
                             </Link>
 
