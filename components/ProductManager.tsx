@@ -214,6 +214,7 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
     try {
       const formDataUpload = new FormData();
       formDataUpload.append('file', file);
+      formDataUpload.append('folder', 'products');
 
       const response = await fetch('/api/upload', {
         method: 'POST',
