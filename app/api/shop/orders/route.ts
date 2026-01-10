@@ -156,8 +156,10 @@ export async function POST(request: NextRequest) {
         const subtotal = items.reduce((sum: number, item: any) =>
             sum + (item.price * item.quantity), 0
         );
-        const shippingFee = 15000;
-        const serviceFee = 1000;
+
+        // Get fees from body (passed from dynamic calculation in frontend)
+        const shippingFee = Number(body.shippingFee) || 0;
+        const serviceFee = Number(body.serviceFee) || 0;
         const grandTotal = subtotal + shippingFee + serviceFee;
 
         // Create order with items

@@ -221,7 +221,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                                     <p className="text-sm text-gray-500">x{item.quantity}</p>
                                 </div>
                                 <p className="font-medium text-stone-900">
-                                    Rp {(item.price * item.quantity).toLocaleString('id-ID')}
+                                    Rp {((item.price || 0) * (item.quantity || 0)).toLocaleString('id-ID')}
                                 </p>
                             </div>
                         ))}
@@ -234,22 +234,19 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                     <div className="space-y-2">
                         <div className="flex justify-between text-sm">
                             <span className="text-gray-500">Subtotal</span>
-                            <span className="text-stone-900">Rp {order.subtotal.toLocaleString('id-ID')}</span>
+                            <span className="text-stone-900">Rp {(order.subtotal || 0).toLocaleString('id-ID')}</span>
                         </div>
                         <div className="flex justify-between text-sm">
                             <span className="text-gray-500">Ongkos Kirim</span>
-                            <span className="text-stone-900">Rp {order.shippingFee.toLocaleString('id-ID')}</span>
+                            <span className="text-stone-900">Rp {(order.shippingFee || 0).toLocaleString('id-ID')}</span>
                         </div>
-                        {order.serviceFee && (
-                            <div className="flex justify-between text-sm">
-                                <span className="text-gray-500">Biaya Layanan</span>
-                                <span className="text-stone-900">Rp {order.serviceFee.toLocaleString('id-ID')}</span>
-                            </div>
-                        )}
+                        <div className="flex justify-between text-sm text-amber-600 bg-amber-50 p-2 rounded-lg mt-1">
+                            <span className="text-xs">Biaya layanan & total mungkin berubah sesuai konfirmasi admin jika ongkir manual.</span>
+                        </div>
                         <div className="border-t border-dashed border-gray-200 my-2"></div>
                         <div className="flex justify-between">
                             <span className="font-bold text-stone-900">Total</span>
-                            <span className="font-bold text-orange-600">Rp {order.grandTotal.toLocaleString('id-ID')}</span>
+                            <span className="font-bold text-orange-600">Rp {(order.grandTotal || 0).toLocaleString('id-ID')}</span>
                         </div>
                     </div>
                     <div className="mt-3 pt-3 border-t border-gray-100">

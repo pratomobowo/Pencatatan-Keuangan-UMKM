@@ -105,12 +105,10 @@ export async function GET(
             subtotal: Number(order.subtotal),
             shippingFee: Number(order.shippingFee),
             serviceFee: Number(order.serviceFee),
-            total: Number(order.grandTotal),
-            address: {
-                name: order.recipientName || order.customerName || 'Penerima',
-                phone: order.recipientPhone || order.customerPhone || '-',
-                address: order.shippingAddress || order.customerAddress || '-',
-            },
+            grandTotal: Number(order.grandTotal),
+            recipientName: order.recipientName || order.customerName || 'Penerima',
+            recipientPhone: order.recipientPhone || order.customerPhone || '-',
+            shippingAddress: order.shippingAddress || order.customerAddress || '-',
             deliveryTime: order.deliveryTime,
             paymentMethod: order.paymentMethod === 'cod'
                 ? 'COD (Bayar di Tempat)'
