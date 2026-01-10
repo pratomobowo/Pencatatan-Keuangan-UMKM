@@ -12,12 +12,24 @@ interface AIAdvisorProps {
 export const AIAdvisor: React.FC<AIAdvisorProps> = ({ transactions }) => {
   const [analysis, setAnalysis] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleAnalyze = async () => {
     setLoading(true);
-    const result = await analyzeBusiness(transactions);
-    setAnalysis(result);
-    setLoading(false);
+    setError(null);
+    try {
+      const response = await fetch('/api/ai/analysis', {
+        method: 'POST',
+      });
+      const data = await response.json();
+      if (data.error) throw new Error(data.error);
+      setAnalysis(data.analysis);
+    } catch (err: any) {
+      console.error("Analysis Error:", err);
+      setError("Gagal mendapatkan analisis AI. Coba lagi nanti.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -43,6 +55,13 @@ export const AIAdvisor: React.FC<AIAdvisorProps> = ({ transactions }) => {
           </button>
         </div>
       </Card>
+
+      {error && (
+        <div className="p-4 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 text-sm flex items-center gap-2">
+          <AlertCircle size={16} />
+          {error}
+        </div>
+      )}
 
       {analysis && (
         <Card className="animate-fade-in border-t-4 border-t-indigo-500">

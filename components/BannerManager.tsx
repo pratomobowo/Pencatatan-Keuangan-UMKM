@@ -154,21 +154,26 @@ export const BannerManager: React.FC = () => {
 
     return (
         <div className="space-y-6">
-            <div className="flex justify-between items-center">
-                <h3 className="text-lg font-medium text-slate-800">Manajemen Banner Promo</h3>
-                <button
-                    onClick={() => setShowFormModal(true)}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
-                >
-                    <Plus size={20} />
-                    Tambah Banner
-                </button>
-            </div>
-
             <Card>
+                {/* Action Bar */}
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                    <div>
+                        <h3 className="text-lg font-semibold text-slate-800">Manajemen Banner Promo</h3>
+                        <p className="text-xs text-slate-500 mt-0.5">Kelola banner promosi yang tampil di halaman utama toko.</p>
+                    </div>
+                    <button
+                        onClick={() => setShowFormModal(true)}
+                        className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                    >
+                        <Plus size={16} />
+                        Tambah Banner
+                    </button>
+                </div>
+
+                {/* Banner Table */}
                 <div className="overflow-x-auto">
                     <table className="w-full">
-                        <thead>
+                        <thead className="bg-slate-50">
                             <tr className="border-b border-slate-200">
                                 <th className="text-left px-4 py-3 text-sm font-semibold text-slate-700">Preview</th>
                                 <th className="text-left px-4 py-3 text-sm font-semibold text-slate-700">Info Banner</th>
@@ -186,7 +191,7 @@ export const BannerManager: React.FC = () => {
                                 banners.map((banner) => (
                                     <tr key={banner.id} className="border-b border-slate-100 hover:bg-slate-50/50 transition-colors">
                                         <td className="px-4 py-3">
-                                            <div className="relative w-32 aspect-[2/1] rounded-lg overflow-hidden bg-slate-100 border border-slate-200">
+                                            <div className="relative w-32 aspect-[2/1] rounded-lg overflow-hidden bg-slate-100 border border-slate-200 shadow-sm">
                                                 {banner.image ? (
                                                     <Image src={banner.image} alt={banner.title} fill className="object-cover" />
                                                 ) : (
@@ -199,9 +204,9 @@ export const BannerManager: React.FC = () => {
                                         <td className="px-4 py-3">
                                             <div className="flex flex-col">
                                                 <div className="flex items-center gap-2">
-                                                    <span className="text-sm font-bold text-slate-900">{banner.title}</span>
+                                                    <span className="text-sm font-semibold text-slate-900">{banner.title}</span>
                                                     {banner.badge && (
-                                                        <span className="px-1.5 py-0.5 bg-orange-100 text-orange-700 text-[10px] font-bold rounded uppercase">
+                                                        <span className="px-1.5 py-0.5 bg-orange-100 text-orange-700 text-[10px] font-semibold rounded uppercase">
                                                             {banner.badge}
                                                         </span>
                                                     )}
@@ -219,7 +224,7 @@ export const BannerManager: React.FC = () => {
                                         <td className="px-4 py-3 text-center">
                                             <button
                                                 onClick={() => toggleStatus(banner)}
-                                                className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider transition-colors border
+                                                className={`px-3 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider transition-colors border
                                                     ${banner.isActive
                                                         ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
                                                         : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200'}`}
@@ -256,58 +261,58 @@ export const BannerManager: React.FC = () => {
             {/* Banner Form Modal */}
             {showFormModal && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in duration-200">
-                        <div className="flex items-center justify-between p-6 border-b border-slate-100">
+                    <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in duration-200">
+                        <div className="flex items-center justify-between p-6 border-b border-slate-100 text-sm">
                             <div>
-                                <h2 className="text-xl font-bold text-slate-800">
+                                <h2 className="text-lg font-semibold text-slate-800">
                                     {editingBanner ? 'Edit Banner Promo' : 'Tambah Banner Promo'}
                                 </h2>
-                                <p className="text-sm text-slate-500">Konfigurasi visual dan teks banner di halaman utama toko.</p>
+                                <p className="text-xs text-slate-500 mt-0.5">Konfigurasi visual dan teks banner di halaman utama toko.</p>
                             </div>
                             <button onClick={handleCloseModal} className="p-2 text-slate-400 hover:bg-slate-100 rounded-full transition-colors">
-                                <X size={24} />
+                                <X size={20} />
                             </button>
                         </div>
 
-                        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-5">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                                <div className="space-y-4">
+                        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-4 text-xs font-semibold">
                                     <div>
-                                        <label className="block text-sm font-semibold text-slate-700 mb-1.5">Judul Banner <span className="text-rose-500">*</span></label>
+                                        <label className="block text-slate-700 mb-1.5">Judul Banner <span className="text-rose-500">*</span></label>
                                         <input
                                             type="text"
                                             required
                                             value={formData.title}
                                             onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                                            className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                                            className="w-full px-4 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all"
                                             placeholder="Contoh: Ikan Laut Segar"
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-semibold text-slate-700 mb-1.5">Subtitle</label>
+                                        <label className="block text-slate-700 mb-1.5">Subtitle</label>
                                         <input
                                             type="text"
                                             value={formData.subtitle}
                                             onChange={(e) => setFormData({ ...formData, subtitle: e.target.value })}
-                                            className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                                            className="w-full px-4 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all"
                                             placeholder="Contoh: Langsung dari Nelayan"
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-semibold text-slate-700 mb-1.5">Badge (Label Kecil)</label>
+                                        <label className="block text-slate-700 mb-1.5">Badge (Label Kecil)</label>
                                         <input
                                             type="text"
                                             value={formData.badge}
                                             onChange={(e) => setFormData({ ...formData, badge: e.target.value })}
-                                            className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                                            className="w-full px-4 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all"
                                             placeholder="Contoh: PROMO SPESIAL"
                                         />
                                     </div>
                                 </div>
 
-                                <div className="space-y-4">
+                                <div className="space-y-4 text-xs font-semibold">
                                     <div>
-                                        <label className="block text-sm font-semibold text-slate-700 mb-1.5">Gambar Banner <span className="text-rose-500">*</span></label>
+                                        <label className="block text-slate-700 mb-1.5">Gambar Banner <span className="text-rose-500">*</span></label>
                                         <div className="flex flex-col gap-3">
                                             <input
                                                 type="file"
@@ -319,7 +324,7 @@ export const BannerManager: React.FC = () => {
 
                                             <div
                                                 onClick={() => !isUploading && imageInputRef.current?.click()}
-                                                className={`relative aspect-[2/1] border-2 border-dashed rounded-2xl cursor-pointer transition-all flex flex-col items-center justify-center bg-slate-50 overflow-hidden group
+                                                className={`relative aspect-[2/1] border-2 border-dashed rounded-lg cursor-pointer transition-all flex flex-col items-center justify-center bg-slate-50 overflow-hidden group
                                                     ${formData.image ? 'border-blue-200' : 'border-slate-300 hover:border-blue-400'}
                                                     ${isUploading ? 'opacity-70 cursor-not-allowed' : ''}`}
                                             >
@@ -332,23 +337,23 @@ export const BannerManager: React.FC = () => {
                                                             className="object-cover transition-transform group-hover:scale-105"
                                                         />
                                                         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center border-4 border-white/20">
-                                                            <div className="bg-white/90 p-2 rounded-lg flex items-center gap-2 text-slate-800 text-sm font-medium">
-                                                                <Upload size={16} />
+                                                            <div className="bg-white/90 p-2 rounded-lg flex items-center gap-2 text-slate-800 text-[10px] font-semibold">
+                                                                <Upload size={14} />
                                                                 Ganti Gambar
                                                             </div>
                                                         </div>
                                                     </>
                                                 ) : (
-                                                    <div className="text-center p-6">
+                                                    <div className="text-center p-6 text-[10px] font-semibold">
                                                         {isUploading ? (
-                                                            <Loader2 className="w-10 h-10 mx-auto text-blue-500 animate-spin mb-2" />
+                                                            <Loader2 className="w-8 h-8 mx-auto text-blue-500 animate-spin mb-2" />
                                                         ) : (
-                                                            <ImageIcon className="w-10 h-10 mx-auto text-slate-400 mb-2 group-hover:text-blue-500 transition-colors" />
+                                                            <ImageIcon className="w-8 h-8 mx-auto text-slate-400 mb-2 group-hover:text-blue-500 transition-colors" />
                                                         )}
-                                                        <p className="text-sm font-medium text-slate-600">
+                                                        <p className="text-slate-600">
                                                             {isUploading ? 'Mengupload...' : 'Klik untuk upload gambar'}
                                                         </p>
-                                                        <p className="text-xs text-slate-400 mt-1">PNG, JPG, WebP (Maks. 5MB)</p>
+                                                        <p className="text-slate-400 mt-0.5">PNG, JPG, WebP (Maks. 5MB)</p>
                                                     </div>
                                                 )}
                                             </div>
@@ -357,42 +362,42 @@ export const BannerManager: React.FC = () => {
                                                 type="text"
                                                 value={formData.image}
                                                 onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                                                className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-xs"
+                                                className="w-full px-4 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-blue-500 outline-none transition-all"
                                                 placeholder="Atau masukkan URL gambar..."
                                             />
                                         </div>
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-semibold text-slate-700 mb-1.5">Teks Tombol</label>
+                                        <label className="block text-slate-700 mb-1.5 font-semibold">Teks Tombol</label>
                                         <input
                                             type="text"
                                             value={formData.buttonText}
                                             onChange={(e) => setFormData({ ...formData, buttonText: e.target.value })}
-                                            className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                                            className="w-full px-4 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all"
                                             placeholder="Belanja Sekarang"
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-semibold text-slate-700 mb-1.5">Link Tujuan</label>
+                                        <label className="block text-slate-700 mb-1.5 font-semibold">Link Tujuan</label>
                                         <input
                                             type="text"
                                             value={formData.link}
                                             onChange={(e) => setFormData({ ...formData, link: e.target.value })}
-                                            className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                                            className="w-full px-4 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all"
                                             placeholder="/products/category/seafood"
                                         />
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-5 pt-2">
+                            <div className="grid grid-cols-2 gap-6 pt-2">
                                 <div>
-                                    <label className="block text-sm font-semibold text-slate-700 mb-1.5">Urutan Tampil</label>
+                                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">Urutan Tampil</label>
                                     <input
                                         type="number"
                                         value={formData.order}
                                         onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) || 0 })}
-                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                                        className="w-full px-4 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all"
                                     />
                                 </div>
                                 <div className="flex items-end pb-3">
@@ -404,30 +409,30 @@ export const BannerManager: React.FC = () => {
                                                 onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
                                                 className="sr-only"
                                             />
-                                            <div className={`w-12 h-6 rounded-full transition-colors border ${formData.isActive ? 'bg-blue-600 border-blue-600' : 'bg-slate-100 border-slate-200'}`}></div>
-                                            <div className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${formData.isActive ? 'translate-x-6' : 'translate-x-0'}`}></div>
+                                            <div className={`w-10 h-5 rounded-full transition-colors border ${formData.isActive ? 'bg-blue-600 border-blue-600' : 'bg-slate-100 border-slate-300'}`}></div>
+                                            <div className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform shadow-sm ${formData.isActive ? 'translate-x-5' : 'translate-x-0'}`}></div>
                                         </div>
-                                        <span className="text-sm font-semibold text-slate-700">Status Aktif</span>
+                                        <span className="text-xs font-semibold text-slate-700">Status Aktif</span>
                                     </label>
                                 </div>
                             </div>
 
                             {/* Live Preview Card */}
                             <div className="mt-4">
-                                <label className="block text-sm font-semibold text-slate-700 mb-3">Preview Banner (Live)</label>
-                                <div className="relative aspect-[2.5/1] rounded-2xl overflow-hidden bg-slate-100 shadow-inner group">
+                                <label className="block text-xs font-semibold text-slate-700 mb-3">Preview Banner (Live)</label>
+                                <div className="relative aspect-[2.5/1] rounded-xl overflow-hidden bg-slate-100 border border-slate-200 shadow-sm group">
                                     {formData.image && (
                                         <Image src={formData.image} alt="Preview" fill className="object-cover transition-opacity duration-300" onError={() => { }} />
                                     )}
                                     <div className="absolute inset-0 bg-gradient-to-r from-black/70 to-transparent flex flex-col justify-center p-6">
                                         {formData.badge && (
-                                            <span className="bg-orange-500 text-white text-[10px] font-bold px-2 py-0.5 rounded w-fit mb-1.5">
+                                            <span className="bg-orange-500 text-white text-[10px] font-semibold px-2 py-0.5 rounded w-fit mb-1.5">
                                                 {formData.badge}
                                             </span>
                                         )}
-                                        <h2 className="text-white text-lg font-bold leading-tight mb-0.5">{formData.title || 'Judul Banner Anda'}</h2>
-                                        <p className="text-white/80 text-[11px] mb-3 max-w-[60%]">{formData.subtitle || 'Keterangan tambahan...'}</p>
-                                        <div className="bg-white text-slate-900 px-3 py-1.5 rounded-lg text-[11px] font-bold w-fit">
+                                        <h2 className="text-white text-base font-semibold leading-tight mb-0.5">{formData.title || 'Judul Banner Anda'}</h2>
+                                        <p className="text-white/80 text-[10px] mb-3 max-w-[60%]">{formData.subtitle || 'Keterangan tambahan...'}</p>
+                                        <div className="bg-white text-slate-900 px-3 py-1.5 rounded-lg text-[10px] font-semibold w-fit">
                                             {formData.buttonText || 'Button'}
                                         </div>
                                     </div>
@@ -439,13 +444,13 @@ export const BannerManager: React.FC = () => {
                             <button
                                 type="button"
                                 onClick={handleCloseModal}
-                                className="flex-1 px-4 py-3 border border-slate-200 text-slate-600 font-bold rounded-xl hover:bg-white transition-all shadow-sm"
+                                className="flex-1 px-4 py-2.5 border border-slate-300 text-slate-600 text-sm font-semibold rounded-lg hover:bg-white transition-colors"
                             >
                                 Batal
                             </button>
                             <button
                                 onClick={handleSubmit}
-                                className="flex-1 px-4 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-200"
+                                className="flex-1 px-4 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
                             >
                                 {editingBanner ? 'Simpan Perubahan' : 'Buat Banner'}
                             </button>

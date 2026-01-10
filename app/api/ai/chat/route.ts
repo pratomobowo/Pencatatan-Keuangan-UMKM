@@ -5,14 +5,9 @@ import { prisma } from '@/lib/prisma';
 
 export async function POST(request: NextRequest) {
     try {
-        // Optional: Check if user is authenticated
-        // const session = await auth();
-        // if (!session) {
-        //   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-        // }
-
+        const session = await auth();
         const body = await request.json();
-        const { messages } = body;
+        const { messages, conversationId: existingConversationId } = body;
 
         if (!messages || !Array.isArray(messages)) {
             return NextResponse.json(
@@ -21,10 +16,30 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Limit previous messages to keep context efficient
-        const recentMessages: ChatMessage[] = messages.slice(-10);
+        const lastUserMessage = messages[messages.length - 1]?.content;
 
-        // Fetch active products for AI context
+        let conversationId = existingConversationId;
+        if (!conversationId) {
+            const newConversation = await prisma.aIChatConversation.create({
+                data: {
+                    customerId: session?.user?.id || null, // Best effort
+                    title: lastUserMessage?.slice(0, 50) || 'New Conversation',
+                }
+            });
+            conversationId = newConversation.id;
+        }
+
+        // 2. Log User Message
+        await prisma.aIChatMessage.create({
+            data: {
+                conversationId,
+                role: 'user',
+                content: lastUserMessage || '',
+            }
+        });
+
+        // 3. Get AI Response
+        const recentMessages: ChatMessage[] = messages.slice(-10);
         const products = await prisma.product.findMany({
             where: { isActive: true },
             select: {
@@ -39,7 +54,16 @@ export async function POST(request: NextRequest) {
 
         const response = await ChatbotService.getChatCompletion(recentMessages, products);
 
-        return NextResponse.json({ response });
+        // 4. Log Assistant Response
+        await prisma.aIChatMessage.create({
+            data: {
+                conversationId,
+                role: 'assistant',
+                content: response,
+            }
+        });
+
+        return NextResponse.json({ response, conversationId });
     } catch (error: any) {
         console.error('AI Chat Error:', error);
         return NextResponse.json(

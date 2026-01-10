@@ -81,23 +81,36 @@ export const TransactionManager: React.FC<TransactionManagerProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Header with Search and Filters */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div className="flex-1 max-w-md w-full">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" size={20} />
+      {/* Transaction Table Card */}
+      <Card>
+        {/* Action Bar */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+          <div>
+            <h3 className="text-lg font-semibold text-slate-800">Buku Transaksi</h3>
+          </div>
+          <button
+            onClick={() => setShowFormModal(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+          >
+            <Plus size={16} />
+            Tambah Transaksi
+          </button>
+        </div>
+
+        {/* Filter/Search Bar */}
+        <div className="flex flex-col sm:flex-row gap-3 mb-4">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
             <input
               type="text"
               placeholder="Cari keterangan atau kategori..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
-        </div>
-        <div className="flex gap-2 w-full sm:w-auto">
           <select
-            className="px-3 py-2 border border-slate-300 rounded-lg text-sm flex-1 sm:flex-none"
+            className="px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500"
             value={filterType}
             onChange={(e) => setFilterType(e.target.value)}
           >
@@ -106,21 +119,17 @@ export const TransactionManager: React.FC<TransactionManagerProps> = ({
             <option value={TransactionType.EXPENSE}>Pengeluaran</option>
             <option value={TransactionType.CAPITAL}>Modal</option>
           </select>
-          <button
-            onClick={() => setShowFormModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors whitespace-nowrap"
-          >
-            <Plus size={20} />
-            Tambah Transaksi
-          </button>
         </div>
-      </div>
 
-      {/* Transaction Table */}
-      <Card>
+        {/* Info Text */}
+        <div className="text-xs text-slate-500 mb-4">
+          Menampilkan {filteredTransactions.length} dari {transactions.length} transaksi
+        </div>
+
+        {/* Transaction Table */}
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead>
+            <thead className="bg-slate-50">
               <tr className="border-b border-slate-200">
                 <th className="text-left px-4 py-3 text-sm font-semibold text-slate-700">Tanggal</th>
                 <th className="text-left px-4 py-3 text-sm font-semibold text-slate-700">Kategori</th>
@@ -174,21 +183,15 @@ export const TransactionManager: React.FC<TransactionManagerProps> = ({
             </tbody>
           </table>
         </div>
-
-        {/* Item Count */}
-        {filteredTransactions.length > 0 && (
-          <div className="mt-4 pt-4 border-t border-slate-200 text-sm text-slate-500">
-            Menampilkan {filteredTransactions.length} dari {transactions.length} transaksi
-          </div>
-        )}
       </Card>
+
 
       {/* Add Transaction Modal */}
       {showFormModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
             <div className="sticky top-0 z-10 flex items-center justify-between p-4 border-b bg-white">
-              <h2 className="text-xl font-bold text-slate-800">
+              <h2 className="text-lg font-semibold text-slate-800">
                 Tambah Transaksi
               </h2>
               <button

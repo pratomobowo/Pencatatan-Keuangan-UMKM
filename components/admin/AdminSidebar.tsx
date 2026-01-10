@@ -6,7 +6,8 @@ import { ViewState } from '@/lib/types';
 import {
     LayoutDashboard, List, BrainCircuit, ShoppingCart, Package,
     Users as UsersIcon, Image as ImageIcon, Download, PieChart,
-    Calculator, LogOut, UserCog, User as UserIcon, Settings, Tags, Gift
+    Calculator, LogOut, UserCog, User as UserIcon, Settings, Tags, Gift,
+    MessageSquare
 } from 'lucide-react';
 import { AdminNotificationBell } from './AdminNotificationBell';
 
@@ -118,6 +119,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
 
                 <SectionLabel>Insight</SectionLabel>
                 <NavButton targetView="ANALYSIS" icon={BrainCircuit} label="Analisis Bisnis" />
+                <NavButton targetView="CHAT_LOGS" icon={MessageSquare} label="Chat Logs AI" />
             </nav>
 
             {/* Footer - Fixed */}

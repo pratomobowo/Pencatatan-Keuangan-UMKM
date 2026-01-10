@@ -411,7 +411,7 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
             {/* Header & Tools */}
             <div className="flex flex-col gap-4 mb-6">
               <div className="flex justify-between items-center">
-                <h3 className="text-lg font-medium text-slate-800">Katalog Produk & Stok</h3>
+                <h3 className="text-lg font-semibold text-slate-800">Katalog Produk & Stok</h3>
                 <div className="flex gap-2">
                   {/* Hidden File Input */}
                   <input
@@ -489,14 +489,14 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
 
             <div className="overflow-x-auto">
               <table className="w-full text-sm text-left text-slate-600">
-                <thead className="text-xs text-slate-500 uppercase bg-slate-50">
-                  <tr>
-                    <th className="px-4 py-3">Nama Produk</th>
-                    <th className="px-4 py-3 text-center">Stok</th>
-                    <th className="px-4 py-3 text-right">Harga Modal</th>
-                    <th className="px-4 py-3 text-right">Harga Jual</th>
-                    <th className="px-4 py-3 text-center">Margin</th>
-                    <th className="px-4 py-3 text-center">Aksi</th>
+                <thead className="bg-slate-50">
+                  <tr className="border-b border-slate-200">
+                    <th className="text-left px-4 py-3 text-sm font-semibold text-slate-700">Nama Produk</th>
+                    <th className="text-center px-4 py-3 text-sm font-semibold text-slate-700">Stok</th>
+                    <th className="text-right px-4 py-3 text-sm font-semibold text-slate-700">Harga Modal</th>
+                    <th className="text-right px-4 py-3 text-sm font-semibold text-slate-700">Harga Jual</th>
+                    <th className="text-center px-4 py-3 text-sm font-semibold text-slate-700">Margin</th>
+                    <th className="text-center px-4 py-3 text-sm font-semibold text-slate-700">Aksi</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -520,12 +520,12 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
                       const isLowStock = (p.stock || 0) <= 5;
 
                       return (
-                        <tr key={p.id} className="bg-white border-b hover:bg-slate-50">
+                        <tr key={p.id} className="border-b border-slate-100 hover:bg-slate-50/50 transition-colors">
                           <td className="px-4 py-3">
                             <div className="flex items-center gap-2">
                               <div className="font-medium text-slate-900">{p.name}</div>
                               {p.isPromo && (
-                                <span className="px-1.5 py-0.5 text-[10px] font-bold bg-orange-100 text-orange-600 rounded">
+                                <span className="px-1.5 py-0.5 text-[10px] font-medium bg-orange-100 text-orange-700 rounded">
                                   PROMO
                                 </span>
                               )}
@@ -647,7 +647,7 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
             <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
               <div className="sticky top-0 z-10 flex items-center justify-between p-4 border-b bg-white">
-                <h2 className="text-xl font-bold text-slate-800">
+                <h2 className="text-lg font-semibold text-slate-800">
                   {isEditing ? "Edit Produk" : "Tambah Produk Baru"}
                 </h2>
                 <button
@@ -680,7 +680,7 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
                         type="button"
                         onClick={handleGenerateDescription}
                         disabled={isGeneratingDescription || !formData.name}
-                        className="flex items-center gap-1.5 px-2 py-1 text-[10px] font-bold bg-orange-50 text-orange-600 rounded-md hover:bg-orange-100 transition-all border border-orange-200 disabled:opacity-50"
+                        className="flex items-center gap-1.5 px-2 py-1 text-[10px] font-medium bg-orange-50 text-orange-600 rounded-md hover:bg-orange-100 transition-all border border-orange-200 disabled:opacity-50"
                       >
                         {isGeneratingDescription ? (
                           <Loader2 size={12} className="animate-spin" />
@@ -959,7 +959,7 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
                     <span className="text-xs text-blue-700 font-medium flex items-center gap-1">
                       <TrendingUp size={14} /> Margin Laba
                     </span>
-                    <span className="text-sm font-bold text-blue-700">
+                    <span className="text-sm font-semibold text-blue-700">
                       {formatCurrency((formData.price || 0) - (formData.costPrice || 0))}
                     </span>
                   </div>
@@ -991,14 +991,17 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
 
       {/* Smart Restock Modal */}
       {restockProduct && (
-        <div className="fixed inset-0 bg-slate-900/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md animate-fade-in overflow-hidden">
-            <div className="bg-blue-600 px-6 py-4 flex justify-between items-center text-white">
-              <h3 className="font-semibold text-lg flex items-center gap-2">
-                <ShoppingBasket size={20} /> Belanja Stok Baru
-              </h3>
-              <button onClick={closeRestockModal} className="text-blue-100 hover:text-white">
-                <X size={24} />
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 z-10 flex items-center justify-between p-4 border-b bg-white">
+              <h2 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
+                <ShoppingBasket size={20} className="text-blue-600" /> Belanja Stok Baru
+              </h2>
+              <button
+                onClick={closeRestockModal}
+                className="p-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100 transition-colors"
+              >
+                <X size={20} />
               </button>
             </div>
 

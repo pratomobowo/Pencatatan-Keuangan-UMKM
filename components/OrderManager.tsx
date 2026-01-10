@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Order, OrderItem, Product, Customer, ShopOrderStatus } from '@/lib/types';
 import { Card } from './ui/Card';
-import { Plus, Search, X, Trash2, Eye, CheckCircle, XCircle, Printer, MessageSquare } from 'lucide-react';
+import { Plus, Search, X, Trash2, Eye, CheckCircle, XCircle, Printer, MessageSquare, ShoppingBag, Clock, Package } from 'lucide-react';
 
 interface OrderManagerProps {
   orders: Order[]; // All orders (MANUAL + ONLINE)
@@ -218,6 +218,11 @@ export const OrderManager: React.FC<OrderManagerProps> = ({
     }
   };
 
+  const totalOrders = orders.length;
+  const unprocessedOrdersCount = orders.filter(o => ['PENDING', 'CONFIRMED'].includes(o.status)).length;
+  const inProcessOrdersCount = orders.filter(o => ['PREPARING', 'SHIPPING'].includes(o.status)).length;
+  const completedOrdersCount = orders.filter(o => ['DELIVERED'].includes(o.status)).length;
+
   const filteredOrders = orders
     .filter(o => statusFilter === 'ALL' || o.status === statusFilter)
     .filter(o =>
@@ -229,6 +234,61 @@ export const OrderManager: React.FC<OrderManagerProps> = ({
 
   return (
     <div className="space-y-6">
+      {/* Summary Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Total Orders */}
+        <Card className="p-0 overflow-hidden border-none shadow-sm group">
+          <div className="bg-indigo-600 p-4 sm:p-5 flex items-center justify-between text-white transition-all hover:brightness-105">
+            <div>
+              <p className="text-indigo-100 text-[11px] font-medium uppercase tracking-wider">Order Masuk</p>
+              <h3 className="text-2xl sm:text-3xl font-semibold mt-1.5">{totalOrders}</h3>
+            </div>
+            <div className="bg-white/10 p-2.5 rounded-xl backdrop-blur-md border border-white/20">
+              <ShoppingBag className="text-white" size={24} />
+            </div>
+          </div>
+        </Card>
+
+        {/* Unprocessed */}
+        <Card className="p-0 overflow-hidden border-none shadow-sm group">
+          <div className="bg-orange-500 p-4 sm:p-5 flex items-center justify-between text-white transition-all hover:brightness-105">
+            <div>
+              <p className="text-orange-50 text-[11px] font-medium uppercase tracking-wider">Belum Diproses</p>
+              <h3 className="text-2xl sm:text-3xl font-semibold mt-1.5">{unprocessedOrdersCount}</h3>
+            </div>
+            <div className="bg-white/10 p-2.5 rounded-xl backdrop-blur-md border border-white/20">
+              <Clock className="text-white" size={24} />
+            </div>
+          </div>
+        </Card>
+
+        {/* In Process */}
+        <Card className="p-0 overflow-hidden border-none shadow-sm group">
+          <div className="bg-blue-500 p-4 sm:p-5 flex items-center justify-between text-white transition-all hover:brightness-105">
+            <div>
+              <p className="text-blue-50 text-[11px] font-medium uppercase tracking-wider">Sedang Diproses</p>
+              <h3 className="text-2xl sm:text-3xl font-semibold mt-1.5">{inProcessOrdersCount}</h3>
+            </div>
+            <div className="bg-white/10 p-2.5 rounded-xl backdrop-blur-md border border-white/20">
+              <Package className="text-white" size={24} />
+            </div>
+          </div>
+        </Card>
+
+        {/* Completed */}
+        <Card className="p-0 overflow-hidden border-none shadow-sm group">
+          <div className="bg-emerald-500 p-4 sm:p-5 flex items-center justify-between text-white transition-all hover:brightness-105">
+            <div>
+              <p className="text-emerald-50 text-[11px] font-medium uppercase tracking-wider">Selesai</p>
+              <h3 className="text-2xl sm:text-3xl font-semibold mt-1.5">{completedOrdersCount}</h3>
+            </div>
+            <div className="bg-white/10 p-2.5 rounded-xl backdrop-blur-md border border-white/20">
+              <CheckCircle className="text-white" size={24} />
+            </div>
+          </div>
+        </Card>
+      </div>
+
       {/* Orders Table */}
       <Card>
         {/* Search and Filters - Inside Card */}

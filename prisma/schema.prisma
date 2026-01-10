@@ -145,6 +145,7 @@ model Customer {
   tier          String         @default("BRONZE") // BRONZE, SILVER, GOLD
   pointTransactions PointTransaction[]
   vouchers      Voucher[]
+  chatConversations AIChatConversation[]
 
   @@index([phone])
   @@index([email])
@@ -422,4 +423,33 @@ model LoyaltyConfig {
   multiplierSilver  Decimal  @default(1.2) @db.Decimal(3, 2)
   multiplierGold    Decimal  @default(1.5) @db.Decimal(3, 2)
   updatedAt         DateTime @updatedAt
+}
+
+model AIChatConversation {
+  id          String            @id @default(uuid())
+  customerId  String?
+  visitorId   String?           // For anonymous tracking
+  title       String?
+  metadata    Json?             @default("{}")
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  messages    AIChatMessage[]
+  customer    Customer?         @relation(fields: [customerId], references: [id], onDelete: SetNull)
+
+  @@index([customerId])
+  @@index([visitorId])
+  @@index([createdAt])
+}
+
+model AIChatMessage {
+  id             String             @id @default(uuid())
+  conversationId String
+  role           String             // system, user, assistant
+  content        String
+  metadata       Json?              @default("{}")
+  createdAt      DateTime           @default(now())
+  conversation   AIChatConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+  @@index([createdAt])
 }

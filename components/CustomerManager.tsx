@@ -91,34 +91,46 @@ export const CustomerManager: React.FC<CustomerManagerProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <div className="flex-1 max-w-md">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" size={20} />
+      {/* Customer Table Card */}
+      <Card>
+        {/* Action Bar */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+          <div>
+            <h3 className="text-lg font-semibold text-slate-800">Data Pelanggan</h3>
+            <p className="text-xs text-slate-500 mt-0.5">Kelola data pelanggan POS dan Online.</p>
+          </div>
+          <button
+            onClick={() => handleOpenModal()}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+          >
+            <Plus size={16} />
+            Tambah Pelanggan
+          </button>
+        </div>
+
+        {/* Filter/Search Bar */}
+        <div className="flex flex-col sm:flex-row gap-3 mb-6">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
             <input
               type="text"
               placeholder="Cari nama, telepon, atau email..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
         </div>
-        <button
-          onClick={() => handleOpenModal()}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          <Plus size={20} />
-          Tambah Pelanggan
-        </button>
-      </div>
 
-      {/* Customer Table */}
-      <Card>
+        {/* Info Text */}
+        <div className="text-xs text-slate-500 mb-4">
+          Menampilkan {filteredCustomers.length} dari {customers.length} pelanggan
+        </div>
+
+        {/* Table */}
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead>
+            <thead className="bg-slate-50">
               <tr className="border-b border-slate-200">
                 <th className="text-left px-4 py-3 text-sm font-semibold text-slate-700">Nama</th>
                 <th className="text-left px-4 py-3 text-sm font-semibold text-slate-700">Kontak</th>
@@ -141,7 +153,7 @@ export const CustomerManager: React.FC<CustomerManagerProps> = ({
                   <tr key={customer.id} className="border-b border-slate-100 hover:bg-slate-50/50 transition-colors">
                     <td className="p-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
+                        <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-semibold">
                           {customer.name.charAt(0).toUpperCase()}
                         </div>
                         <div>
@@ -213,7 +225,7 @@ export const CustomerManager: React.FC<CustomerManagerProps> = ({
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
             <div className="sticky top-0 z-10 flex items-center justify-between p-4 border-b bg-white">
-              <h2 className="text-xl font-bold text-slate-800">
+              <h2 className="text-lg font-semibold text-slate-800">
                 {isEditing ? 'Edit Pelanggan' : 'Tambah Pelanggan'}
               </h2>
               <button
@@ -234,7 +246,7 @@ export const CustomerManager: React.FC<CustomerManagerProps> = ({
                   required
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="Nama pelanggan"
                 />
               </div>
@@ -247,7 +259,7 @@ export const CustomerManager: React.FC<CustomerManagerProps> = ({
                   type="tel"
                   value={formData.phone || ''}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="08xxxxxxxxxx"
                 />
               </div>
@@ -260,7 +272,7 @@ export const CustomerManager: React.FC<CustomerManagerProps> = ({
                   type="email"
                   value={formData.email || ''}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="email@example.com"
                 />
               </div>
@@ -272,7 +284,7 @@ export const CustomerManager: React.FC<CustomerManagerProps> = ({
                 <textarea
                   value={formData.address || ''}
                   onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   rows={3}
                   placeholder="Alamat lengkap"
                 />
@@ -285,7 +297,7 @@ export const CustomerManager: React.FC<CustomerManagerProps> = ({
                 <textarea
                   value={formData.notes || ''}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   rows={2}
                   placeholder="Catatan tambahan"
                 />

@@ -131,6 +131,7 @@ export default function AIChatbot() {
     ]);
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [conversationId, setConversationId] = useState<string | null>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     const scrollToBottom = () => {
@@ -157,6 +158,7 @@ export default function AIChatbot() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
+                    conversationId,
                     messages: [...messages, { role: 'user', content: userMessage }].map(m => ({
                         role: m.role,
                         content: m.content
@@ -168,6 +170,7 @@ export default function AIChatbot() {
 
             if (!response.ok) throw new Error(data.error || 'Gagal tersambung ke Minsar');
 
+            if (data.conversationId) setConversationId(data.conversationId);
             setMessages(prev => [...prev, { role: 'assistant', content: data.response }]);
         } catch (error: any) {
             setMessages(prev => [...prev, { role: 'assistant', content: `Maaf Puh, sepertinya Minsar lagi gangguan: ${error.message}` }]);
