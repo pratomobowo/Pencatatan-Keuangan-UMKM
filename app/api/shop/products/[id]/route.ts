@@ -30,6 +30,7 @@ export async function GET(
                         color: true
                     }
                 },
+                isActive: true,
             },
         });
 
