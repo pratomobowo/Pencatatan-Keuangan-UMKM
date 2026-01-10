@@ -18,6 +18,7 @@ interface ProductCardProps {
     image: string;
     badge?: string;
     isGrid?: boolean; // For grid layout (full width)
+    layout?: 'grid' | 'horizontal';
     variants?: ProductVariant[];
 }
 
@@ -32,10 +33,14 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     image,
     badge,
     isGrid = false,
+    layout = 'grid',
     variants = []
 }) => {
     const { addItem } = useCart();
     const [added, setAdded] = useState(false);
+
+    // Final layout decision: if explicit layout is provided use it, otherwise use isGrid
+    const currentLayout = layout === 'horizontal' ? 'horizontal' : 'grid';
 
     // Find the cheapest variant
     const selectedVariant = useMemo(() => {
@@ -59,6 +64,65 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         setAdded(true);
         setTimeout(() => setAdded(false), 1500);
     };
+
+    if (currentLayout === 'horizontal') {
+        return (
+            <div className="flex bg-white rounded-2xl overflow-hidden border border-orange-50 shadow-sm relative group w-full h-32">
+                {/* Product Image - Left */}
+                <Link href={`/products/${slug || id}`} className="relative w-32 shrink-0 bg-gray-50 border-r border-orange-50 overflow-hidden">
+                    {discount && (
+                        <div className="absolute top-2 left-2 bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow-sm z-10">
+                            {discount}%
+                        </div>
+                    )}
+                    <Image
+                        src={image}
+                        alt={name}
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                </Link>
+
+                {/* Product Info - Right */}
+                <div className="flex-1 p-3 flex flex-col justify-between min-w-0">
+                    <div className="space-y-0.5">
+                        <Link href={`/products/${slug || id}`}>
+                            <h3 className="text-sm font-bold text-stone-900 truncate">{name}</h3>
+                        </Link>
+                        <p className="text-[10px] text-stone-500 font-medium tracking-wide flex items-center gap-1.5">
+                            <span className="bg-stone-50 px-1.5 py-0.5 rounded">Per {currentUnit}</span>
+                        </p>
+                    </div>
+
+                    <div className="flex items-end justify-between gap-2">
+                        <div className="flex flex-col">
+                            {originalPrice && (
+                                <span className="text-[10px] text-stone-400 line-through">
+                                    Rp {originalPrice.toLocaleString('id-ID')}
+                                </span>
+                            )}
+                            <span className="text-base font-bold text-orange-600">
+                                Rp {currentPrice.toLocaleString('id-ID')}
+                            </span>
+                        </div>
+
+                        <button
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleAddToCart();
+                            }}
+                            className={`h-9 px-4 rounded-xl text-white text-xs font-bold active:scale-95 transition-all shadow-sm flex items-center justify-center gap-1.5 ${added ? 'bg-green-500' : 'bg-orange-500 hover:bg-orange-600'
+                                }`}
+                        >
+                            {added ? <Check size={16} /> : <Plus size={16} />}
+                            <span className="hidden xs:inline">{added ? 'Beres' : 'Beli'}</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className={`flex flex-col bg-white rounded-xl overflow-hidden border border-orange-50 shadow-sm relative group ${isGrid ? 'w-full' : 'min-w-[160px] w-[160px] shrink-0'}`}>

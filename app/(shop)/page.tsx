@@ -206,7 +206,7 @@ export default function ShopHomepage() {
                         <p className="text-stone-400 text-sm">Belum ada produk untuk ditampilkan</p>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="flex flex-col gap-4">
                         {products.map((product, index) => {
                             const isLast = products.length === index + 1;
                             return (
@@ -220,7 +220,7 @@ export default function ShopHomepage() {
                                         originalPrice={product.originalPrice || undefined}
                                         discount={product.discount || undefined}
                                         image={product.image || DEFAULT_IMAGE}
-                                        isGrid={true}
+                                        layout="horizontal"
                                         variants={product.variants}
                                     />
                                 </div>
