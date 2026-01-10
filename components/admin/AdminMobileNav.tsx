@@ -3,6 +3,7 @@
 import React from 'react';
 import { ViewState } from '@/lib/types';
 import { LayoutDashboard, ShoppingCart, Package, List, Menu, X } from 'lucide-react';
+import { AdminNotificationBell } from './AdminNotificationBell';
 
 interface AdminMobileNavProps {
     view: ViewState;
@@ -35,12 +36,15 @@ export const AdminMobileNav: React.FC<AdminMobileNavProps> = ({
                         <span className="text-[10px] text-slate-500">Admin Dashboard</span>
                     </div>
                 </div>
-                <button
-                    onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                    className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
-                >
-                    {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-                </button>
+                <div className="flex items-center gap-1">
+                    <AdminNotificationBell onViewOrder={() => handleNav('ORDERS')} />
+                    <button
+                        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                        className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+                    >
+                        {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                    </button>
+                </div>
             </header>
 
             {/* Mobile Overlay */}

@@ -8,6 +8,7 @@ import {
     Users as UsersIcon, Image as ImageIcon, Download, PieChart,
     Calculator, LogOut, UserCog, User as UserIcon, Settings, Tags
 } from 'lucide-react';
+import { AdminNotificationBell } from './AdminNotificationBell';
 
 interface AdminSidebarProps {
     view: ViewState;
@@ -62,13 +63,18 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
             lg:top-0
         `}>
             {/* Logo Header - Fixed */}
-            <div className="p-6 flex items-center gap-3 border-b border-slate-100 flex-shrink-0">
-                <div className="w-10 h-10 bg-blue-600 rounded-lg shadow-sm flex items-center justify-center">
-                    <span className="text-white font-semibold text-lg tracking-tight">PA</span>
+            <div className="p-6 flex items-center justify-between border-b border-slate-100 flex-shrink-0">
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-blue-600 rounded-lg shadow-sm flex items-center justify-center">
+                        <span className="text-white font-semibold text-lg tracking-tight">PA</span>
+                    </div>
+                    <div>
+                        <h1 className="font-semibold text-lg leading-none text-slate-900">Pasarantar</h1>
+                        <span className="text-xs text-slate-500">Keuangan & Stok</span>
+                    </div>
                 </div>
-                <div>
-                    <h1 className="font-semibold text-lg leading-none text-slate-900">Pasarantar</h1>
-                    <span className="text-xs text-slate-500">Keuangan & Stok</span>
+                <div className="hidden lg:block">
+                    <AdminNotificationBell onViewOrder={() => handleNav('ORDERS')} />
                 </div>
             </div>
 
