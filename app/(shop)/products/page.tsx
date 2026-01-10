@@ -230,7 +230,7 @@ function ProductsContent() {
                         <div className="flex items-center justify-between mb-4 px-1">
                             <p className="text-[10px] font-bold text-stone-400 uppercase tracking-[0.1em]">{total} Produk Tersedia</p>
                         </div>
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="flex flex-col gap-4">
                             {products.map((product, index) => {
                                 const isLast = products.length === index + 1;
                                 return (
@@ -244,7 +244,8 @@ function ProductsContent() {
                                             originalPrice={product.originalPrice || undefined}
                                             discount={product.discount || undefined}
                                             image={product.image || DEFAULT_IMAGE}
-                                            isGrid={true}
+                                            description={product.description || undefined}
+                                            layout="horizontal"
                                             variants={product.variants}
                                         />
                                     </div>

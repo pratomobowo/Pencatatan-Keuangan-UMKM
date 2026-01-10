@@ -112,16 +112,17 @@ export default function FavoritesPage() {
                         </Link>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="flex flex-col gap-4">
                         {products.map((product) => (
                             <ProductCard
                                 key={product.id}
                                 id={product.id}
                                 name={product.name}
                                 image={product.image}
+                                description={product.description}
                                 price={Number(product.price)}
                                 unit={product.unit}
-                                isGrid={true}
+                                layout="horizontal"
                                 variants={product.variants}
                             />
                         ))}
