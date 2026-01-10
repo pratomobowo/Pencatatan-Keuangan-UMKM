@@ -3,6 +3,7 @@ import { BottomNav } from '@/components/shop/BottomNav';
 import { CartProvider } from '@/contexts/CartContext';
 import { ShopAuthProvider } from '@/contexts/ShopAuthContext';
 import AIChatbot from '@/components/shop/AIChatbot';
+import MarketingPopup from '@/components/shop/MarketingPopup';
 import { prisma } from '@/lib/prisma';
 import { Suspense } from 'react';
 
@@ -20,6 +21,7 @@ export default function ShopLayout({
                 </main>
                 <BottomNav />
                 <AIChatbot />
+                <MarketingPopup />
             </div>
         </div>
     );

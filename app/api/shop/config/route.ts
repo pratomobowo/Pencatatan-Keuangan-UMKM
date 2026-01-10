@@ -55,6 +55,13 @@ export async function GET() {
             holidayMode: config.holidayMode,
             holidayMessage: config.holidayMessage,
             faq: JSON.parse(config.faq || '[]'),
+            // Marketing Popup
+            popupEnabled: config.popupEnabled,
+            popupImage: config.popupImage,
+            popupTitle: config.popupTitle,
+            popupLink: config.popupLink,
+            popupShowOnce: config.popupShowOnce,
+            popupDelay: config.popupDelay,
         });
     } catch (error) {
         console.error('Error fetching public shop config:', error);

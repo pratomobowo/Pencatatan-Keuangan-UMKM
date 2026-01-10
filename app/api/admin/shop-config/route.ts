@@ -90,6 +90,14 @@ export async function POST(request: Request) {
                 faq: typeof data.faq === 'string'
                     ? data.faq
                     : JSON.stringify(data.faq || []),
+
+                // Marketing Popup (Tab 7)
+                popupEnabled: data.popupEnabled || false,
+                popupImage: data.popupImage,
+                popupTitle: data.popupTitle,
+                popupLink: data.popupLink,
+                popupShowOnce: data.popupShowOnce !== false,
+                popupDelay: data.popupDelay || 2000,
             },
             create: {
                 id: 'global',

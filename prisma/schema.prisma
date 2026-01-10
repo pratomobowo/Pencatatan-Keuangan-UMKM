@@ -304,6 +304,14 @@ model ShopConfig {
   // FAQ (Tab 6)
   faq                  String   @default("[]")
   
+  // Marketing Popup (Tab 7)
+  popupEnabled         Boolean  @default(false)
+  popupImage           String?
+  popupTitle           String?
+  popupLink            String?  // Optional link when popup clicked
+  popupShowOnce        Boolean  @default(true) // Show only once per session
+  popupDelay           Int      @default(2000) // Delay in ms before showing
+  
   updatedAt            DateTime @updatedAt
 }
 
