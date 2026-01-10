@@ -42,16 +42,12 @@ export default function LoginPage() {
         <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-50 flex items-center justify-center p-4">
             <div className="w-full max-w-md">
                 {/* Logo & Title */}
-                <div className="text-center mb-10">
-                    <div className="relative inline-flex items-center justify-center w-72 h-32 bg-white rounded-3xl shadow-2xl mb-6 overflow-hidden p-2">
-                        <Image
-                            src="/logo.webp"
-                            alt="Pasarantar Logo"
-                            fill
-                            className="object-contain p-2"
-                        />
+                <div className="text-center mb-8">
+                    <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-2xl shadow-lg mb-4">
+                        <span className="text-white font-bold text-2xl">PA</span>
                     </div>
-                    <p className="text-slate-600 font-medium">Sistem Manajemen Keuangan & Stok</p>
+                    <h1 className="text-3xl font-bold text-slate-900 mb-2">Pasarantar Finance</h1>
+                    <p className="text-slate-600">Sistem Manajemen Keuangan & Stok</p>
                 </div>
 
                 {/* Login Card */}

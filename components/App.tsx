@@ -326,14 +326,13 @@ const App: React.FC = () => {
             {/* Sidebar Navigation - LIGHT THEME */}
             <aside className="w-full md:w-64 bg-white text-slate-800 flex-shrink-0 md:h-screen sticky top-0 z-50 border-r border-slate-200 shadow-sm flex flex-col justify-between">
                 <div>
-                    <div className="p-8 flex items-center justify-center border-b border-slate-100">
-                        <div className="relative w-56 h-20 shrink-0">
-                            <Image
-                                src="/logo.webp"
-                                alt="Pasarantar Logo"
-                                fill
-                                className="object-contain"
-                            />
+                    <div className="p-6 flex items-center gap-3 border-b border-slate-100">
+                        <div className="w-10 h-10 bg-blue-600 rounded-lg shadow-sm flex items-center justify-center">
+                            <span className="text-white font-semibold text-lg tracking-tight">PA</span>
+                        </div>
+                        <div>
+                            <h1 className="font-semibold text-lg leading-none text-slate-900">Pasarantar</h1>
+                            <span className="text-xs text-slate-500">Keuangan & Stok</span>
                         </div>
                     </div>
 
