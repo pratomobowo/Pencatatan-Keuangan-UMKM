@@ -179,7 +179,7 @@ export default function CartPage() {
             {/* Note Editor Modal */}
             {editingNoteId && (
                 <div className="fixed inset-0 z-50 bg-black/50 flex items-end">
-                    <div className="w-full max-w-md mx-auto bg-white rounded-t-3xl p-6 pb-8 animate-slide-up">
+                    <div className="w-full max-w-md mx-auto bg-white rounded-t-3xl p-6 pb-24 animate-slide-up">
                         <div className="flex items-center justify-between mb-4">
                             <h3 className="text-lg font-bold text-stone-900">Catatan Produk</h3>
                             <button
