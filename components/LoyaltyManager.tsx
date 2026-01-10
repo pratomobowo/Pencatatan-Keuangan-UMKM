@@ -178,7 +178,7 @@ export const LoyaltyManager: React.FC = () => {
                         <Award size={24} />
                     </div>
                     <div className="space-y-1">
-                        <p className="text-[10px] text-blue-600 font-medium uppercase tracking-wider">Sistem Poin</p>
+                        <p className="text-[10px] pt-2 text-blue-600 font-medium uppercase tracking-wider">Sistem Poin</p>
                         <p className="text-lg font-semibold text-slate-800 tracking-tight">Aktif</p>
                     </div>
                 </Card>
@@ -187,7 +187,7 @@ export const LoyaltyManager: React.FC = () => {
                         <Star size={24} />
                     </div>
                     <div className="space-y-1">
-                        <p className="text-[10px] text-orange-600 font-medium uppercase tracking-wider">Kurs Poin</p>
+                        <p className="text-[10px] pt-2 text-orange-600 font-medium uppercase tracking-wider">Kurs Poin</p>
                         <p className="text-lg font-semibold text-slate-800 tracking-tight">10rb = 1 Poin</p>
                     </div>
                 </Card>
@@ -196,7 +196,7 @@ export const LoyaltyManager: React.FC = () => {
                         <Gift size={24} />
                     </div>
                     <div className="space-y-1">
-                        <p className="text-[10px] text-emerald-600 font-medium uppercase tracking-wider">Katalog Hadiah</p>
+                        <p className="text-[10px] pt-2  text-emerald-600 font-medium uppercase tracking-wider">Katalog Hadiah</p>
                         <p className="text-lg font-semibold text-slate-800 tracking-tight">{rewards.length} Item</p>
                     </div>
                 </Card>
@@ -205,7 +205,7 @@ export const LoyaltyManager: React.FC = () => {
                         <TrendingUp size={24} />
                     </div>
                     <div className="space-y-1">
-                        <p className="text-[10px] text-purple-600 font-medium uppercase tracking-wider">Tier Multiplier</p>
+                        <p className="text-[10px] pt-2 text-purple-600 font-medium uppercase tracking-wider">Tier Multiplier</p>
                         <p className="text-lg font-semibold text-slate-800 tracking-tight">Up to 1.5x</p>
                     </div>
                 </Card>
