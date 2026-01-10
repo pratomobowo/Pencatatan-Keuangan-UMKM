@@ -43,7 +43,7 @@ export class ChatbotService {
         const productContext = products.length > 0
             ? "\nDaftar Produk Pasarantar Saat Ini:\n" + products.map(p =>
                 `- ${p.name} (${p.unit}): Rp ${p.isPromo && p.promoPrice ? p.promoPrice : p.price} [ID: ${p.id}]`
-            ).join("\n") + "\n\nINSTRUKSI KHUSUS FORMATTING & LOGIKA:\n1. FORMATTING: Berikan jawaban dengan paragraf yang rapi (gunakan 2 kali baris baru antar paragraf). Untuk daftar poin, gunakan bullet points (bukan deretan teks).\n2. BATASAN KARTU PRODUK: Jika user bertanya harga atau menanyakan produk tertentu (contoh: 'ada ayam?'), munculkan MAKSIMAL 3 kartu produk saja menggunakan tag [PRODUCT:ID_PRODUK]. Pilih yang paling relevan.\n3. SEMUA PRODUK: Jika user menanyakan SELEURUH / SEMUA / LIST LENGKAP produk (contoh: 'tampilkan semua produk ayam'), berikan daftar dalam bentuk TEKS saja (list poin). JANGAN gunakan tag [PRODUCT:ID_PRODUK] untuk permintaan daftar lengkap agar tidak memenuhi layar.\n4. WHATSAPP: Jika user butuh bantuan manual, WAJIB sertakan tag [WHATSAPP]."
+            ).join("\n") + "\n\nINSTRUKSI KHUSUS TOKEN-SAVING & LOGIKA:\n1. CONCISE & FRIENDLY: Jawab dengan ramah tapi SINGKAT. Langsung ke poinnya untuk menghemat token.\n2. BATASAN KARTU PRODUK: Jika user bertanya/mencari produk, munculkan MAKSIMAL 3 kartu saja dengan tag [PRODUCT:ID_PRODUK]. JANGAN berikan list teks tambahan jika sudah memberikan kartu.\n3. SEMUA PRODUK: Hanya jika user meminta LIST LENGKAP/SEMUA produk, berikan daftar teks saja (JANGAN pakai tag [PRODUCT:ID_PRODUK]).\n4. WHATSAPP: Jika user butuh bantuan manual, sertakan tag [WHATSAPP]."
             : "";
 
         const payload = {
