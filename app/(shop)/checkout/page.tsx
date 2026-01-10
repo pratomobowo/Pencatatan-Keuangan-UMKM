@@ -458,6 +458,23 @@ export default function CheckoutPage() {
                             <Link href="/settings" className="block w-full py-3 border-2 border-dashed border-gray-200 rounded-xl text-center text-sm font-medium text-gray-500 hover:bg-gray-50">
                                 + Tambah Alamat Baru
                             </Link>
+
+                            {/* Distance display for logged-in users */}
+                            {selectedAddress && shippingData.distance !== null && !shippingData.error && (
+                                <div className="mt-4 bg-emerald-50 border border-emerald-100 p-3 rounded-lg text-sm text-emerald-800 flex flex-col gap-1">
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-emerald-700">📍 Jarak: <strong>{shippingData.distance.toFixed(1)} km</strong></span>
+                                        {shippingData.isFreeShipping && <span className="bg-emerald-500 text-white px-2 py-0.5 rounded-full text-xs font-bold">GRATIS ONGKIR</span>}
+                                    </div>
+                                </div>
+                            )}
+
+                            {selectedAddress && shippingData.error && (
+                                <div className="mt-4 bg-rose-50 border border-rose-200 p-3 rounded-lg flex items-start gap-2 text-sm text-rose-700">
+                                    <AlertCircle size={16} className="shrink-0 mt-0.5" />
+                                    <span>{shippingData.error}</span>
+                                </div>
+                            )}
                         </div>
                     ) : (
                         <div className="bg-white p-4 rounded-xl border border-gray-100 space-y-4 shadow-sm">
