@@ -85,6 +85,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
     const clearCart = () => {
         setItems([]);
+        if (typeof window !== 'undefined') {
+            localStorage.removeItem('pasarantar-cart');
+        }
     };
 
     const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
