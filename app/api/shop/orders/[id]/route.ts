@@ -111,9 +111,7 @@ export async function GET(
             recipientPhone: order.recipientPhone || order.customerPhone || '-',
             shippingAddress: order.shippingAddress || order.customerAddress || '-',
             deliveryTime: order.deliveryTime,
-            paymentMethod: order.paymentMethod === 'cod'
-                ? 'COD (Bayar di Tempat)'
-                : 'Transfer Bank',
+            paymentMethod: order.paymentMethod,
         };
 
         return NextResponse.json(transformed);

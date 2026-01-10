@@ -279,9 +279,29 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                     </div>
                     <div className="mt-3 pt-3 border-t border-gray-100">
                         <p className="text-sm text-gray-500">Metode Pembayaran</p>
-                        <p className="font-medium text-stone-900 uppercase">
-                            {order.paymentMethod === 'cod' ? 'Bayar di Tempat (COD)' : order.paymentMethod.replace('transfer-', 'Transfer ')}
-                        </p>
+                        <div className="flex flex-col">
+                            {(() => {
+                                if (order.paymentMethod === 'cod') return <p className="font-medium text-stone-900 uppercase">Bayar di Tempat (COD)</p>;
+
+                                const idx = order.paymentMethod.startsWith('transfer-') ? parseInt(order.paymentMethod.split('-')[1]) : -1;
+                                const method = idx >= 0 ? shopConfig?.paymentMethods?.[idx] : null;
+
+                                return (
+                                    <>
+                                        <p className="font-medium text-stone-900 uppercase">
+                                            {method ? `Transfer ${method.name}` : order.paymentMethod.replace('transfer-', 'Transfer ')}
+                                        </p>
+                                        {method && (
+                                            <div className="mt-1">
+                                                <p className="text-xs text-stone-500 font-mono italic">
+                                                    ({method.details.split('\n')[0]})
+                                                </p>
+                                            </div>
+                                        )}
+                                    </>
+                                );
+                            })()}
+                        </div>
                     </div>
                 </div>
 
