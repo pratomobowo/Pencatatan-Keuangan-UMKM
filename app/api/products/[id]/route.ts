@@ -50,10 +50,39 @@ export async function PUT(
     try {
         const { id } = await params;
         const body = await request.json();
-        const { variants, category, ...productData } = body;
+        console.log('PUT /api/products/[id] - Body:', body);
+        const { variants, category, ...rawData } = body;
 
-        // Remove 'category' relation field if it's sent as a string/null from old frontend
-        // it should be categoryId and categoryName now.
+        // Whitelist allowed fields for product update
+        const allowedFields = [
+            'sku', 'name', 'slug', 'description', 'price', 'costPrice',
+            'stock', 'unit', 'image', 'categoryName', 'categoryId',
+            'isActive', 'isPromo', 'promoPrice', 'promoDiscount',
+            'promoStartDate', 'promoEndDate'
+        ];
+
+        const productData: any = {};
+        allowedFields.forEach(field => {
+            if (rawData[field] !== undefined) {
+                productData[field] = rawData[field];
+            }
+        });
+
+        // Ensure numeric fields are actually numbers/Decimals
+        if (productData.price !== undefined) productData.price = Number(productData.price);
+        if (productData.costPrice !== undefined) productData.costPrice = Number(productData.costPrice);
+        if (productData.promoPrice !== undefined) productData.promoPrice = Number(productData.promoPrice);
+        if (productData.promoDiscount !== undefined) productData.promoDiscount = Number(productData.promoDiscount);
+        if (productData.stock !== undefined) productData.stock = Number(productData.stock);
+
+        // Fix: Convert empty categoryId to null to avoid foreign key constraint violation
+        if (productData.categoryId === '') {
+            productData.categoryId = null;
+        }
+
+        // Ensure date fields are Date objects
+        if (productData.promoStartDate) productData.promoStartDate = new Date(productData.promoStartDate);
+        if (productData.promoEndDate) productData.promoEndDate = new Date(productData.promoEndDate);
 
         // If name is changed, update slug
         if (productData.name) {
@@ -72,6 +101,7 @@ export async function PUT(
             productData.slug = finalSlug;
         }
 
+
         // Update product data
         const product = await prisma.product.update({
             where: { id },
@@ -80,6 +110,7 @@ export async function PUT(
                 variants: true
             }
         });
+
 
         // If variants are provided, sync them
         if (variants && Array.isArray(variants)) {
