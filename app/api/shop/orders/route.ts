@@ -198,6 +198,7 @@ export async function POST(request: NextRequest) {
                         qty: item.quantity,
                         unit: item.unit || 'pcs',
                         price: item.price,
+                        originalPrice: item.originalPrice || item.price,
                         costPrice: item.costPrice || 0, // Fallback
                         total: item.price * item.quantity,
                     })),

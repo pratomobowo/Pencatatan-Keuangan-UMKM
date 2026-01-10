@@ -40,7 +40,7 @@ interface ShippingData {
 
 export default function CheckoutPage() {
     const router = useRouter();
-    const { items, subtotal, clearCart } = useCart();
+    const { items, subtotal, totalSavings, clearCart } = useCart();
     const { isAuthenticated, isLoading: authLoading } = useShopAuth();
     const { addNotification } = useNotifications();
 
@@ -322,6 +322,7 @@ export default function CheckoutPage() {
                     variant: item.variant,
                     quantity: item.quantity,
                     price: item.price,
+                    originalPrice: item.originalPrice || item.price,
                 })),
                 addressLabel: isAuthenticated ? selectedAddress?.label : 'Guest Order',
                 addressName: isAuthenticated ? selectedAddress?.name : guestInfo.name,
@@ -627,8 +628,14 @@ export default function CheckoutPage() {
                     <div className="space-y-2 text-sm">
                         <div className="flex justify-between">
                             <span className="text-gray-600">Subtotal Produk</span>
-                            <span className="font-medium">Rp {subtotal.toLocaleString('id-ID')}</span>
+                            <span className="font-medium">Rp {(subtotal + totalSavings).toLocaleString('id-ID')}</span>
                         </div>
+                        {totalSavings > 0 && (
+                            <div className="flex justify-between">
+                                <span className="text-emerald-600 font-medium italic">Hemat Promo</span>
+                                <span className="font-medium text-emerald-600">- Rp {totalSavings.toLocaleString('id-ID')}</span>
+                            </div>
+                        )}
                         <div className="flex justify-between">
                             <span className="text-gray-600">Biaya Pengiriman</span>
                             {shippingData.requiresManualConfirmation ? (

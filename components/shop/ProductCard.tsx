@@ -53,6 +53,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             name,
             variant: currentUnit,
             price: currentPrice,
+            originalPrice: originalPrice || currentPrice,
             image,
         });
         setAdded(true);

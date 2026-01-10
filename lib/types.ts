@@ -80,6 +80,7 @@ export interface Product {
   description?: string; // Short product description
   unit: string; // kg, pack, ekor (default unit)
   price: number; // Base selling price
+  originalPrice?: number; // Added
   costPrice: number; // Base cost price (HPP)
   stock: number; // Current inventory quantity
   image?: string; // Product image URL
@@ -99,7 +100,7 @@ export interface Product {
 // Shop Product Type (Extended with display fields)
 export interface ShopProduct extends Product {
   displayPrice: number;
-  originalPrice?: number | null;
+  originalPrice?: number;
   discount?: number | null;
   isPromoActive?: boolean;
 }
@@ -145,6 +146,7 @@ export interface OrderItem {
   qty: number;
   unit: string; // kg, pack, gram
   price: number; // Selling Price
+  originalPrice?: number; // Added for discount tracking
   costPrice?: number; // Snapshot of cost price at time of order
   total: number;
 }

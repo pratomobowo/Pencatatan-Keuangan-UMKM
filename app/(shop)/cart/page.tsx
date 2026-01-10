@@ -6,7 +6,7 @@ import { ArrowLeft, Trash2, Minus, Plus, ArrowRight } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 
 export default function CartPage() {
-    const { items: cartItems, removeItem, updateQuantity, itemCount, subtotal } = useCart();
+    const { items: cartItems, removeItem, updateQuantity, itemCount, subtotal, totalSavings } = useCart();
 
     const handleQuantityChange = (id: string, variant: string, delta: number) => {
         const item = cartItems.find(i => i.id === id && i.variant === variant);
@@ -97,9 +97,14 @@ export default function CartPage() {
                     <h3 className="text-stone-900 text-lg font-bold mb-4">Rincian Pembayaran</h3>
                     <div className="flex flex-col gap-3">
                         <div className="flex justify-between items-center text-sm">
-                            <span className="text-gray-600">Subtotal Produk</span>
-                            <span className="font-medium text-stone-900">Rp {subtotal.toLocaleString('id-ID')}</span>
+                            <span className="font-medium text-stone-900">Rp {(subtotal + totalSavings).toLocaleString('id-ID')}</span>
                         </div>
+                        {totalSavings > 0 && (
+                            <div className="flex justify-between items-center text-sm">
+                                <span className="text-emerald-600 font-medium italic">Hemat Promo</span>
+                                <span className="font-medium text-emerald-600">- Rp {totalSavings.toLocaleString('id-ID')}</span>
+                            </div>
+                        )}
                         <div className="flex justify-between items-center text-sm">
                             <span className="text-gray-600">Biaya Pengiriman</span>
                             <span className="text-xs text-gray-400">Dihitung di checkout</span>

@@ -49,6 +49,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
             name: product.name,
             variant: unit,
             price: price,
+            originalPrice: product.originalPrice || price,
             image: product.image || DEFAULT_IMAGE,
         }, quantity);
         setAdded(true);

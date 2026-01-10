@@ -201,6 +201,7 @@ model OrderItem {
   qty          Int
   unit         String
   price        Decimal  @db.Decimal(10, 2)
+  originalPrice Decimal? @db.Decimal(10, 2)
   costPrice    Decimal? @db.Decimal(10, 2)
   total        Decimal  @db.Decimal(10, 2)
   productImage String?
