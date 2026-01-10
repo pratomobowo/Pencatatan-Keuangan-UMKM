@@ -2,6 +2,9 @@ import { ShopNavbar } from '@/components/shop/ShopNavbar';
 import { BottomNav } from '@/components/shop/BottomNav';
 import { CartProvider } from '@/contexts/CartContext';
 import { ShopAuthProvider } from '@/contexts/ShopAuthContext';
+import AIChatbot from '@/components/shop/AIChatbot';
+import { prisma } from '@/lib/prisma';
+import { Suspense } from 'react';
 
 export default function ShopLayout({
     children,
@@ -16,6 +19,7 @@ export default function ShopLayout({
                     {children}
                 </main>
                 <BottomNav />
+                <AIChatbot />
             </div>
         </div>
     );
