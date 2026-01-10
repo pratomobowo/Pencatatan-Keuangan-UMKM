@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
     ArrowLeft, MapPin, Banknote, Building2, ShieldCheck, ArrowRight,
-    Loader2, Navigation, CheckCircle2, AlertCircle, HelpCircle, Copy, Check, QrCode
+    Loader2, Navigation, CheckCircle2, AlertCircle, HelpCircle, Copy, Check, QrCode, Gift
 } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useShopAuth } from '@/contexts/ShopAuthContext';
@@ -77,8 +77,15 @@ export default function CheckoutPage() {
 
     const [serviceFee, setServiceFee] = useState(0);
 
+    // Voucher state
+    const [voucherCode, setVoucherCode] = useState('');
+    const [appliedVoucher, setAppliedVoucher] = useState<any>(null);
+    const [isValidatingVoucher, setIsValidatingVoucher] = useState(false);
+    const [voucherError, setVoucherError] = useState('');
+
     // Total calculation: if manual confirmation, shipping is 0 but noted
-    const total = subtotal + shippingData.fee + serviceFee;
+    const discount = appliedVoucher ? Number(appliedVoucher.value) : 0;
+    const total = Math.max(0, subtotal + shippingData.fee + serviceFee - discount);
 
     // Load initial data
     useEffect(() => {
@@ -289,6 +296,32 @@ export default function CheckoutPage() {
         }
     };
 
+    const handleApplyVoucher = async () => {
+        if (!voucherCode.trim()) return;
+
+        setIsValidatingVoucher(true);
+        setVoucherError('');
+        try {
+            const res = await fetch('/api/shop/vouchers/validate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code: voucherCode }),
+            });
+
+            const data = await res.json();
+            if (res.ok) {
+                setAppliedVoucher(data.voucher);
+                addNotification('Voucer Berhasil!', 'Potongan diskon telah diterapkan.', 'success');
+            } else {
+                setVoucherError(data.error || 'Voucer tidak valid');
+            }
+        } catch (err) {
+            setVoucherError('Gagal memvalidasi voucer');
+        } finally {
+            setIsValidatingVoucher(false);
+        }
+    };
+
     const handlePlaceOrder = async () => {
         if (shippingData.fee === 0 && !shippingData.isFreeShipping && !shippingData.requiresManualConfirmation) {
             setError('Hitung ongkir terlebih dahulu');
@@ -334,6 +367,7 @@ export default function CheckoutPage() {
                 paymentMethod: selectedPayment,
                 shippingFee: shippingData.requiresManualConfirmation ? 0 : shippingData.fee, // 0 if manual
                 serviceFee: serviceFee,
+                voucherCode: appliedVoucher?.code || null,
             };
 
             const response = await fetch('/api/shop/orders', {
@@ -656,6 +690,52 @@ export default function CheckoutPage() {
                     </div>
                 </div>
 
+                {/* Voucher Section */}
+                {isAuthenticated && (
+                    <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+                        <h3 className="text-stone-900 font-bold mb-3 flex items-center gap-2">
+                            <Gift size={18} className="text-orange-500" />
+                            Gunakan Voucer
+                        </h3>
+                        {appliedVoucher ? (
+                            <div className="bg-emerald-50 border border-emerald-100 p-3 rounded-xl flex items-center justify-between">
+                                <div>
+                                    <p className="text-[10px] font-black text-emerald-600 tracking-wider">VOUCER TERAPLIKASI</p>
+                                    <p className="text-sm font-bold text-emerald-800">{appliedVoucher.code}</p>
+                                    <p className="text-[10px] text-emerald-700">Potongan Rp {Number(appliedVoucher.value).toLocaleString('id-ID')}</p>
+                                </div>
+                                <button
+                                    onClick={() => { setAppliedVoucher(null); setVoucherCode(''); }}
+                                    className="text-xs font-bold text-emerald-600 hover:text-emerald-700 underline"
+                                >
+                                    Batal
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="space-y-3">
+                                <div className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        placeholder="Ketik kode voucer..."
+                                        value={voucherCode}
+                                        onChange={(e) => setVoucherCode(e.target.value.toUpperCase())}
+                                        className="flex-1 px-4 py-3 bg-gray-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-orange-200 outline-none uppercase font-mono"
+                                    />
+                                    <button
+                                        onClick={handleApplyVoucher}
+                                        disabled={isValidatingVoucher || !voucherCode}
+                                        className="px-4 py-3 bg-orange-500 text-white rounded-xl text-sm font-bold disabled:opacity-50"
+                                    >
+                                        {isValidatingVoucher ? <Loader2 size={16} className="animate-spin" /> : 'Pakai'}
+                                    </button>
+                                </div>
+                                {voucherError && <p className="text-xs text-rose-500 px-1 font-medium">{voucherError}</p>}
+                                <p className="text-[10px] text-gray-400">Punya poin? Tukarkan di menu Akun &gt; Loyalty</p>
+                            </div>
+                        )}
+                    </div>
+                )}
+
                 {/* Payment Summary */}
                 <div className="bg-white p-4 rounded-xl border border-gray-200">
                     <h3 className="text-stone-900 font-bold mb-3">Rincian Pembayaran</h3>
@@ -686,6 +766,12 @@ export default function CheckoutPage() {
                             <div className="flex justify-between">
                                 <span className="text-gray-600">Biaya Layanan</span>
                                 <span className="font-medium">Rp {serviceFee.toLocaleString('id-ID')}</span>
+                            </div>
+                        )}
+                        {discount > 0 && (
+                            <div className="flex justify-between">
+                                <span className="text-emerald-600 font-medium italic">Voucer Loyalitas</span>
+                                <span className="font-medium text-emerald-600">- Rp {discount.toLocaleString('id-ID')}</span>
                             </div>
                         )}
                         <div className="border-t border-dashed border-gray-300 my-2"></div>

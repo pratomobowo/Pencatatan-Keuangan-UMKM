@@ -9,6 +9,8 @@ interface Customer {
     name: string;
     phone: string;
     email?: string;
+    points?: number;
+    tier?: string;
 }
 
 interface AuthContextType {

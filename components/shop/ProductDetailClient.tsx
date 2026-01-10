@@ -107,7 +107,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                                 </span>
                             )}
                         </div>
-                        <h1 className="text-stone-900 text-2xl font-bold leading-tight mb-1">{product.name}</h1>
+                        <h1 className="text-stone-900 text-xl font-bold leading-tight mb-1">{product.name}</h1>
                         <p className="text-gray-500 text-sm">per {currentUnit}</p>
                     </div>
                 </div>
@@ -134,7 +134,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                 )}
 
                 <div className="mt-4 flex items-end gap-2 border-b border-orange-100 pb-6">
-                    <h2 className="text-orange-500 text-3xl font-bold">
+                    <h2 className="text-orange-500 text-2xl font-extrabold">
                         Rp {currentPrice.toLocaleString('id-ID')}
                     </h2>
                     <span className="text-gray-400 mb-1.5 text-base font-medium">/ {currentUnit}</span>
@@ -167,7 +167,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                     <button
                         onClick={handleAddToCart}
                         disabled={!isInStock}
-                        className={`flex-1 h-12 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-orange-300/40 transition-all active:scale-[0.98] ${added
+                        className={`flex-1 h-12 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] ${added
                             ? 'bg-green-500'
                             : isInStock
                                 ? 'bg-orange-500 hover:bg-orange-600 active:bg-orange-700'

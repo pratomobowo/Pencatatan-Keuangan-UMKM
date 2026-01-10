@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/lib/auth';
+import { processLoyaltyPoints } from '@/lib/loyalty';
 
 export async function PATCH(
     request: Request,
@@ -45,7 +46,7 @@ export async function PATCH(
             }
         }
 
-        // 2. Handle DELIVERED - Create income transaction + update customer stats
+        // 2. Handle DELIVERED - Create income transaction + update customer stats/loyalty
         if (status === 'DELIVERED' && previousStatus !== 'DELIVERED') {
             // Create income transaction for the order
             await prisma.transaction.create({
@@ -84,20 +85,14 @@ export async function PATCH(
                 });
             }
 
-            // Update customer stats
+            // Loyalty Points & Customer Stats Integration
             if (order.customerId) {
-                await prisma.customer.update({
-                    where: { id: order.customerId },
-                    data: {
-                        totalSpent: {
-                            increment: order.grandTotal,
-                        },
-                        orderCount: {
-                            increment: 1,
-                        },
-                        lastOrderDate: new Date(),
-                    },
-                });
+                await processLoyaltyPoints(
+                    order.customerId,
+                    Number(order.grandTotal),
+                    order.id,
+                    order.orderNumber
+                );
             }
         }
 

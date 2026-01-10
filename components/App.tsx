@@ -15,6 +15,7 @@ import { Profile } from '@/components/Profile';
 import { ShopSettingsManager } from '@/components/ShopSettingsManager';
 import { BannerManager } from '@/components/BannerManager';
 import { CategoryManager } from '@/components/CategoryManager';
+import { LoyaltyManager } from '@/components/LoyaltyManager';
 import { Loader2 } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { ToastProvider, useToast } from '@/components/ui/Toast';
@@ -119,6 +120,7 @@ const App: React.FC = () => {
         CUSTOMERS: { title: 'Database Pelanggan', description: 'Kelola semua data pelanggan (POS dan online).' },
         TRANSACTIONS: { title: 'Buku Kas Harian', description: 'Catat pembelian pasar, penjualan customer, dan biaya lain.' },
         ANALYSIS: { title: 'Konsultan AI', description: 'Evaluasi performa penjualan dan efisiensi pengiriman.' },
+        LOYALTY_MANAGEMENT: { title: 'Program Loyalitas Customer', description: 'Kelola poin belanja, katalog hadiah, dan level (tier) pelanggan.' },
         USER_MANAGEMENT: { title: 'User Management', description: 'Manage system users, roles, and permissions.' },
         PROFILE: { title: 'Profile', description: 'Update your account information and change password.' },
         SHOP_SETTINGS: { title: 'Store Settings', description: 'Update FAQ, jam operasional, dan info pembayaran toko.' },
@@ -222,6 +224,7 @@ const App: React.FC = () => {
                     {view === 'SHOP_SETTINGS' && <ShopSettingsManager />}
                     {view === 'BANNER_MANAGEMENT' && <BannerManager />}
                     {view === 'CATEGORY_MANAGEMENT' && <CategoryManager />}
+                    {view === 'LOYALTY_MANAGEMENT' && <LoyaltyManager />}
 
                     {view === 'USER_MANAGEMENT' && isAdmin && (
                         <UserManager

@@ -22,7 +22,7 @@ export interface FinancialSummary {
   netProfit: number; // Income - Expense (ignoring capital)
 }
 
-export type ViewState = 'DASHBOARD' | 'TRANSACTIONS' | 'ORDERS' | 'SHOP_ORDERS' | 'PRODUCTS' | 'ANALYSIS' | 'CUSTOMERS' | 'SHOP_CUSTOMERS' | 'REPORTS' | 'HPP_CALCULATOR' | 'USER_MANAGEMENT' | 'PROFILE' | 'SHOP_SETTINGS' | 'BANNER_MANAGEMENT' | 'CATEGORY_MANAGEMENT';
+export type ViewState = 'DASHBOARD' | 'TRANSACTIONS' | 'ORDERS' | 'SHOP_ORDERS' | 'PRODUCTS' | 'ANALYSIS' | 'CUSTOMERS' | 'LOYALTY_MANAGEMENT' | 'REPORTS' | 'HPP_CALCULATOR' | 'USER_MANAGEMENT' | 'PROFILE' | 'SHOP_SETTINGS' | 'BANNER_MANAGEMENT' | 'CATEGORY_MANAGEMENT';
 
 export interface User {
   id: string;
@@ -124,7 +124,8 @@ export interface Customer {
   totalSpent?: number; // Calculated field
   lastOrderDate?: string; // Calculated field
   orderCount?: number; // Calculated field
-
+  points?: number;
+  tier?: string;
   createdAt?: string;
   updatedAt?: string;
 }

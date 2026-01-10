@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { processLoyaltyPoints } from '@/lib/loyalty';
 
 // GET /api/orders/[id]
 export async function GET(
@@ -100,20 +101,14 @@ export async function PATCH(
                 });
             }
 
-            // Update customer stats
+            // Loyalty Points & Customer Stats Integration
             if (order.customerId) {
-                await prisma.customer.update({
-                    where: { id: order.customerId },
-                    data: {
-                        totalSpent: {
-                            increment: order.grandTotal,
-                        },
-                        orderCount: {
-                            increment: 1,
-                        },
-                        lastOrderDate: new Date(),
-                    },
-                });
+                await processLoyaltyPoints(
+                    order.customerId,
+                    Number(order.grandTotal),
+                    order.id,
+                    order.orderNumber
+                );
             }
         }
 

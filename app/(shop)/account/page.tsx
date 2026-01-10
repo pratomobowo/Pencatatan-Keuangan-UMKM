@@ -15,11 +15,19 @@ import {
     ShoppingBag,
     Bell,
     CreditCard,
+    Gift,
+    Star,
     Loader2
 } from 'lucide-react';
 import { useShopAuth } from '@/contexts/ShopAuthContext';
 
 const menuItems = [
+    {
+        section: 'Program Loyalitas',
+        items: [
+            { icon: Gift, label: 'Loyalty & Hadiah', href: '/loyalty' },
+        ]
+    },
     {
         section: 'Pesanan',
         items: [
@@ -181,10 +189,10 @@ export default function AccountPage() {
                         <span className="text-xs text-gray-500 mt-1">Favorit</span>
                     </div>
                     <div className="w-px bg-gray-200"></div>
-                    <div className="flex flex-col items-center">
-                        <span className="text-2xl font-bold text-stone-900">0</span>
+                    <Link href="/loyalty" className="flex flex-col items-center">
+                        <span className="text-2xl font-bold text-orange-600">{customer?.points || 0}</span>
                         <span className="text-xs text-gray-500 mt-1">Poin</span>
-                    </div>
+                    </Link>
                 </div>
             </div>
 
