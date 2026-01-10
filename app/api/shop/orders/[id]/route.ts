@@ -69,7 +69,10 @@ export async function GET(
 
         const order = await prisma.order.findFirst({
             where: {
-                id,
+                OR: [
+                    { id: id },
+                    { orderNumber: id }
+                ],
                 customerId: customer.id,
             },
             include: {

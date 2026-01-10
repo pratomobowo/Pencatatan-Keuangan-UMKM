@@ -68,7 +68,13 @@ export async function GET(request: NextRequest) {
         const status = searchParams.get('status');
 
         const where: any = { customerId: customer.id };
-        if (status && status !== 'all') {
+        if (status === 'processing') {
+            where.status = {
+                in: ['PENDING', 'CONFIRMED', 'PREPARING', 'SHIPPING']
+            };
+        } else if (status === 'delivered') {
+            where.status = 'DELIVERED';
+        } else if (status && status !== 'all') {
             where.status = status.toUpperCase();
         }
 
