@@ -7,8 +7,13 @@ export async function GET(request: NextRequest) {
         const { searchParams } = new URL(request.url);
         const category = searchParams.get('category');
         const search = searchParams.get('search');
-        const limit = searchParams.get('limit');
+        const limitParam = searchParams.get('limit');
+        const pageParam = searchParams.get('page');
         const promo = searchParams.get('promo'); // Filter for promo products
+
+        const limit = limitParam ? parseInt(limitParam) : 10;
+        const page = pageParam ? parseInt(pageParam) : 1;
+        const skip = (page - 1) * limit;
 
         // Build where clause
         const where: any = {
@@ -24,16 +29,25 @@ export async function GET(request: NextRequest) {
         }
 
         if (search) {
-            where.OR = [
+            const searchOR = [
                 { name: { contains: search, mode: 'insensitive' } },
                 { description: { contains: search, mode: 'insensitive' } },
             ];
+
+            if (where.OR) {
+                // If we already have OR from category, combine them
+                where.AND = [
+                    { OR: where.OR },
+                    { OR: searchOR }
+                ];
+                delete where.OR;
+            } else {
+                where.OR = searchOR;
+            }
         }
 
         // Filter promo products
         if (promo === 'true') {
-            where.isPromo = true;
-            // Check promo is still valid (not expired)
             const promoValidCondition = {
                 OR: [
                     { promoEndDate: null },
@@ -41,18 +55,24 @@ export async function GET(request: NextRequest) {
                 ]
             };
 
-            if (where.OR) {
-                // If we already have an OR (from category filter), we need to AND it with promo condition
-                // Prisma handles this naturally if we use AND
-                where.AND = [
-                    { OR: where.OR },
-                    promoValidCondition
-                ];
+            const promoFinalCondition = {
+                isPromo: true,
+                ...promoValidCondition
+            };
+
+            if (where.AND) {
+                where.AND.push(promoFinalCondition);
+            } else if (where.OR) {
+                where.AND = [{ OR: where.OR }, promoFinalCondition];
                 delete where.OR;
             } else {
+                where.isPromo = true;
                 where.OR = promoValidCondition.OR;
             }
         }
+
+        // Get total count for pagination
+        const total = await prisma.product.count({ where });
 
         const products = await prisma.product.findMany({
             where,
@@ -72,7 +92,8 @@ export async function GET(request: NextRequest) {
                 }
             },
             orderBy: { createdAt: 'desc' },
-            take: limit ? parseInt(limit) : undefined,
+            take: limit,
+            skip: skip,
         }) as any;
 
         // Transform prices from Decimal to number and calculate display price
@@ -85,7 +106,7 @@ export async function GET(request: NextRequest) {
             return {
                 ...p,
                 price: Number(p.price),
-                categoryName: p.categoryName, // Explicitly map if needed, though it's already in p
+                categoryName: p.categoryName,
                 category: p.category,
                 originalPrice: isPromoActive ? Number(p.price) : null,
                 displayPrice: isPromoActive && p.promoPrice ? Number(p.promoPrice) : Number(p.price),
@@ -95,10 +116,15 @@ export async function GET(request: NextRequest) {
             };
         });
 
-        return NextResponse.json(transformedProducts);
+        return NextResponse.json({
+            products: transformedProducts,
+            total,
+            page,
+            limit,
+            hasMore: skip + products.length < total
+        });
     } catch (error: any) {
         console.error('Error fetching shop products:', error);
-        console.error('Error stack:', error.stack);
         return NextResponse.json(
             { error: 'Failed to fetch products: ' + (error.message || 'Unknown error') },
             { status: 500 }
