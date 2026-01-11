@@ -143,6 +143,79 @@ export default function AIChatbot() {
     const [conversationId, setConversationId] = useState<string | null>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
+    // Draggable Logic
+    const [yPosition, setYPosition] = useState(50); // Default 50%
+    const [isDragging, setIsDragging] = useState(false);
+    const dragStartY = useRef<number>(0);
+    const initialY = useRef<number>(0);
+    const hasDragged = useRef(false);
+
+    // Load saved position
+    useEffect(() => {
+        const saved = localStorage.getItem('minsar-y-pos');
+        if (saved) {
+            setYPosition(Number(saved));
+        }
+    }, []);
+
+    const handleDragStart = (clientY: number) => {
+        setIsDragging(true);
+        dragStartY.current = clientY;
+        initialY.current = yPosition;
+        hasDragged.current = false;
+    };
+
+    const handleDragMove = (clientY: number, e?: MouseEvent | TouchEvent) => {
+        if (!isDragging) return;
+
+        // Prevent page scrolling while dragging
+        if (e && e.cancelable) {
+            e.preventDefault();
+        }
+
+        const deltaY = clientY - dragStartY.current;
+        const screenHeight = window.innerHeight;
+        const deltaPercent = (deltaY / screenHeight) * 100;
+
+        let newPos = initialY.current + deltaPercent;
+
+        // Boundaries (keeping button visible)
+        newPos = Math.max(10, Math.min(90, newPos));
+
+        if (Math.abs(deltaY) > 5) {
+            hasDragged.current = true;
+        }
+
+        setYPosition(newPos);
+    };
+
+    const handleDragEnd = () => {
+        if (isDragging) {
+            setIsDragging(false);
+            localStorage.setItem('minsar-y-pos', yPosition.toString());
+        }
+    };
+
+    useEffect(() => {
+        if (isDragging) {
+            const onMouseMove = (e: MouseEvent) => handleDragMove(e.clientY, e);
+            const onTouchMove = (e: TouchEvent) => handleDragMove(e.touches[0].clientY, e);
+            const onEnd = () => handleDragEnd();
+
+            window.addEventListener('mousemove', onMouseMove);
+            window.addEventListener('mouseup', onEnd);
+            window.addEventListener('touchmove', onTouchMove, { passive: false });
+            window.addEventListener('touchend', onEnd);
+
+            return () => {
+                window.removeEventListener('mousemove', onMouseMove);
+                window.removeEventListener('mouseup', onEnd);
+                window.removeEventListener('touchmove', onTouchMove);
+                window.removeEventListener('touchend', onEnd);
+            };
+        }
+    }, [isDragging, yPosition]);
+
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     };
@@ -192,9 +265,18 @@ export default function AIChatbot() {
         <>
             {/* Sidebar Button - Rotated Vertical (Extra Slim) */}
             <button
-                onClick={() => setIsOpen(true)}
-                className="fixed right-0 top-1/2 -translate-y-1/2 z-[60] bg-orange-500/95 hover:bg-orange-600 text-white py-2 px-1.5 rounded-l-lg shadow-[-2px_0_8px_rgba(249,115,22,0.2)] transition-all flex flex-col items-center gap-1 group active:scale-95 backdrop-blur-sm"
-                style={{ writingMode: 'vertical-rl' }}
+                onMouseDown={(e) => handleDragStart(e.clientY)}
+                onTouchStart={(e) => handleDragStart(e.touches[0].clientY)}
+                onClick={() => {
+                    if (!hasDragged.current) setIsOpen(true);
+                }}
+                className={`fixed right-0 z-[60] bg-orange-500/95 hover:bg-orange-600 text-white py-2 px-1.5 rounded-l-lg shadow-[-2px_0_8px_rgba(249,115,22,0.2)] transition-colors flex flex-col items-center gap-1 group backdrop-blur-sm ${isDragging ? 'cursor-grabbing scale-105 shadow-xl' : 'cursor-grab active:scale-95'
+                    }`}
+                style={{
+                    writingMode: 'vertical-rl',
+                    top: `${yPosition}%`,
+                    transform: 'translateY(-50%)'
+                }}
             >
                 <div className="flex items-center gap-1 rotate-180">
                     <MessageCircle size={12} className="opacity-90" />
