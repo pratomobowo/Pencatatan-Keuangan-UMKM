@@ -94,6 +94,15 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                         <p className={`text-[10px] line-clamp-2 ${description ? 'text-stone-500 font-medium' : 'text-stone-400 italic'}`}>
                             {description || "Deskripsi produk belum ditambahkan minsar, maaf ya buibu"}
                         </p>
+                        {variants && variants.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-1">
+                                {variants.map((v, i) => (
+                                    <span key={i} className="text-[8px] uppercase font-bold text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded-md border border-orange-100 shadow-[0_1px_2px_rgba(249,115,22,0.05)]">
+                                        {v.unit}
+                                    </span>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
                     <div className="flex items-end justify-between gap-2">
@@ -162,6 +171,16 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                 <p className={`text-[10px] line-clamp-2 mb-1 ${description ? 'text-stone-500 font-medium' : 'text-stone-400 italic'}`}>
                     {description || "Deskripsi produk belum ditambahkan minsar, maaf ya buibu"}
                 </p>
+
+                {variants && variants.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mb-2">
+                        {variants.map((v, i) => (
+                            <span key={i} className="text-[8px] uppercase font-bold text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded-md border border-orange-100 shadow-[0_1px_2px_rgba(249,115,22,0.05)]">
+                                {v.unit}
+                            </span>
+                        ))}
+                    </div>
+                )}
 
                 {/* Price & Unit */}
                 <div className="flex flex-col mt-auto pt-2">

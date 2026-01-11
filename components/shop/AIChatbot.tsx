@@ -66,6 +66,15 @@ const ChatProductCard = ({ productId }: { productId: string }) => {
                 <p className={`text-[9px] line-clamp-1 truncate ${product.description ? 'text-stone-500 font-medium' : 'text-stone-400 italic'}`}>
                     {product.description || "Deskripsi belum ada, maaf ya buibu"}
                 </p>
+                {product.variants && product.variants.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-0.5">
+                        {product.variants.map((v: any, i: number) => (
+                            <span key={i} className="text-[7px] font-bold text-orange-600 bg-orange-50 px-1 py-0.5 rounded border border-orange-100">
+                                {v.unit}
+                            </span>
+                        ))}
+                    </div>
+                )}
                 <div className="flex items-center gap-2 mt-0.5">
                     <span className="text-sm font-bold text-orange-600">Rp {Number(currentPrice).toLocaleString('id-ID')}</span>
                     {product.isPromo && (
