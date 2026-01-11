@@ -152,7 +152,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                 {/* Discount Badge */}
                 {originalPrice && (!selectedVariant || selectedVariant.isDefault) && (
                     <div className="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-semibold px-2 py-0.5 rounded shadow-sm z-10">
-                        {discount || Math.round((1 - (defaultPrice / originalPrice)) * 100)}% OFF
+                        {discount || Math.round((1 - (defaultPrice / originalPrice)) * 100)}% Hemat
                     </div>
                 )}
 

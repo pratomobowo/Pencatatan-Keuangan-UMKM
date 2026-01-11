@@ -104,8 +104,8 @@ export default function AddressesPage() {
             name: addr.name,
             phone: addr.phone,
             address: addr.address,
-            latitude: addr.latitude || null,
-            longitude: addr.longitude || null,
+            latitude: addr.latitude ? Number(addr.latitude) : null,
+            longitude: addr.longitude ? Number(addr.longitude) : null,
             type: addr.type,
         });
         setLocationError(null);
@@ -408,7 +408,8 @@ export default function AddressesPage() {
                                         <div className="flex-1 min-w-0">
                                             <p className="text-xs font-bold text-emerald-700">Koordinat Tersimpan</p>
                                             <p className="text-xs text-emerald-600 font-mono truncate">
-                                                {formData.latitude.toFixed(6)}, {formData.longitude.toFixed(6)}
+                                                {typeof formData.latitude === 'number' ? formData.latitude.toFixed(6) : formData.latitude},
+                                                {typeof formData.longitude === 'number' ? formData.longitude.toFixed(6) : formData.longitude}
                                             </p>
                                         </div>
                                     </div>
