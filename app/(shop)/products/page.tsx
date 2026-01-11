@@ -248,6 +248,7 @@ function ProductsContent() {
                                             layout="horizontal"
                                             variants={product.variants}
                                             showPromoFirst={searchParams.get('promo') === 'true'}
+                                            hideDescription={searchParams.get('promo') === 'true'}
                                         />
                                     </div>
                                 );

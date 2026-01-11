@@ -22,6 +22,7 @@ interface ProductCardProps {
     layout?: 'grid' | 'horizontal';
     variants?: ProductVariant[];
     showPromoFirst?: boolean; // If true, show promo price even if there's a cheaper variant
+    hideDescription?: boolean; // If true, hide the short description
 }
 
 export const ProductCard: React.FC<ProductCardProps> = ({
@@ -38,7 +39,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     isGrid = false,
     layout = 'grid',
     variants = [],
-    showPromoFirst = false
+    showPromoFirst = false,
+    hideDescription = false
 }) => {
     const { addItem } = useCart();
     const [added, setAdded] = useState(false);
@@ -96,9 +98,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                         <Link href={`/products/${slug || id}`}>
                             <h3 className="text-sm font-bold text-stone-900 truncate">{name}</h3>
                         </Link>
-                        <p className={`text-[10px] line-clamp-2 ${description ? 'text-stone-500 font-medium' : 'text-stone-400 italic'}`}>
-                            {description || "Deskripsi produk belum ditambahkan minsar, maaf ya buibu"}
-                        </p>
+                        {!hideDescription && (
+                            <p className={`text-[10px] line-clamp-2 ${description ? 'text-stone-500 font-medium' : 'text-stone-400 italic'}`}>
+                                {description || "Deskripsi produk belum ditambahkan minsar, maaf ya buibu"}
+                            </p>
+                        )}
                         {variants && variants.length > 0 && (
                             <div className="flex flex-wrap gap-1 mt-1">
                                 {variants.map((v, i) => (
@@ -173,9 +177,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                     <h3 className="text-sm font-semibold text-stone-900 line-clamp-2 min-h-[40px]">{name}</h3>
                 </Link>
 
-                <p className={`text-[10px] line-clamp-2 mb-1 ${description ? 'text-stone-500 font-medium' : 'text-stone-400 italic'}`}>
-                    {description || "Deskripsi produk belum ditambahkan minsar, maaf ya buibu"}
-                </p>
+                {!hideDescription && (
+                    <p className={`text-[10px] line-clamp-2 mb-1 ${description ? 'text-stone-500 font-medium' : 'text-stone-400 italic'}`}>
+                        {description || "Deskripsi produk belum ditambahkan minsar, maaf ya buibu"}
+                    </p>
+                )}
 
                 {variants && variants.length > 0 && (
                     <div className="flex flex-wrap gap-1 mb-2">
