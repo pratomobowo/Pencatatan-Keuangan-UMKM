@@ -144,6 +144,33 @@ export default function AIChatbot() {
     const [conversationId, setConversationId] = useState<string | null>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
+    // Load saved conversation and history
+    useEffect(() => {
+        const savedConversationId = localStorage.getItem('minsar-conversation-id');
+        if (savedConversationId) {
+            setConversationId(savedConversationId);
+            fetchHistory(savedConversationId);
+        }
+    }, []);
+
+    const fetchHistory = async (id: string) => {
+        try {
+            const res = await fetch(`/api/ai/chat?id=${id}`);
+            if (res.ok) {
+                const data = await res.json();
+                if (data.messages && data.messages.length > 0) {
+                    setMessages(data.messages);
+                }
+            } else if (res.status === 404 || res.status === 401) {
+                // If not found or unauthorized, clear the stale ID
+                localStorage.removeItem('minsar-conversation-id');
+                setConversationId(null);
+            }
+        } catch (err) {
+            console.error("Error fetching chat history:", err);
+        }
+    };
+
     // Draggable Logic
     const [yPosition, setYPosition] = useState(50); // Default 50%
     const [isDragging, setIsDragging] = useState(false);
@@ -217,6 +244,16 @@ export default function AIChatbot() {
         }
     }, [isDragging, yPosition]);
 
+    const handleResetChat = () => {
+        if (confirm('Buang riwayat chat ini dan mulai baru?')) {
+            localStorage.removeItem('minsar-conversation-id');
+            setConversationId(null);
+            setMessages([
+                { role: 'assistant', content: 'Halo! Saya Minsar, asisten AI Pasarantar. Ada yang bisa saya bantu seputar ikan segar, seafood, ayam, atau daging hari ini? 🐟🍗🍖' }
+            ]);
+        }
+    };
+
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     };
@@ -253,7 +290,10 @@ export default function AIChatbot() {
 
             if (!response.ok) throw new Error(data.error || 'Gagal tersambung ke Minsar');
 
-            if (data.conversationId) setConversationId(data.conversationId);
+            if (data.conversationId) {
+                setConversationId(data.conversationId);
+                localStorage.setItem('minsar-conversation-id', data.conversationId);
+            }
             setMessages(prev => [...prev, { role: 'assistant', content: data.response }]);
         } catch (error: any) {
             setMessages(prev => [...prev, { role: 'assistant', content: `Maaf Puh, sepertinya Minsar lagi gangguan: ${error.message}` }]);
@@ -302,12 +342,22 @@ export default function AIChatbot() {
                                 </p>
                             </div>
                         </div>
-                        <button
-                            onClick={() => setIsOpen(false)}
-                            className="size-10 flex items-center justify-center rounded-full bg-white border border-orange-100 text-stone-400 hover:text-rose-500 hover:bg-rose-50 transition-all shadow-sm"
-                        >
-                            <X size={24} />
-                        </button>
+                        <div className="flex items-center gap-2">
+                            {messages.length > 1 && (
+                                <button
+                                    onClick={handleResetChat}
+                                    className="px-3 py-1.5 text-[10px] font-bold text-stone-400 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-all border border-transparent hover:border-orange-100"
+                                >
+                                    Reset Chat
+                                </button>
+                            )}
+                            <button
+                                onClick={() => setIsOpen(false)}
+                                className="size-10 flex items-center justify-center rounded-full bg-white border border-orange-100 text-stone-400 hover:text-rose-500 hover:bg-rose-50 transition-all shadow-sm"
+                            >
+                                <X size={24} />
+                            </button>
+                        </div>
                     </header>
 
                     {/* Chat Messages Area */}

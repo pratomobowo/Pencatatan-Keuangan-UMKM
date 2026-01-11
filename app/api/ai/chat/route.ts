@@ -3,6 +3,54 @@ import { ChatbotService, ChatMessage } from '@/services/chatbotService';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
+export async function GET(request: NextRequest) {
+    try {
+        const { searchParams } = new URL(request.url);
+        const conversationId = searchParams.get('id');
+
+        if (!conversationId) {
+            return NextResponse.json({ error: 'Conversation ID dibutuhkan' }, { status: 400 });
+        }
+
+        const conversation = await prisma.aIChatConversation.findUnique({
+            where: { id: conversationId },
+            include: {
+                messages: {
+                    orderBy: { createdAt: 'asc' }
+                }
+            }
+        });
+
+        if (!conversation) {
+            return NextResponse.json({ error: 'Percakapan tidak ditemukan' }, { status: 404 });
+        }
+
+        // Security check: If it's a customer conversation, ensure the session owner matches
+        // (Note: Anonymous visitors will skip this if customerId is null)
+        const session = await auth();
+        if (conversation.customerId && conversation.customerId !== (session?.user as any)?.id) {
+            // Check if customer email matches too (due to the User/Customer ID distinction fix)
+            const customer = await prisma.customer.findFirst({
+                where: { email: session?.user?.email || '' }
+            });
+
+            if (!customer || conversation.customerId !== customer.id) {
+                return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+            }
+        }
+
+        return NextResponse.json({
+            messages: conversation.messages.map(m => ({
+                role: m.role,
+                content: m.content
+            }))
+        });
+    } catch (error: any) {
+        console.error('Fetch Chat History Error:', error);
+        return NextResponse.json({ error: 'Gagal memuat riwayat chat' }, { status: 500 });
+    }
+}
+
 export async function POST(request: NextRequest) {
     try {
         const session = await auth();

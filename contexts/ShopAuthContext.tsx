@@ -103,6 +103,9 @@ export function ShopAuthProvider({ children }: { children: ReactNode }) {
 
             // 2. Clear NextAuth session (Google, etc.)
             await signOut({ redirect: false });
+
+            // 3. Clear Chat Persistence
+            localStorage.removeItem('minsar-conversation-id');
         } catch {
             // Ignore errors
         }
