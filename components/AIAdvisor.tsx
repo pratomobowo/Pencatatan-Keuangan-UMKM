@@ -47,6 +47,10 @@ interface InfographicData {
     title: string;
     content: string;
   }>;
+  detailedReport: Array<{
+    title: string;
+    content: string;
+  }>;
   fullNarrative: string;
 }
 
@@ -216,8 +220,8 @@ export const AIAdvisor: React.FC<AIAdvisorProps> = ({ transactions }) => {
                   <h3 className="font-bold text-slate-800">Inventory Health</h3>
                 </div>
                 <div className={`flex items-center gap-2 mb-3 px-3 py-1.5 rounded-xl w-fit font-bold text-xs border ${data.infographic.inventoryHealth.status === 'Bahaya' ? 'bg-rose-50 text-rose-600 border-rose-100' :
-                    data.infographic.inventoryHealth.status === 'Peringatan' ? 'bg-amber-50 text-amber-600 border-amber-100' :
-                      'bg-emerald-50 text-emerald-600 border-emerald-100'
+                  data.infographic.inventoryHealth.status === 'Peringatan' ? 'bg-amber-50 text-amber-600 border-amber-100' :
+                    'bg-emerald-50 text-emerald-600 border-emerald-100'
                   }`}>
                   {getInventoryIcon(data.infographic.inventoryHealth.status)}
                   {data.infographic.inventoryHealth.status}
@@ -250,16 +254,31 @@ export const AIAdvisor: React.FC<AIAdvisorProps> = ({ transactions }) => {
             </div>
           </div>
 
-          {/* Detailed Narrative Fallback */}
-          <Card className="p-8 bg-slate-50/50 border-dashed border-2 border-slate-200">
-            <h3 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
-              <Activity size={20} className="text-slate-400" />
-              Detailed Business Report
+          {/* Detailed Business Report - Grouped by Title */}
+          <div className="space-y-6">
+            <h3 className="text-xl font-bold text-slate-800 flex items-center gap-2 px-2">
+              <Activity size={24} className="text-blue-500" />
+              Laporan Analisis Mendalam
             </h3>
-            <div className="prose prose-slate max-w-none prose-headings:text-slate-800 prose-p:text-slate-600 prose-li:text-slate-600 prose-strong:text-slate-900 prose-sm">
-              <ReactMarkdown>{data.infographic.fullNarrative}</ReactMarkdown>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {data.infographic.detailedReport.map((section, idx) => (
+                <Card key={idx} className="p-6 border-slate-100 hover:border-blue-100 transition-colors shadow-sm bg-white flex flex-col h-full">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="size-10 bg-slate-50 flex items-center justify-center rounded-xl text-blue-600 shadow-sm border border-slate-100 group-hover:bg-blue-600 group-hover:text-white transition-all">
+                      {section.title.toLowerCase().includes('keuangan') ? <TrendingUp size={20} /> :
+                        section.title.toLowerCase().includes('produk') ? <Package size={20} /> :
+                          section.title.toLowerCase().includes('pelanggan') ? <Users size={20} /> :
+                            <Activity size={20} />}
+                    </div>
+                    <h4 className="text-base font-bold text-slate-800">{section.title}</h4>
+                  </div>
+                  <div className="prose prose-slate prose-sm max-w-none prose-p:text-slate-500 prose-li:text-slate-500 prose-strong:text-slate-800 flex-1">
+                    <ReactMarkdown>{section.content}</ReactMarkdown>
+                  </div>
+                </Card>
+              ))}
             </div>
-          </Card>
+          </div>
         </div>
       )}
 

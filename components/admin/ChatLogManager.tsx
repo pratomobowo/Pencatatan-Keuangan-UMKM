@@ -54,7 +54,7 @@ export const ChatLogManager: React.FC = () => {
         <div className="space-y-6 animate-fade-in -mx-4 md:mx-0">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-[calc(100vh-280px)] min-h-[500px]">
                 {/* Conversation List */}
-                <Card className="lg:col-span-4 p-0 overflow-hidden flex flex-col bg-white border-slate-200">
+                <Card noPadding className="lg:col-span-4 overflow-hidden flex flex-col bg-white border-slate-200">
                     <div className="p-4 border-b border-slate-100 bg-slate-50/50">
                         <div className="relative">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
@@ -115,7 +115,7 @@ export const ChatLogManager: React.FC = () => {
                 </Card>
 
                 {/* Chat Detail */}
-                <Card className="lg:col-span-8 p-0 overflow-hidden flex flex-col bg-slate-50/30 border-slate-200">
+                <Card noPadding className="lg:col-span-8 overflow-hidden flex flex-col bg-slate-50/30 border-slate-200">
                     {selectedConv ? (
                         <>
                             {/* Chat Header */}
@@ -157,8 +157,8 @@ export const ChatLogManager: React.FC = () => {
                                                 {msg.role === 'user' ? <User size={16} /> : <Bot size={16} />}
                                             </div>
                                             <div className={`p-3.5 rounded-2xl text-sm leading-relaxed shadow-sm ${msg.role === 'user'
-                                                    ? 'bg-slate-800 text-white rounded-tr-none'
-                                                    : 'bg-white border border-slate-100 text-slate-800 rounded-tl-none'
+                                                ? 'bg-slate-800 text-white rounded-tr-none'
+                                                : 'bg-white border border-slate-100 text-slate-800 rounded-tl-none'
                                                 }`}>
                                                 <p className="whitespace-pre-wrap">{msg.content}</p>
                                                 <span className={`text-[9px] mt-2 block ${msg.role === 'user' ? 'text-slate-400' : 'text-slate-400'}`}>

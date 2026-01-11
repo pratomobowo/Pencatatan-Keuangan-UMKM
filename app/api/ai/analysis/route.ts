@@ -82,9 +82,14 @@ export async function POST(request: NextRequest) {
                     "actionItems": ["Segera restock X", "Promo cuci gudang Y"]
                 },
                 "strategicAdvice": [
-                    { "title": "...", "content": "..." }, ... (Maks 3 saran taktis)
+                    { "title": "...", "content": "..." }
                 ],
-                "fullNarrative": "Konten analisis mendalam dalam format Markdown (tetap disediakan sebagai opsi bacaan detail)."
+                "detailedReport": [
+                    { "title": "Kesehatan Keuangan", "content": "..." },
+                    { "title": "Analisis Produk & Stok", "content": "..." },
+                    { "title": "Strategi Pelanggan", "content": "..." },
+                    { "title": "Efisiensi Operasional", "content": "..." }
+                ]
             }
             
             DATA OPERASIONAL:
