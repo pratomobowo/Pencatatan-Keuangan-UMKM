@@ -24,10 +24,16 @@ async function getProduct(slug: string): Promise<Product | null> {
 
     if (!product) return null;
 
+    const now = new Date();
+    const isPromoActive = product.isPromo &&
+        (!product.promoStartDate || new Date(product.promoStartDate) <= now) &&
+        (!product.promoEndDate || new Date(product.promoEndDate) >= now);
+
     // Convert Prisma Decimal to number for the interface
     return {
         ...product,
-        price: Number(product.price),
+        originalPrice: isPromoActive ? Number(product.price) : undefined,
+        price: (isPromoActive && product.promoPrice) ? Number(product.promoPrice) : Number(product.price),
         costPrice: Number(product.costPrice),
         promoPrice: product.promoPrice ? Number(product.promoPrice) : undefined,
         variants: product.variants ? product.variants.map((v: any) => ({

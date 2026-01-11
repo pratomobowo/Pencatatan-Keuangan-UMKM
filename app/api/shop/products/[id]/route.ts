@@ -31,8 +31,17 @@ export async function GET(
                     }
                 },
                 isActive: true,
+                // Add promo fields
+                isPromo: true,
+                promoPrice: true,
+                promoDiscount: true,
+                promoStartDate: true,
+                promoEndDate: true,
+                variants: {
+                    orderBy: { isDefault: 'desc' }
+                }
             },
-        });
+        }) as any;
 
         if (!product) {
             return NextResponse.json(
@@ -48,10 +57,23 @@ export async function GET(
             );
         }
 
+        const now = new Date();
+        const isPromoActive = product.isPromo &&
+            (!product.promoStartDate || new Date(product.promoStartDate) <= now) &&
+            (!product.promoEndDate || new Date(product.promoEndDate) >= now);
+
         // Transform price from Decimal to number
         const transformedProduct = {
             ...product,
-            price: Number(product.price),
+            originalPrice: isPromoActive ? Number(product.price) : null,
+            price: (isPromoActive && product.promoPrice) ? Number(product.promoPrice) : Number(product.price),
+            promoPrice: product.promoPrice ? Number(product.promoPrice) : null,
+            variants: product.variants ? product.variants.map((v: any) => ({
+                ...v,
+                price: Number(v.price),
+                costPrice: Number(v.costPrice),
+                unitQty: Number(v.unitQty)
+            })) : []
         };
 
         return NextResponse.json(transformedProduct);
