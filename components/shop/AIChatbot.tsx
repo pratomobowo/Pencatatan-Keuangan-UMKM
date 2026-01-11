@@ -52,8 +52,8 @@ const ChatProductCard = ({ productId }: { productId: string }) => {
     };
 
     return (
-        <div className="mt-3 bg-white border border-orange-100 rounded-xl overflow-hidden shadow-sm flex items-center gap-3 p-2 animate-in fade-in zoom-in-95 duration-300">
-            <div className="relative size-16 rounded-lg overflow-hidden shrink-0">
+        <div className="mt-3 bg-white border border-orange-100 rounded-xl overflow-hidden shadow-sm flex items-center gap-2 p-2 animate-in fade-in zoom-in-95 duration-300">
+            <div className="relative size-14 rounded-lg overflow-hidden shrink-0">
                 <Image
                     src={product.image || '/images/coming-soon.jpg'}
                     alt={product.name}
@@ -62,12 +62,15 @@ const ChatProductCard = ({ productId }: { productId: string }) => {
                 />
             </div>
             <div className="flex-1 min-w-0">
-                <h4 className="text-xs font-bold text-stone-900 truncate">{product.name}</h4>
-                <p className={`text-[9px] line-clamp-1 truncate ${product.description ? 'text-stone-500 font-medium' : 'text-stone-400 italic'}`}>
-                    {product.description || "Deskripsi belum ada, maaf ya buibu"}
-                </p>
+                <h4 className="text-[11px] font-bold text-stone-900 truncate">{product.name}</h4>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                    <span className="text-xs font-bold text-orange-600">Rp {Number(currentPrice).toLocaleString('id-ID')}</span>
+                    {product.isPromo && (
+                        <span className="text-[9px] text-gray-400 line-through">Rp {Number(product.price).toLocaleString('id-ID')}</span>
+                    )}
+                </div>
                 {product.variants && product.variants.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-0.5">
+                    <div className="flex flex-wrap gap-1 mt-1">
                         {product.variants.map((v: any, i: number) => (
                             <span key={i} className="text-[7px] font-bold text-orange-600 bg-orange-50 px-1 py-0.5 rounded border border-orange-100">
                                 {v.unit}
@@ -75,19 +78,13 @@ const ChatProductCard = ({ productId }: { productId: string }) => {
                         ))}
                     </div>
                 )}
-                <div className="flex items-center gap-2 mt-0.5">
-                    <span className="text-sm font-bold text-orange-600">Rp {Number(currentPrice).toLocaleString('id-ID')}</span>
-                    {product.isPromo && (
-                        <span className="text-[10px] text-gray-400 line-through">Rp {Number(product.price).toLocaleString('id-ID')}</span>
-                    )}
-                </div>
             </div>
             <button
                 onClick={handleAdd}
-                className={`size-10 rounded-lg flex items-center justify-center transition-all ${added ? 'bg-green-500 text-white' : 'bg-orange-500 text-white hover:bg-orange-600'
+                className={`size-9 rounded-lg flex items-center justify-center transition-all shrink-0 ${added ? 'bg-green-500 text-white' : 'bg-orange-500 text-white hover:bg-orange-600'
                     }`}
             >
-                {added ? <ShoppingCart size={18} /> : <Plus size={18} />}
+                {added ? <ShoppingCart size={16} /> : <Plus size={16} />}
             </button>
         </div>
     );
@@ -113,22 +110,26 @@ const WhatsAppChatCard = () => {
     }, []);
 
     return (
-        <div className="mt-3 bg-white border border-green-100 rounded-xl overflow-hidden shadow-sm flex items-center gap-3 p-3 animate-in fade-in slide-in-from-right-4 duration-300">
-            <div className="size-12 rounded-xl bg-green-50 flex items-center justify-center text-green-500 shrink-0">
-                <MessageCircle size={24} />
+        <div className="mt-4 bg-white border border-green-100 rounded-xl overflow-hidden shadow-sm animate-in fade-in slide-in-from-right-4 duration-300">
+            <div className="flex items-center gap-3 p-3">
+                <div className="size-10 rounded-xl bg-green-50 flex items-center justify-center text-green-500 shrink-0">
+                    <MessageCircle size={20} />
+                </div>
+                <div className="flex-1 min-w-0">
+                    <h4 className="text-[11px] font-bold text-stone-900">Butuh Bantuan Manual?</h4>
+                    <p className="text-[9px] text-stone-400">Chat Admin via WhatsApp</p>
+                </div>
             </div>
-            <div className="flex-1 min-w-0">
-                <h4 className="text-xs font-bold text-stone-900">Butuh Bantuan Manual?</h4>
-                <p className="text-[10px] text-stone-400">Chat Admin via WhatsApp</p>
+            <div className="px-3 pb-3">
+                <a
+                    href={`https://wa.me/${waNumber}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full flex items-center justify-center py-2 bg-green-500 text-white rounded-lg text-xs font-bold hover:bg-green-600 transition-all active:scale-95 shadow-sm shadow-green-100"
+                >
+                    Chat Sekarang
+                </a>
             </div>
-            <a
-                href={`https://wa.me/${waNumber}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-3 py-2 bg-green-500 text-white rounded-lg text-xs font-bold hover:bg-green-600 transition-all active:scale-90"
-            >
-                Chat Sekarang
-            </a>
         </div>
     );
 };
