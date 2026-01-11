@@ -95,11 +95,11 @@ export const ShopNavbar = () => {
                 <div className="relative" ref={notificationsRef}>
                     <button
                         onClick={handleToggleNotifications}
-                        className="flex size-10 items-center justify-center rounded-full bg-stone-50 hover:bg-orange-50 transition-colors relative"
+                        className="flex size-10 items-center justify-center rounded-full bg-orange-50 hover:bg-orange-100 transition-all relative"
                     >
-                        <Bell className="text-stone-900" size={20} />
+                        <Bell className="text-orange-600" size={20} />
                         {unreadCount > 0 && (
-                            <span className="absolute top-2 right-2 flex min-size-4 items-center justify-center bg-red-500 rounded-full border border-white text-[10px] text-white font-bold px-1">
+                            <span className="absolute -top-1 -right-1 flex min-size-5 items-center justify-center bg-red-600 rounded-full border-2 border-white text-[10px] text-white font-black px-1 shadow-sm animate-bounce-subtle">
                                 {unreadCount > 9 ? '9+' : unreadCount}
                             </span>
                         )}

@@ -228,7 +228,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                         <Thermometer className="text-blue-500" size={24} />
                         <div>
                             <p className="text-xs font-bold text-stone-900">Suhu Terjaga</p>
-                            <p className="text-xs text-gray-500">Dikirim ice gel</p>
+                            <p className="text-xs text-gray-500">Tersimpan di Freezer</p>
                         </div>
                     </div>
                 </div>
