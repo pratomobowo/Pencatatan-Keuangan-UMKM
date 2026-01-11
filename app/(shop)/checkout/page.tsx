@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
     ArrowLeft, MapPin, Banknote, Building2, ShieldCheck, ArrowRight,
-    Loader2, Navigation, CheckCircle2, AlertCircle, HelpCircle, Copy, Check, QrCode, Gift
+    Loader2, Navigation, CheckCircle2, AlertCircle, HelpCircle, Copy, Check, QrCode, Gift, MessageSquare
 } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useShopAuth } from '@/contexts/ShopAuthContext';
@@ -594,6 +594,53 @@ export default function CheckoutPage() {
                             )}
                         </div>
                     )}
+                </div>
+
+                {/* Product Summary Section */}
+                <div>
+                    <div className="flex items-center justify-between mb-3">
+                        <h3 className="text-stone-900 font-bold flex items-center gap-2">
+                            <ShieldCheck size={18} className="text-orange-500" />
+                            Pesanan Anda
+                        </h3>
+                        <Link href="/cart" className="text-xs font-bold text-orange-600 hover:underline">
+                            Ubah Keranjang
+                        </Link>
+                    </div>
+                    <div className="flex flex-col gap-3">
+                        {items.map((item) => (
+                            <div key={`${item.id}-${item.variant}`} className="flex flex-col bg-white rounded-xl p-3 shadow-sm border border-gray-100">
+                                <div className="flex gap-3">
+                                    <div className="relative size-16 rounded-lg overflow-hidden bg-gray-50 shrink-0 border border-gray-100">
+                                        <Image
+                                            src={item.image || DEFAULT_IMAGE}
+                                            alt={item.name}
+                                            fill
+                                            className="object-cover"
+                                        />
+                                    </div>
+                                    <div className="flex-1 min-w-0 flex flex-col justify-center">
+                                        <div className="flex justify-between items-start gap-2">
+                                            <h4 className="text-stone-900 font-bold text-sm truncate">{item.name}</h4>
+                                            <span className="text-xs font-bold text-stone-400 shrink-0">x{item.quantity}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center mt-1">
+                                            <p className="text-[10px] text-gray-500 truncate">{item.variant}</p>
+                                            <p className="text-orange-600 font-bold text-sm">
+                                                Rp {(item.price * item.quantity).toLocaleString('id-ID')}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                {item.note && (
+                                    <div className="mt-2 pt-2 border-t border-gray-50 flex items-start gap-2 bg-stone-50/50 p-2 rounded-lg">
+                                        <MessageSquare size={12} className="text-stone-400 shrink-0 mt-0.5" />
+                                        <p className="text-[10px] text-stone-600 italic leading-tight">"{item.note}"</p>
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
                 </div>
 
                 {/* Payment Method */}
