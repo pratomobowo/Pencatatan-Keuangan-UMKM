@@ -21,6 +21,7 @@ interface ProductCardProps {
     isGrid?: boolean; // For grid layout (full width)
     layout?: 'grid' | 'horizontal';
     variants?: ProductVariant[];
+    showPromoFirst?: boolean; // If true, show promo price even if there's a cheaper variant
 }
 
 export const ProductCard: React.FC<ProductCardProps> = ({
@@ -36,7 +37,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     description,
     isGrid = false,
     layout = 'grid',
-    variants = []
+    variants = [],
+    showPromoFirst = false
 }) => {
     const { addItem } = useCart();
     const [added, setAdded] = useState(false);
@@ -44,11 +46,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     // Final layout decision: if explicit layout is provided use it, otherwise use isGrid
     const currentLayout = layout === 'horizontal' ? 'horizontal' : 'grid';
 
-    // Find the cheapest variant
+    // Find the variant preference: promo first if explicitly asked, otherwise cheapest
     const selectedVariant = useMemo(() => {
         if (!variants || variants.length === 0) return null;
+        if (showPromoFirst && discount) return null; // Use the default props which carry the promo
         return [...variants].sort((a, b) => Number(a.price) - Number(b.price))[0];
-    }, [variants]);
+    }, [variants, showPromoFirst, discount]);
 
     // Current display values
     const currentPrice = selectedVariant ? Number(selectedVariant.price) : defaultPrice;

@@ -247,6 +247,7 @@ function ProductsContent() {
                                             description={product.description || undefined}
                                             layout="horizontal"
                                             variants={product.variants}
+                                            showPromoFirst={searchParams.get('promo') === 'true'}
                                         />
                                     </div>
                                 );

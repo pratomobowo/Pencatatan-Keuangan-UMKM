@@ -188,6 +188,7 @@ export default function ShopHomepage() {
                                         description={product.description || undefined}
                                         isGrid={true}
                                         variants={product.variants}
+                                        showPromoFirst={true}
                                     />
                                 </div>
                             ))}
