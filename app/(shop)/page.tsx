@@ -139,9 +139,9 @@ export default function ShopHomepage() {
             <PromoSlider />
 
             {/* Categories */}
-            <div className="px-4 py-6">
-                <div className="flex items-center gap-4 overflow-x-auto pb-2 scrollbar-none">
-                    {categories.map((category) => (
+            <div className="px-4 py-3">
+                <div className="grid grid-cols-5 gap-y-6 gap-x-2">
+                    {categories.slice(0, 9).map((category) => (
                         <CategoryIcon
                             key={category.id}
                             name={category.name}
