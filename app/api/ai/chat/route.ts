@@ -20,9 +20,20 @@ export async function POST(request: NextRequest) {
 
         let conversationId = existingConversationId;
         if (!conversationId) {
+            // Resolve customerId from session email if available
+            let resolvedCustomerId: string | null = null;
+            if (session?.user?.email) {
+                const customer = await prisma.customer.findFirst({
+                    where: { email: session.user.email }
+                });
+                if (customer) {
+                    resolvedCustomerId = customer.id;
+                }
+            }
+
             const newConversation = await prisma.aIChatConversation.create({
                 data: {
-                    customerId: session?.user?.id || null, // Best effort
+                    customerId: resolvedCustomerId,
                     title: lastUserMessage?.slice(0, 50) || 'New Conversation',
                 }
             });
