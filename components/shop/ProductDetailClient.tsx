@@ -140,7 +140,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                             </span>
                             {product.price < product.originalPrice && (
                                 <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded shadow-sm">
-                                    SAVE {Math.round((1 - (product.price / product.originalPrice)) * 100)}%
+                                    HEMAT {Math.round((1 - (product.price / product.originalPrice)) * 100)}%
                                 </span>
                             )}
                         </div>
