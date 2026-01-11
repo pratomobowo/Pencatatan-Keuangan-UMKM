@@ -108,7 +108,6 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                             )}
                         </div>
                         <h1 className="text-stone-900 text-xl font-bold leading-tight mb-1">{product.name}</h1>
-                        <p className="text-gray-500 text-sm">per {currentUnit}</p>
                     </div>
                 </div>
 

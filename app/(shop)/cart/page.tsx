@@ -68,11 +68,13 @@ export default function CartPage() {
                                 </div>
                                 <div className="flex-1 flex flex-col justify-between">
                                     <div>
-                                        <h4 className="text-stone-900 font-semibold text-sm line-clamp-1">{item.name}</h4>
-                                        <p className="text-xs text-gray-500 mt-0.5">{item.variant}</p>
+                                        <h4 className="text-stone-900 font-bold text-sm line-clamp-1">{item.name}</h4>
                                     </div>
                                     <div className="flex items-center justify-between mt-2">
-                                        <span className="text-orange-600 font-bold text-base">Rp {item.price.toLocaleString('id-ID')}</span>
+                                        <span className="text-orange-600 font-bold text-base whitespace-nowrap">
+                                            Rp {item.price.toLocaleString('id-ID')}
+                                            <span className="text-[10px] font-medium opacity-60 ml-0.5">/{item.variant}</span>
+                                        </span>
                                         <div className="flex items-center gap-2">
                                             <button
                                                 onClick={() => handleQuantityChange(item.id, item.variant, -1)}

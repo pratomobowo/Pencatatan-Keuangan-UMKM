@@ -625,9 +625,9 @@ export default function CheckoutPage() {
                                             <span className="text-xs font-bold text-stone-400 shrink-0">x{item.quantity}</span>
                                         </div>
                                         <div className="flex justify-between items-center mt-1">
-                                            <p className="text-[10px] text-gray-500 truncate">{item.variant}</p>
                                             <p className="text-orange-600 font-bold text-sm">
                                                 Rp {(item.price * item.quantity).toLocaleString('id-ID')}
+                                                <span className="text-[10px] font-medium opacity-60 ml-0.5">/{item.variant}</span>
                                             </p>
                                         </div>
                                     </div>
