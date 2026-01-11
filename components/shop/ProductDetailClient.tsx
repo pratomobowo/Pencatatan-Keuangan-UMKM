@@ -49,7 +49,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
             name: product.name,
             variant: unit,
             price: price,
-            originalPrice: product.originalPrice || price,
+            originalPrice: (!selectedVariant || selectedVariant.isDefault) ? (product.originalPrice || price) : price,
             image: product.image || DEFAULT_IMAGE,
         }, quantity);
         setAdded(true);
@@ -132,11 +132,25 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                     </div>
                 )}
 
-                <div className="mt-4 flex items-end gap-2 border-b border-orange-100 pb-6">
-                    <h2 className="text-orange-500 text-2xl font-extrabold">
-                        Rp {currentPrice.toLocaleString('id-ID')}
-                    </h2>
-                    <span className="text-gray-400 mb-1.5 text-base font-medium">/ {currentUnit}</span>
+                <div className="mt-4 flex flex-col gap-1 border-b border-orange-100 pb-6">
+                    {product.originalPrice && (!selectedVariant || selectedVariant.isDefault) && (
+                        <div className="flex items-center gap-2">
+                            <span className="text-gray-400 line-through text-base font-medium">
+                                Rp {product.originalPrice.toLocaleString('id-ID')}
+                            </span>
+                            {product.price < product.originalPrice && (
+                                <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded shadow-sm">
+                                    SAVE {Math.round((1 - (product.price / product.originalPrice)) * 100)}%
+                                </span>
+                            )}
+                        </div>
+                    )}
+                    <div className="flex items-end gap-2">
+                        <h2 className="text-orange-500 text-3xl font-extrabold">
+                            Rp {currentPrice.toLocaleString('id-ID')}
+                        </h2>
+                        <span className="text-gray-400 mb-1.5 text-base font-medium">/ {currentUnit}</span>
+                    </div>
                 </div>
             </div>
 

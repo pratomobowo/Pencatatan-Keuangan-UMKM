@@ -60,7 +60,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             name,
             variant: currentUnit,
             price: currentPrice,
-            originalPrice: originalPrice || currentPrice,
+            originalPrice: (!selectedVariant || selectedVariant.isDefault) ? (originalPrice || currentPrice) : currentPrice,
             image,
         });
         setAdded(true);
@@ -72,7 +72,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             <div className="flex bg-white rounded-2xl overflow-hidden border border-orange-50 shadow-sm relative group w-full h-32">
                 {/* Product Image - Left */}
                 <Link href={`/products/${slug || id}`} className="relative w-32 shrink-0 bg-gray-50 border-r border-orange-50 overflow-hidden">
-                    {discount && (
+                    {discount && (!selectedVariant || selectedVariant.isDefault) && (
                         <div className="absolute top-2 left-2 bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow-sm z-10">
                             {discount}%
                         </div>
@@ -107,7 +107,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 
                     <div className="flex items-end justify-between gap-2">
                         <div className="flex flex-col">
-                            {originalPrice && (
+                            {originalPrice && (!selectedVariant || selectedVariant.isDefault) && (
                                 <span className="text-[10px] text-stone-400 line-through">
                                     Rp {originalPrice.toLocaleString('id-ID')}/{currentUnit}
                                 </span>
@@ -145,7 +145,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                 className="block"
             >
                 {/* Discount Badge */}
-                {discount && (
+                {discount && (!selectedVariant || selectedVariant.isDefault) && (
                     <div className="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-semibold px-2 py-0.5 rounded shadow-sm z-10">
                         {discount}% OFF
                     </div>
@@ -184,7 +184,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 
                 {/* Price & Unit */}
                 <div className="flex flex-col mt-auto pt-2">
-                    {originalPrice && (
+                    {originalPrice && (!selectedVariant || selectedVariant.isDefault) && (
                         <span className="text-xs text-stone-400 line-through">
                             Rp {originalPrice.toLocaleString('id-ID')}/{currentUnit}
                         </span>
