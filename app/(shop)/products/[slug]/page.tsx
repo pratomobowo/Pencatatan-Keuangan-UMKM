@@ -29,16 +29,18 @@ async function getProduct(slug: string): Promise<Product | null> {
         (!product.promoStartDate || new Date(product.promoStartDate) <= now) &&
         (!product.promoEndDate || new Date(product.promoEndDate) >= now);
 
+    const promoPriceNum = (isPromoActive && product.promoPrice) ? Number(product.promoPrice) : undefined;
+
     // Convert Prisma Decimal to number for the interface
     return {
         ...product,
         originalPrice: isPromoActive ? Number(product.price) : undefined,
-        price: (isPromoActive && product.promoPrice) ? Number(product.promoPrice) : Number(product.price),
+        price: promoPriceNum || Number(product.price),
         costPrice: Number(product.costPrice),
         promoPrice: product.promoPrice ? Number(product.promoPrice) : undefined,
         variants: product.variants ? product.variants.map((v: any) => ({
             ...v,
-            price: Number(v.price),
+            price: (isPromoActive && v.isDefault && promoPriceNum) ? promoPriceNum : Number(v.price),
             costPrice: Number(v.costPrice),
             unitQty: Number(v.unitQty)
         })) : []

@@ -105,17 +105,24 @@ export async function GET(request: NextRequest) {
             const isPromoActive = p.isPromo &&
                 (!p.promoStartDate || new Date(p.promoStartDate) <= now) &&
                 (!p.promoEndDate || new Date(p.promoEndDate) >= now);
+            const promoPriceNum = (isPromoActive && p.promoPrice) ? Number(p.promoPrice) : null;
 
             return {
                 ...p,
-                price: Number(p.price),
+                price: promoPriceNum || Number(p.price),
                 categoryName: p.categoryName,
                 category: p.category,
                 originalPrice: isPromoActive ? Number(p.price) : null,
-                displayPrice: isPromoActive && p.promoPrice ? Number(p.promoPrice) : Number(p.price),
+                displayPrice: promoPriceNum || Number(p.price),
                 promoPrice: p.promoPrice ? Number(p.promoPrice) : null,
                 discount: isPromoActive ? p.promoDiscount : null,
                 isPromoActive,
+                variants: p.variants ? p.variants.map((v: any) => ({
+                    ...v,
+                    price: (isPromoActive && v.isDefault && promoPriceNum) ? promoPriceNum : Number(v.price),
+                    costPrice: Number(v.costPrice),
+                    unitQty: Number(v.unitQty)
+                })) : []
             };
         });
 
