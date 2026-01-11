@@ -1,17 +1,76 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { generateOrderNumber } from '@/lib/utils';
+import { jwtVerify } from 'jose';
+import { auth } from '@/lib/auth';
+import { getJwtSecret } from '@/lib/jwt';
 
-// GET /api/orders - Get all orders
+const JWT_SECRET = getJwtSecret();
+
+// Helper to get identity
+async function getIdentity(request: NextRequest) {
+    const token = request.cookies.get('shop-token')?.value;
+
+    if (token) {
+        try {
+            const { payload } = await jwtVerify(token, JWT_SECRET);
+            return payload as { userId: string; identifier: string; type: string };
+        } catch { /* Fall through */ }
+    }
+
+    const session = await auth();
+    if (session?.user?.email) {
+        return {
+            userId: (session.user as any).id,
+            identifier: session.user.email,
+            type: 'next-auth',
+            role: (session.user as any).role
+        };
+    }
+
+    return null;
+}
+
+export const dynamic = 'force-dynamic';
+
+// GET /api/orders - Get orders (Authenticated only)
 export async function GET(request: NextRequest) {
     try {
+        const identity = await getIdentity(request);
+        if (!identity) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
+        const isAdmin = identity.type === 'admin' || (identity as any).role === 'admin';
         const { searchParams } = new URL(request.url);
         const status = searchParams.get('status');
-        const customerId = searchParams.get('customerId');
+        const requestedCustomerId = searchParams.get('customerId');
 
         const where: any = {};
         if (status) where.status = status;
-        if (customerId) where.customerId = customerId;
+
+        // Authorization Logic
+        if (!isAdmin) {
+            // Find the actual customer record
+            const customer = await prisma.customer.findFirst({
+                where: {
+                    OR: [
+                        { id: identity.userId },
+                        { email: identity.identifier }
+                    ]
+                } as any
+            });
+
+            if (!customer) {
+                return NextResponse.json({ error: 'Customer record not found' }, { status: 404 });
+            }
+
+            // Force filter by the authenticated customer's ID
+            where.customerId = customer.id;
+        } else if (requestedCustomerId) {
+            // Admins can filter by specific customer
+            where.customerId = requestedCustomerId;
+        }
 
         const orders = await prisma.order.findMany({
             where,
@@ -42,6 +101,11 @@ export async function GET(request: NextRequest) {
 // POST /api/orders - Create new order
 export async function POST(request: NextRequest) {
     try {
+        const identity = await getIdentity(request);
+        if (!identity) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
         const body = await request.json();
         const {
             customerId,
@@ -55,6 +119,24 @@ export async function POST(request: NextRequest) {
             status,
             notes,
         } = body;
+
+        const isAdmin = identity.type === 'admin' || (identity as any).role === 'admin';
+
+        // Security check for non-admins: Ensure they are creating orders for themselves
+        if (!isAdmin) {
+            const customer = await prisma.customer.findFirst({
+                where: {
+                    OR: [
+                        { id: identity.userId },
+                        { email: identity.identifier }
+                    ]
+                } as any
+            });
+
+            if (!customer || customer.id !== customerId) {
+                return NextResponse.json({ error: 'Forbidden: Cannot create order for another customer' }, { status: 403 });
+            }
+        }
 
         // Generate professional order number
         const orderNumber = generateOrderNumber();
@@ -103,6 +185,16 @@ export async function POST(request: NextRequest) {
 // DELETE /api/orders - Bulk delete orders (admin only)
 export async function DELETE(request: NextRequest) {
     try {
+        const identity = await getIdentity(request);
+        const isAdmin = identity?.type === 'admin' || (identity as any)?.role === 'admin';
+
+        if (!isAdmin) {
+            return NextResponse.json(
+                { error: 'Unauthorized - Admin access required' },
+                { status: 403 }
+            );
+        }
+
         const { ids } = await request.json();
 
         if (!ids || !Array.isArray(ids)) {

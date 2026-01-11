@@ -2,10 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { SignJWT } from 'jose';
+import { getJwtSecret } from '@/lib/jwt';
 
-const JWT_SECRET = new TextEncoder().encode(
-    process.env.JWT_SECRET || 'shop-customer-secret-key-change-in-production'
-);
+const JWT_SECRET = getJwtSecret();
 
 // POST /api/shop/auth/login - Unified login for customer & admin
 export async function POST(request: NextRequest) {

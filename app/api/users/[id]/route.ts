@@ -19,6 +19,15 @@ export async function GET(
         }
 
         const { id } = await params;
+        const isAdmin = (session.user as any).role === 'admin';
+        const isOwner = (session.user as any).id === id;
+
+        if (!isAdmin && !isOwner) {
+            return NextResponse.json(
+                { error: 'Forbidden: Access denied' },
+                { status: 403 }
+            );
+        }
         const user = await prisma.user.findUnique({
             where: { id },
             select: {

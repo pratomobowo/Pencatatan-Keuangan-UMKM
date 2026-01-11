@@ -2,6 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { ChatbotService, ChatMessage } from '@/services/chatbotService';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { jwtVerify } from 'jose';
+import { getJwtSecret } from '@/lib/jwt';
+
+const JWT_SECRET = getJwtSecret();
+
+export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
     try {

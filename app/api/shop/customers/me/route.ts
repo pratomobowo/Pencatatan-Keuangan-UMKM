@@ -2,10 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { jwtVerify } from 'jose';
 import { auth } from '@/lib/auth';
+import { getJwtSecret } from '@/lib/jwt';
 
-const JWT_SECRET = new TextEncoder().encode(
-    process.env.JWT_SECRET || 'shop-customer-secret-key-change-in-production'
-);
+const JWT_SECRET = getJwtSecret();
 
 // Helper to get customer identity from token or NextAuth session
 async function getCustomerIdentity(request: NextRequest) {
@@ -33,6 +32,8 @@ async function getCustomerIdentity(request: NextRequest) {
 
     return null;
 }
+
+export const dynamic = 'force-dynamic';
 
 // GET /api/shop/customers/me - Get current customer profile
 export async function GET(request: NextRequest) {

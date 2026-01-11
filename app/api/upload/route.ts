@@ -1,9 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { writeFile, mkdir, stat } from 'fs/promises';
 import path from 'path';
+import { auth } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
     try {
+        const session = await auth();
+        if (!session || (session.user as any)?.role !== 'admin') {
+            return NextResponse.json({ error: 'Unauthorized - Admin access required' }, { status: 401 });
+        }
+
         const formData = await request.formData();
         const file = formData.get('file') as File;
         const folder = (formData.get('folder') as string) || 'products';

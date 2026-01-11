@@ -10,7 +10,6 @@ export async function GET() {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        console.log('Available Prisma Models:', Object.keys(prisma).filter(k => !k.startsWith('_')));
         const banners = await (prisma as any).promoBanner.findMany({
             orderBy: { order: 'asc' },
         });
