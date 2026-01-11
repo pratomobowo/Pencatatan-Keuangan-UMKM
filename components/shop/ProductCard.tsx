@@ -49,9 +49,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     // Find the variant preference: promo first if explicitly asked, otherwise cheapest
     const selectedVariant = useMemo(() => {
         if (!variants || variants.length === 0) return null;
-        if (showPromoFirst && discount) return null; // Use the default props which carry the promo
+        // If showPromoFirst is true AND we have an original price (meaning this is the promo item),
+        // we return null to use the default props (which carry the promo price/unit).
+        if (showPromoFirst && originalPrice) return null;
         return [...variants].sort((a, b) => Number(a.price) - Number(b.price))[0];
-    }, [variants, showPromoFirst, discount]);
+    }, [variants, showPromoFirst, originalPrice]);
 
     // Current display values
     const currentPrice = selectedVariant ? Number(selectedVariant.price) : defaultPrice;
@@ -75,9 +77,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             <div className="flex bg-white rounded-2xl overflow-hidden border border-orange-50 shadow-sm relative group w-full h-32">
                 {/* Product Image - Left */}
                 <Link href={`/products/${slug || id}`} className="relative w-32 shrink-0 bg-gray-50 border-r border-orange-50 overflow-hidden">
-                    {discount && (!selectedVariant || selectedVariant.isDefault) && (
+                    {originalPrice && (!selectedVariant || selectedVariant.isDefault) && (
                         <div className="absolute top-2 left-2 bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow-sm z-10">
-                            {discount}%
+                            {discount || Math.round((1 - (defaultPrice / originalPrice)) * 100)}%
                         </div>
                     )}
                     <Image
@@ -148,9 +150,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                 className="block"
             >
                 {/* Discount Badge */}
-                {discount && (!selectedVariant || selectedVariant.isDefault) && (
+                {originalPrice && (!selectedVariant || selectedVariant.isDefault) && (
                     <div className="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-semibold px-2 py-0.5 rounded shadow-sm z-10">
-                        {discount}% OFF
+                        {discount || Math.round((1 - (defaultPrice / originalPrice)) * 100)}% OFF
                     </div>
                 )}
 
