@@ -206,6 +206,51 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
     });
   };
 
+  const handleAutoCalculateVariants = () => {
+    if (formData.unit.toLowerCase() !== 'kg' || !formData.price) return;
+
+    const roundUpTo500 = (num: number) => Math.ceil(num / 500) * 500;
+
+    const v1kg: ProductVariant = {
+      id: `temp-1kg-${Date.now()}`,
+      productId: formData.id || '',
+      unit: '1kg',
+      unitQty: 1,
+      price: formData.price,
+      costPrice: formData.costPrice || 0,
+      isDefault: true
+    };
+
+    const price500 = roundUpTo500((formData.price / 2) + 1000);
+    const cost500 = (formData.costPrice || 0) / 2;
+    const v500gr: ProductVariant = {
+      id: `temp-500gr-${Date.now()}`,
+      productId: formData.id || '',
+      unit: '500gr',
+      unitQty: 0.5,
+      price: price500,
+      costPrice: cost500,
+      isDefault: false
+    };
+
+    const price250 = roundUpTo500((price500 / 2) + 1000);
+    const cost250 = cost500 / 2;
+    const v250gr: ProductVariant = {
+      id: `temp-250gr-${Date.now()}`,
+      productId: formData.id || '',
+      unit: '250gr',
+      unitQty: 0.25,
+      price: price250,
+      costPrice: cost250,
+      isDefault: false
+    };
+
+    setFormData(prev => ({
+      ...prev,
+      variants: [v1kg, v500gr, v250gr]
+    }));
+  };
+
   // Handle image upload
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -871,13 +916,24 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
                   <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
                     <div className="flex items-center justify-between mb-3">
                       <span className="text-sm font-medium text-slate-700">Opsi Satuan</span>
-                      <button
-                        type="button"
-                        onClick={addVariant}
-                        className="text-xs px-2.5 py-1.5 bg-slate-600 text-white rounded-lg hover:bg-slate-700 flex items-center gap-1 transition-colors"
-                      >
-                        <Plus size={12} /> Tambah Varian
-                      </button>
+                      <div className="flex items-center gap-2">
+                        {formData.unit.toLowerCase() === 'kg' && formData.price > 0 && (
+                          <button
+                            type="button"
+                            onClick={handleAutoCalculateVariants}
+                            className="text-xs px-2.5 py-1.5 bg-blue-50 text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-100 flex items-center gap-1 transition-colors"
+                          >
+                            <Sparkles size={12} /> Hitung Otomatis (1kg, 500g, 250g)
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={addVariant}
+                          className="text-xs px-2.5 py-1.5 bg-slate-600 text-white rounded-lg hover:bg-slate-700 flex items-center gap-1 transition-colors"
+                        >
+                          <Plus size={12} /> Tambah Varian
+                        </button>
+                      </div>
                     </div>
 
                     {(formData.variants?.length || 0) === 0 ? (
