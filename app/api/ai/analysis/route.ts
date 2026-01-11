@@ -1,84 +1,98 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { ChatbotService } from '@/services/chatbotService';
+import { auth } from '@/lib/auth';
 
-export async function POST(request: NextRequest) {
+export async function GET() {
     try {
-        // ... (data fetching remains the same)
-        const transactions = await prisma.transaction.findMany({
-            orderBy: { date: 'desc' },
-            take: 100,
+        const lastReport = await prisma.aIAnalysisReport.findFirst({
+            where: { type: 'BUSINESS_INSIGHTS' },
+            orderBy: { createdAt: 'desc' }
         });
 
-        const bestSellers = await prisma.orderItem.groupBy({
-            by: ['productName', 'unit'],
-            _sum: {
-                qty: true,
-                total: true,
-            },
-            orderBy: {
-                _sum: {
-                    qty: 'desc',
-                },
-            },
-            take: 10,
-        });
+        if (!lastReport) return NextResponse.json({ infographic: null });
 
-        const lowStock = await prisma.product.findMany({
-            where: {
-                stock: {
-                    lte: 5,
-                },
-                isActive: true,
-            },
-            select: {
-                name: true,
-                stock: true,
-                unit: true,
-            },
-            take: 10,
+        return NextResponse.json({
+            infographic: lastReport.data,
+            createdAt: lastReport.createdAt
         });
+    } catch (error) {
+        console.error("GET Analysis Error:", error);
+        return NextResponse.json({ error: "Failed to fetch cached analysis" }, { status: 500 });
+    }
+}
+
+export async function POST() {
+    try {
+        const session = await auth();
+        if (!session) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
+        // 1. Fetch data for context
+        const [transactions, orders, products, customers] = await Promise.all([
+            prisma.transaction.findMany({
+                take: 50,
+                orderBy: { date: 'desc' }
+            }),
+            prisma.order.findMany({
+                take: 20,
+                orderBy: { createdAt: 'desc' },
+                include: { items: true }
+            }),
+            prisma.product.findMany({
+                where: { isActive: true }
+            }),
+            prisma.customer.findMany({
+                take: 10,
+                orderBy: { totalSpent: 'desc' }
+            })
+        ]);
+
+        const totalTransactions = transactions.length;
+        const totalIncome = transactions.filter(t => t.type === 'INCOME').reduce((sum, t) => sum + Number(t.amount), 0);
+        const totalExpense = transactions.filter(t => t.type === 'EXPENSE').reduce((sum, t) => sum + Number(t.amount), 0);
+
+        const bestSellers = products
+            .map(p => ({ name: p.name, stock: p.stock, unit: p.unit }))
+            .sort((a, b) => b.stock - a.stock)
+            .slice(0, 5);
+
+        const lowStock = products
+            .filter(p => p.stock <= 5)
+            .map(p => ({ name: p.name, stock: p.stock }));
 
         const totalCustomers = await prisma.customer.count();
         const repeatCustomers = await prisma.customer.count({
-            where: {
-                orderCount: {
-                    gt: 1,
-                },
-            },
+            where: { orderCount: { gt: 1 } }
         });
 
-        const summary = transactions.reduce((acc, curr) => {
-            const type = curr.type.toString();
-            if (!acc[type]) acc[type] = 0;
-            acc[type] += Number(curr.amount);
-            return acc;
-        }, {} as Record<string, number>);
+        const summary = {
+            totalIncome,
+            totalExpense,
+            balance: totalIncome - totalExpense,
+            transactionCount: totalTransactions
+        };
 
         const prompt = `
-            Bertindaklah sebagai konsultan bisnis profesional untuk 'Pasarantar', sebuah bisnis UMKM yang bergerak di bidang penjualan dan pengiriman protein segar (Ikan, Seafood, Ayam, Daging) dari pasar ke rumah pelanggan.
-            
-            Saya akan memberikan data operasional yang komprehensif.
-            
-            TUGAS ANDA: Berikan analisis strategis dalam format JSON yang bisa diubah menjadi infografik.
+            Sebagai sistem AI Analis UMKM 'Pasarantar', berikan analisis mendalam dalam format JSON.
+            Pasarantar adalah toko UMKM yang menjual protein segar (ayam, daging, telur).
             
             FORMAT JSON YANG DIHARAPKAN:
             {
                 "kpis": [
-                    { "label": "Margin Laba", "value": "25%", "status": "posistive|neutral|negative", "description": "Penjelasan singkat" },
-                    { "label": "Efisiensi Biaya", "value": "Tinggi", "status": "...", "description": "..." },
-                    { "label": "Retensi Pelanggan", "value": "45%", "status": "...", "description": "..." }
+                    { "label": "Margin Laba", "value": "...%", "status": "positive|neutral|negative", "description": "..." },
+                    { "label": "Efisiensi Stok", "value": "...%", "status": "...", "description": "..." },
+                    { "label": "Retensi Pelanggan", "value": "...%", "status": "...", "description": "..." }
                 ],
                 "productAnalysis": {
-                    "topPerforming": "Nama Produk Terlaris",
-                    "suggestion": "Bundling yang disarankan",
-                    "chartData": [
-                        { "name": "Produk A", "sales": 100 }, ... (Maks 5 produk teratas)
-                    ]
+                    "topPerforming": "...",
+                    "suggestion": "...",
+                    "chartData": [ { "name": "Produk A", "sales": 100 }, ... (Min 5 produk) ]
                 },
                 "inventoryHealth": {
                     "status": "Aman|Peringatan|Bahaya",
-                    "summary": "Ringkasan kondisi stok",
+                    "summary": "...",
                     "actionItems": ["Segera restock X", "Promo cuci gudang Y"]
                 },
                 "strategicAdvice": [
@@ -108,17 +122,25 @@ export async function POST(request: NextRequest) {
             // Clean AI response if it contains markdown code blocks
             const cleanJson = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
             const infographicData = JSON.parse(cleanJson);
-            return NextResponse.json({ infographic: infographicData });
+
+            // SAVE to database
+            await prisma.aIAnalysisReport.create({
+                data: {
+                    data: infographicData,
+                    type: 'BUSINESS_INSIGHTS'
+                }
+            });
+
+            return NextResponse.json({
+                infographic: infographicData,
+                createdAt: new Date()
+            });
         } catch (e) {
             console.error("Failed to parse AI JSON response:", responseText);
             return NextResponse.json({ analysis: responseText });
         }
-
-    } catch (error: any) {
-        console.error('AI Analysis Error:', error);
-        return NextResponse.json(
-            { error: error.message || 'Gagal menghasilkan analisis.' },
-            { status: 500 }
-        );
+    } catch (error) {
+        console.error("Analysis API Error:", error);
+        return NextResponse.json({ error: "Gagal menghubungkan ke AI. Silakan coba lagi." }, { status: 500 });
     }
 }

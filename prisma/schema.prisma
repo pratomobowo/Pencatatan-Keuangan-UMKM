@@ -453,3 +453,13 @@ model AIChatMessage {
   @@index([conversationId])
   @@index([createdAt])
 }
+
+model AIAnalysisReport {
+  id        String   @id @default(uuid())
+  data      Json     // Stores the infographic JSON
+  type      String   @default("BUSINESS_INSIGHTS")
+  createdAt DateTime @default(now())
+
+  @@index([type])
+  @@index([createdAt])
+}

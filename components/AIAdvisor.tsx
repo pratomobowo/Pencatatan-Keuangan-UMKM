@@ -12,7 +12,11 @@ import {
   ChevronRight,
   TrendingDown,
   CheckCircle2,
-  AlertTriangle
+  AlertTriangle,
+  Clock,
+  Search,
+  UserCircle,
+  Phone
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import {
@@ -51,7 +55,6 @@ interface InfographicData {
     title: string;
     content: string;
   }>;
-  fullNarrative: string;
 }
 
 interface AIAdvisorProps {
@@ -59,9 +62,25 @@ interface AIAdvisorProps {
 }
 
 export const AIAdvisor: React.FC<AIAdvisorProps> = ({ transactions }) => {
-  const [data, setData] = useState<{ infographic?: InfographicData; analysis?: string } | null>(null);
+  const [data, setData] = useState<{ infographic?: InfographicData; analysis?: string; createdAt?: string } | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Load cached report on mount
+  React.useEffect(() => {
+    const fetchCachedReport = async () => {
+      try {
+        const res = await fetch('/api/ai/analysis');
+        const result = await res.json();
+        if (result.infographic) {
+          setData(result);
+        }
+      } catch (err) {
+        console.error("Failed to load cached report:", err);
+      }
+    };
+    fetchCachedReport();
+  }, []);
 
   const handleAnalyze = async () => {
     setLoading(true);
@@ -111,6 +130,18 @@ export const AIAdvisor: React.FC<AIAdvisorProps> = ({ transactions }) => {
             <p className="text-slate-300 text-lg max-w-2xl leading-relaxed">
               Dapatkan laporan visual mendalam tentang performa operasional 'Pasarantar'. Temukan pola belanja, optimasi stok, dan strategi pertumbuhan UMKM Anda.
             </p>
+            {data?.createdAt && (
+              <div className="flex items-center gap-2 mt-4 text-blue-200/70 text-xs font-medium bg-blue-500/10 w-fit px-3 py-1.5 rounded-full border border-blue-500/20">
+                <Clock size={14} />
+                Terakhir diperbarui: {new Date(data.createdAt).toLocaleString('id-ID', {
+                  day: '2-digit',
+                  month: 'short',
+                  year: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                })}
+              </div>
+            )}
           </div>
           <button
             onClick={handleAnalyze}
@@ -220,8 +251,8 @@ export const AIAdvisor: React.FC<AIAdvisorProps> = ({ transactions }) => {
                   <h3 className="font-bold text-slate-800">Inventory Health</h3>
                 </div>
                 <div className={`flex items-center gap-2 mb-3 px-3 py-1.5 rounded-xl w-fit font-bold text-xs border ${data.infographic.inventoryHealth.status === 'Bahaya' ? 'bg-rose-50 text-rose-600 border-rose-100' :
-                  data.infographic.inventoryHealth.status === 'Peringatan' ? 'bg-amber-50 text-amber-600 border-amber-100' :
-                    'bg-emerald-50 text-emerald-600 border-emerald-100'
+                    data.infographic.inventoryHealth.status === 'Peringatan' ? 'bg-amber-50 text-amber-600 border-amber-100' :
+                      'bg-emerald-50 text-emerald-600 border-emerald-100'
                   }`}>
                   {getInventoryIcon(data.infographic.inventoryHealth.status)}
                   {data.infographic.inventoryHealth.status}
