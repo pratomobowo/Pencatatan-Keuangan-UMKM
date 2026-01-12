@@ -73,31 +73,26 @@ export const GowaSettingsManager = () => {
             setTesting(true);
             setTestResult(null);
 
-            const testUrl = `${config.endpoint}/devices`;
-            const headers: Record<string, string> = {};
+            const response = await fetch('/api/admin/gowa-config/test', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(config),
+            });
 
-            if (config.username && config.password) {
-                const auth = btoa(`${config.username}:${config.password}`);
-                headers['Authorization'] = `Basic ${auth}`;
-            } else if (config.apiKey) {
-                headers['Authorization'] = `Bearer ${config.apiKey}`;
-            }
+            const data = await response.json();
 
-            const response = await fetch(testUrl, { headers });
-
-            if (response.ok) {
-                const data = await response.json();
+            if (response.ok && data.success) {
                 setTestResult({
                     success: true,
-                    message: `Koneksi Berhasil! Ditemukan ${data.results?.length || 0} device terhubung.`
+                    message: data.message
                 });
             } else {
-                throw new Error('Connection failed');
+                throw new Error(data.error || 'Connection failed');
             }
-        } catch (error) {
+        } catch (error: any) {
             setTestResult({
                 success: false,
-                message: 'Koneksi Gagal. Pastikan Endpoint dan Kredensial benar.'
+                message: error.message || 'Koneksi Gagal. Pastikan Endpoint dan Kredensial benar.'
             });
         } finally {
             setTesting(false);
@@ -143,8 +138,8 @@ export const GowaSettingsManager = () => {
 
                 {testResult && (
                     <div className={`mb-8 p-4 rounded-xl flex items-center gap-3 border ${testResult.success
-                            ? 'bg-emerald-50 border-emerald-100 text-emerald-800'
-                            : 'bg-rose-50 border-rose-100 text-rose-800'
+                        ? 'bg-emerald-50 border-emerald-100 text-emerald-800'
+                        : 'bg-rose-50 border-rose-100 text-rose-800'
                         }`}>
                         {testResult.success ? <CheckCircle2 size={20} /> : <AlertCircle size={20} />}
                         <span className="text-sm font-medium">{testResult.message}</span>
