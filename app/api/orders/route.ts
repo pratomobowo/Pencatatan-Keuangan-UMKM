@@ -142,11 +142,34 @@ export async function POST(request: NextRequest) {
         // Generate professional order number
         const orderNumber = generateOrderNumber();
 
+        // Auto-create/link customer logic
+        let linkedCustomerId = customerId;
+        if (!linkedCustomerId && customerPhone) {
+            // Search for existing regular customer by phone
+            const existingCustomer = await prisma.customer.findFirst({
+                where: { phone: customerPhone }
+            });
+
+            if (existingCustomer) {
+                linkedCustomerId = existingCustomer.id;
+            } else if (customerName) {
+                // Create new customer record
+                const newCustomer = await prisma.customer.create({
+                    data: {
+                        name: customerName,
+                        phone: customerPhone,
+                        address: customerAddress || '',
+                    }
+                });
+                linkedCustomerId = newCustomer.id;
+            }
+        }
+
         // Create order with items in a transaction
         const order = await prisma.order.create({
             data: {
                 orderNumber,
-                customerId,
+                customerId: linkedCustomerId,
                 customerName,
                 customerAddress,
                 customerPhone,
