@@ -99,7 +99,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
                     <Settings className="text-orange-500" size={20} />
                     <span>Pengaturan Toko</span>
                 </button>
-                <NavButton targetView="NOTIFICATIONS" icon={Bell} label="Notifikasi WhatsApp" />
+                <NavButton targetView="NOTIFICATIONS" icon={Bell} label="Wa Notifikasi" />
 
                 <SectionLabel>Keuangan</SectionLabel>
                 <NavButton targetView="TRANSACTIONS" icon={List} label="Buku Transaksi" />
