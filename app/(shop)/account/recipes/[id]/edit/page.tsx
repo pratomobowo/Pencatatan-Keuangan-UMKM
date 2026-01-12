@@ -6,10 +6,6 @@ import Image from 'next/image';
 import { ArrowLeft, Plus, Trash2, Camera, Loader2, Save, GripVertical } from 'lucide-react';
 import { useNotifications } from '@/contexts/NotificationContext';
 
-interface Ingredient {
-    item: string;
-    amount?: string;
-}
 
 interface Step {
     content: string;
@@ -27,7 +23,7 @@ export default function EditRecipePage({ params }: { params: Promise<{ id: strin
     // Form State
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
-    const [ingredients, setIngredients] = useState<Ingredient[]>([]);
+    const [ingredients, setIngredients] = useState<string[]>([]);
     const [steps, setSteps] = useState<Step[]>([]);
     const [closing, setClosing] = useState('');
     const [image, setImage] = useState<string | null>(null);
@@ -45,10 +41,12 @@ export default function EditRecipePage({ params }: { params: Promise<{ id: strin
             setTitle(data.title);
             setDescription(data.description || '');
 
-            // Normalize ingredients (handle string array vs object array)
+            // Normalize ingredients (handle object array to string array for simplified editing)
             const normalizedIngredients = (data.ingredients || []).map((ing: any) => {
-                if (typeof ing === 'string') return { item: ing, amount: '' };
-                return ing;
+                if (typeof ing === 'object' && ing !== null) {
+                    return `${ing.amount || ''} ${ing.item || ''}`.trim();
+                }
+                return String(ing);
             });
             setIngredients(normalizedIngredients);
 
@@ -95,12 +93,12 @@ export default function EditRecipePage({ params }: { params: Promise<{ id: strin
     };
 
     const addIngredient = () => {
-        setIngredients([...ingredients, { item: '', amount: '' }]);
+        setIngredients([...ingredients, '']);
     };
 
-    const updateIngredient = (index: number, field: keyof Ingredient, value: string) => {
+    const updateIngredient = (index: number, value: string) => {
         const newIngredients = [...ingredients];
-        newIngredients[index] = { ...newIngredients[index], [field]: value };
+        newIngredients[index] = value;
         setIngredients(newIngredients);
     };
 
@@ -243,24 +241,17 @@ export default function EditRecipePage({ params }: { params: Promise<{ id: strin
                             <div key={idx} className="flex gap-2 items-center animate-in fade-in slide-in-from-right-2 duration-300">
                                 <input
                                     type="text"
-                                    value={ing.item}
-                                    onChange={(e) => updateIngredient(idx, 'item', e.target.value)}
-                                    placeholder="Nama Bahan"
-                                    className="flex-1 px-3 py-2.5 rounded-xl border border-stone-200 focus:border-orange-500 focus:outline-none bg-stone-50/50 text-sm"
-                                />
-                                <input
-                                    type="text"
-                                    value={ing.amount || ''}
-                                    onChange={(e) => updateIngredient(idx, 'amount', e.target.value)}
-                                    placeholder="Porsi/Banyak"
-                                    className="w-24 px-3 py-2.5 rounded-xl border border-stone-200 focus:border-orange-500 focus:outline-none bg-stone-50/50 text-sm text-center font-medium"
+                                    value={ing}
+                                    onChange={(e) => updateIngredient(idx, e.target.value)}
+                                    placeholder="Contoh: Bawang 1 ons"
+                                    className="flex-1 px-4 py-3 rounded-xl border border-stone-200 focus:border-orange-500 focus:outline-none bg-stone-50/50 text-sm"
                                 />
                                 <button
                                     type="button"
                                     onClick={() => removeIngredient(idx)}
                                     className="p-2 text-rose-500 hover:bg-rose-50 rounded-lg transition-colors"
                                 >
-                                    <Trash2 size={18} />
+                                    <Trash2 size={20} />
                                 </button>
                             </div>
                         ))}
