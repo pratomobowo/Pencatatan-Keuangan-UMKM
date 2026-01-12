@@ -146,6 +146,11 @@ model Customer {
   pointTransactions PointTransaction[]
   vouchers      Voucher[]
   chatConversations AIChatConversation[]
+  
+  // Recipe Relations
+  recipes       Recipe[]
+  recipeLikes   RecipeLike[]
+  recipeComments RecipeComment[]
 
   @@index([phone])
   @@index([email])
@@ -484,4 +489,67 @@ model GowaConfig {
   username  String?
   password  String?
   updatedAt DateTime @updatedAt
+}
+
+enum RecipeStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model Recipe {
+  id          String       @id @default(uuid())
+  title       String
+  slug        String       @unique
+  authorId    String
+  author      Customer     @relation(fields: [authorId], references: [id])
+  
+  // Content Structure
+  image       String?      // 1. Foto Hasil
+  description String?      // 2. Pembukaan (Intro)
+  ingredients Json         // 3. Bahan Masakan (Array/List)
+  steps       Json         // 4. Step by Step (Array/List)
+  closing     String?      // 5. Penutupan (Outro)
+  
+  // Raw Input (for reference or re-processing)
+  rawInput    String?      @db.Text
+  
+  status      RecipeStatus @default(PENDING)
+  adminNote   String?      // Feedback if rejected
+  
+  likes       RecipeLike[]
+  comments    RecipeComment[]
+  
+  // Metadata
+  views       Int          @default(0)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([status])
+  @@index([authorId])
+}
+
+model RecipeLike {
+  id        String   @id @default(uuid())
+  recipeId  String
+  customerId String
+  createdAt DateTime @default(now())
+  
+  recipe    Recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  customer  Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@unique([recipeId, customerId])
+}
+
+model RecipeComment {
+  id        String   @id @default(uuid())
+  content   String
+  recipeId  String
+  customerId String
+  createdAt DateTime @default(now())
+  
+  recipe    Recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  customer  Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@index([recipeId])
 }

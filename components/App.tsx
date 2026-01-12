@@ -18,6 +18,7 @@ import { CategoryManager } from '@/components/CategoryManager';
 import { LoyaltyManager } from '@/components/LoyaltyManager';
 import { ChatLogManager } from '@/components/admin/ChatLogManager';
 import { GowaSettingsManager } from '@/components/GowaSettingsManager';
+import { RecipeManager } from '@/components/admin/RecipeManager';
 import { Loader2 } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { ToastProvider, useToast } from '@/components/ui/Toast';
@@ -130,6 +131,7 @@ const App: React.FC = () => {
         CATEGORY_MANAGEMENT: { title: 'Manajemen Kategori Produk', description: 'Atur kategori produk untuk mempermudah navigasi di toko online.' },
         CHAT_LOGS: { title: 'AI Chat Conversations', description: 'Review interaksi konsumen dengan Minsar AI untuk mempelajari perilaku pasar.' },
         GOWA_SETTINGS: { title: 'WhatsApp Gateway (GOWA v8)', description: 'Konfigurasi integrasi WhatsApp untuk pengiriman OTP dan notifikasi.' },
+        RECIPE_MANAGEMENT: { title: 'Manajemen Buku Resep', description: 'Moderasi resep yang dikirim pelanggan, review format AI, dan setujui untuk memberi poin.' },
     };
 
     return (
@@ -272,6 +274,10 @@ const App: React.FC = () => {
 
                     {view === 'GOWA_SETTINGS' && (
                         <GowaSettingsManager />
+                    )}
+
+                    {view === 'RECIPE_MANAGEMENT' && (
+                        <RecipeManager />
                     )}
                 </main>
             </div>

@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Home, Grid, ShoppingCart, Receipt, User } from 'lucide-react';
+import { Home, Grid, ShoppingCart, Book, User } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { useCart } from '@/contexts/CartContext';
 
@@ -47,12 +47,12 @@ export const BottomNav = () => {
                 </Link>
 
                 <Link
-                    href="/orders"
-                    className={`flex flex-col items-center justify-center gap-1 w-16 transition-colors ${isActive('/orders') ? 'text-orange-500' : 'text-stone-400 hover:text-orange-500'
+                    href="/recipes"
+                    className={`flex flex-col items-center justify-center gap-1 w-16 transition-colors ${isActive('/recipes') ? 'text-orange-500' : 'text-stone-400 hover:text-orange-500'
                         }`}
                 >
-                    <Receipt size={24} />
-                    <span className="text-[10px] font-medium">Pesanan</span>
+                    <Book size={24} />
+                    <span className="text-[10px] font-medium">Resep</span>
                 </Link>
 
                 <Link
