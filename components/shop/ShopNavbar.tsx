@@ -70,7 +70,7 @@ export const ShopNavbar = () => {
     const hasSpecialHeader = [
         '/cart', '/checkout', '/orders', '/account', '/login', '/register',
         '/addresses', '/favorites', '/notifications', '/settings', '/help', '/payments',
-        '/products' // List page has its own search/header
+        '/products', '/forgot-password' // List page has its own search/header
     ];
 
     const isProductDetail = pathname.startsWith('/products/') && pathname !== '/products';
