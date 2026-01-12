@@ -245,7 +245,7 @@ export default function RecipeDetailPage({ params }: { params: Promise<{ slug: s
                 </div>
 
                 {/* Comments Section */}
-                <div className="mt-12 pt-8 border-t border-stone-100 pb-12">
+                <div className="mt-12 pt-8 border-t border-stone-100">
                     <h3 className="text-lg font-bold text-stone-900 mb-6">Komentar ({recipe.comments.length})</h3>
 
                     {/* Input */}
