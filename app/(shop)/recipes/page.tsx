@@ -64,7 +64,7 @@ export default function RecipesPage() {
                 <div className="flex items-center gap-4">
                     <button onClick={() => router.back()} className="text-stone-500 hover:text-orange-500 transition-colors">
                         <ArrowLeft size={24} />
-                    </button> // Added back button for mobile nav override
+                    </button> {/* Added back button for mobile nav override */}
                     <div className="flex-1">
                         <h1 className="font-bold text-lg text-stone-900 flex items-center gap-2">
                             <ChefHat className="text-orange-500" size={24} />
