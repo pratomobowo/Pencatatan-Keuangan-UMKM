@@ -13,16 +13,17 @@ async function getCustomerIdentity(request: NextRequest) {
     if (token) {
         try {
             const { payload } = await jwtVerify(token, JWT_SECRET);
-            return payload as { userId: string; identifier: string; type: string };
+            return { userId: payload.userId as string, identifier: payload.identifier as string };
         } catch { }
     }
     const session = await auth();
     if (session?.user?.email) {
-        return {
-            userId: (session.user as any).id,
-            identifier: session.user.email,
-            type: 'next-auth'
-        };
+        const customer = await prisma.customer.findFirst({
+            where: { email: session.user.email }
+        });
+        if (customer) {
+            return { userId: customer.id, identifier: session.user.email };
+        }
     }
     return null;
 }

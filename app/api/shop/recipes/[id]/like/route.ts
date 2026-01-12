@@ -16,7 +16,12 @@ async function getCustomerIdentity(request: NextRequest) {
     }
     const session = await auth();
     if (session?.user?.email) {
-        return { userId: (session.user as any).id, identifier: session.user.email };
+        const customer = await prisma.customer.findFirst({
+            where: { email: session.user.email }
+        });
+        if (customer) {
+            return { userId: customer.id, identifier: session.user.email };
+        }
     }
     return null;
 }
