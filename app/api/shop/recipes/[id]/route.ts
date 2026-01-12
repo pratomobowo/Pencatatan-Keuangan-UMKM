@@ -86,3 +86,55 @@ export async function GET(
         return NextResponse.json({ error: 'Failed to fetch recipe' }, { status: 500 });
     }
 }
+
+// PATCH /api/shop/recipes/[id] (Update by author)
+export async function PATCH(
+    request: NextRequest,
+    context: { params: Promise<{ id: string }> }
+) {
+    try {
+        const identity = await getCustomerIdentity(request);
+        if (!identity) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
+        const { id } = await context.params;
+        const body = await request.json();
+        const { title, description, ingredients, steps, closing, image } = body;
+
+        // Find the recipe first to check ownership
+        const recipe = await prisma.recipe.findUnique({
+            where: { id: id }
+        });
+
+        if (!recipe) {
+            return NextResponse.json({ error: 'Recipe not found' }, { status: 404 });
+        }
+
+        if (recipe.authorId !== identity.userId) {
+            return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+        }
+
+        // Update the recipe
+        // We reset status to PENDING so admin can review the edit
+        const updatedRecipe = await prisma.recipe.update({
+            where: { id: id },
+            data: {
+                title,
+                description,
+                ingredients: ingredients || [],
+                steps: steps || [],
+                closing,
+                image,
+                status: 'PENDING',
+                updatedAt: new Date()
+            }
+        });
+
+        return NextResponse.json(updatedRecipe);
+
+    } catch (error) {
+        console.error('Error updating recipe:', error);
+        return NextResponse.json({ error: 'Failed to update recipe' }, { status: 500 });
+    }
+}

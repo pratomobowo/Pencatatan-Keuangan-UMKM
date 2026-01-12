@@ -16,6 +16,7 @@ import {
     Bell,
     CreditCard,
     Gift,
+    Book,
     Star,
     Loader2
 } from 'lucide-react';
@@ -26,6 +27,7 @@ const menuItems = [
         section: 'Program Loyalitas',
         items: [
             { icon: Gift, label: 'Loyalty & Hadiah', href: '/loyalty' },
+            { icon: Book, label: 'Resep Saya', href: '/account/recipes' },
         ]
     },
     {
