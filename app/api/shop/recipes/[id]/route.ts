@@ -21,21 +21,20 @@ async function getCustomerIdentity(request: NextRequest) {
     return null;
 }
 
-// GET /api/shop/recipes/[slug]
+// GET /api/shop/recipes/[id] (Handles both slug and UUID)
 export async function GET(
     request: NextRequest,
-    context: { params: Promise<{ slug: string }> } // Fix for Next.js 15
+    context: { params: Promise<{ id: string }> }
 ) {
     try {
-        const params = await context.params;
-        const slug = params.slug;
+        const { id } = await context.params;
         const identity = await getCustomerIdentity(request);
 
-        // Find by slug OR id (if slug looks like UUID)
-        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
+        // Find by slug OR id (if id looks like UUID)
+        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
 
         const recipe = await prisma.recipe.findFirst({
-            where: isUuid ? { id: slug } : { slug },
+            where: isUuid ? { id: id } : { slug: id },
             include: {
                 author: {
                     select: { name: true }
