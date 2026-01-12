@@ -196,6 +196,7 @@ model Order {
   serviceFee      Decimal     @default(0) @db.Decimal(10, 2)
   shippingAddress String?
   shippingFee     Decimal     @default(0) @db.Decimal(10, 2)
+  shippingMethod  String      @default("DELIVERY")
   source          OrderSource @default(MANUAL)
   customer        Customer?   @relation(fields: [customerId], references: [id])
   items           OrderItem[]

@@ -200,12 +200,24 @@ export const OrderManager: React.FC<OrderManagerProps> = ({
     });
 
     message += `\nSubtotal: ${formatCurrency(order.subtotal)}\n`;
-    if (order.shippingFee && order.shippingFee > 0) {
+    if (order.shippingMethod === 'PICKUP') {
+      message += `Ongkir: GRATIS (Pickup Mandiri)\n`;
+    } else if (order.shippingFee && order.shippingFee > 0) {
       message += `Ongkir: ${formatCurrency(order.shippingFee)}\n`;
     }
+
+    if (order.discount && order.discount > 0) {
+      message += `Diskon: -${formatCurrency(order.discount)}\n`;
+    }
+
     message += `*TOTAL: ${formatCurrency(order.grandTotal)}*\n`;
     message += `--------------------------------\n`;
-    message += `Mohon ditunggu pengirimannya ya kak. Terima kasih! 🙏\n`;
+
+    if (order.shippingMethod === 'PICKUP') {
+      message += `Silakan ambil pesanan Anda atau kirim driver ke toko. Terima kasih! 🙏\n`;
+    } else {
+      message += `Mohon ditunggu pengirimannya ya kak. Terima kasih! 🙏\n`;
+    }
 
     const encodedMessage = encodeURIComponent(message);
     let phone = order.customerPhone || '';
@@ -381,6 +393,7 @@ export const OrderManager: React.FC<OrderManagerProps> = ({
                 <th className="text-left px-4 py-3 text-sm font-semibold text-slate-700">No. Order</th>
                 <th className="text-left px-4 py-3 text-sm font-semibold text-slate-700">Tanggal</th>
                 <th className="text-left px-4 py-3 text-sm font-semibold text-slate-700">Pelanggan</th>
+                <th className="text-left px-4 py-3 text-sm font-semibold text-slate-700">Metode</th>
                 <th className="text-left px-4 py-3 text-sm font-semibold text-slate-700">Items</th>
                 <th className="text-right px-4 py-3 text-sm font-semibold text-slate-700">Total</th>
                 <th className="text-center px-4 py-3 text-sm font-semibold text-slate-700">Status</th>
@@ -390,7 +403,7 @@ export const OrderManager: React.FC<OrderManagerProps> = ({
             <tbody>
               {filteredOrders.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-4 py-12 text-center text-slate-500">
+                  <td colSpan={9} className="px-4 py-12 text-center text-slate-500">
                     Tidak ada pesanan yang ditemukan.
                   </td>
                 </tr>
@@ -414,6 +427,11 @@ export const OrderManager: React.FC<OrderManagerProps> = ({
                     <td className="px-4 py-3">
                       <p className="font-medium text-slate-900">{order.customerName}</p>
                       <p className="text-xs text-slate-500">{order.customerPhone}</p>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${order.shippingMethod === 'PICKUP' ? 'bg-blue-100 text-blue-700' : 'bg-orange-100 text-orange-700'}`}>
+                        {order.shippingMethod === 'PICKUP' ? 'Pickup' : 'Kurir'}
+                      </span>
                     </td>
                     <td className="px-4 py-3 text-slate-600">
                       <p className="text-sm">{order.items.length} item(s)</p>
@@ -698,6 +716,12 @@ export const OrderManager: React.FC<OrderManagerProps> = ({
                       {new Date(selectedOrder.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
                     </p>
                     <p className="text-sm mt-2">{getStatusBadge(selectedOrder.status)}</p>
+                    <div className="mt-2 flex items-center justify-end gap-1 capitalize">
+                      <span className="text-[10px] text-slate-500">Metode:</span>
+                      <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${selectedOrder.shippingMethod === 'PICKUP' ? 'bg-blue-100 text-blue-700' : 'bg-orange-100 text-orange-700'}`}>
+                        {selectedOrder.shippingMethod === 'PICKUP' ? 'Pickup Mandiri' : 'Antar Kurir'}
+                      </span>
+                    </div>
                   </div>
                 </div>
 

@@ -164,6 +164,7 @@ export interface Order {
   recipientName?: string;
   recipientPhone?: string;
   shippingAddress?: string;
+  shippingMethod?: string;
   deliveryTime?: string;
 
   date: string; // ISO String
@@ -172,6 +173,7 @@ export interface Order {
   shippingFee: number;
   serviceFee?: number; // Added
   grandTotal: number;
+  discount?: number;
 
   paymentMethod?: string; // Added
   status: string; // broadened to string to accept all statuses or 'PENDING' | 'PAID' | 'CANCELLED' | 'CONFIRMED' etc

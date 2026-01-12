@@ -6,7 +6,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
     ArrowLeft, MapPin, Banknote, Building2, ShieldCheck, ArrowRight,
-    Loader2, Navigation, CheckCircle2, AlertCircle, HelpCircle, Copy, Check, QrCode, Gift, MessageSquare
+    Loader2, Navigation, CheckCircle2, AlertCircle, HelpCircle, Copy, Check, QrCode, Gift, MessageSquare,
+    Package, Store
 } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useShopAuth } from '@/contexts/ShopAuthContext';
@@ -74,6 +75,7 @@ export default function CheckoutPage() {
         error: null,
         requiresManualConfirmation: false,
     });
+    const [shippingMethod, setShippingMethod] = useState<'DELIVERY' | 'PICKUP'>('DELIVERY');
 
     const [serviceFee, setServiceFee] = useState(0);
 
@@ -98,10 +100,19 @@ export default function CheckoutPage() {
     }, [isAuthenticated, authLoading]);
 
     useEffect(() => {
-        if (isAuthenticated && selectedAddress) {
+        if (isAuthenticated && selectedAddress && shippingMethod === 'DELIVERY') {
             calculateShippingForAddress(selectedAddress);
+        } else if (shippingMethod === 'PICKUP') {
+            setShippingData({
+                fee: 0,
+                distance: null,
+                isFreeShipping: false,
+                isCalculating: false,
+                error: null,
+                requiresManualConfirmation: false,
+            });
         }
-    }, [selectedAddress, isAuthenticated]);
+    }, [selectedAddress, isAuthenticated, shippingMethod]);
 
     const fetchShopConfig = async () => {
         try {
@@ -339,7 +350,7 @@ export default function CheckoutPage() {
         }
 
         if (!isAuthenticated) {
-            if (!guestInfo.name || !guestInfo.phone || !guestInfo.address) {
+            if (!guestInfo.name || !guestInfo.phone || (shippingMethod === 'DELIVERY' && !guestInfo.address)) {
                 setError('Lengkapi data pengiriman');
                 return;
             }
@@ -365,6 +376,7 @@ export default function CheckoutPage() {
                 addressPhone: isAuthenticated ? selectedAddress?.phone : guestInfo.phone,
                 addressFull: isAuthenticated ? selectedAddress?.address : guestInfo.address,
                 paymentMethod: selectedPayment,
+                shippingMethod: shippingMethod,
                 shippingFee: shippingData.requiresManualConfirmation ? 0 : shippingData.fee, // 0 if manual
                 serviceFee: serviceFee,
                 voucherCode: appliedVoucher?.code || null,
@@ -467,12 +479,51 @@ export default function CheckoutPage() {
             </header>
 
             <div className="p-4 pb-24 flex flex-col gap-6 max-w-md mx-auto">
+                {/* Shipping Method Selection */}
+                <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+                    <h3 className="text-stone-900 font-bold mb-3 flex items-center gap-2">
+                        <Package size={18} className="text-orange-500" />
+                        Metode Pengiriman
+                    </h3>
+                    <div className="grid grid-cols-2 gap-3">
+                        <div
+                            onClick={() => setShippingMethod('DELIVERY')}
+                            className={`p-3 rounded-xl border-2 cursor-pointer transition-all flex flex-col items-center gap-2 ${shippingMethod === 'DELIVERY' ? 'border-orange-500 bg-orange-50' : 'border-gray-100 hover:border-orange-200'}`}
+                        >
+                            <Navigation size={20} className={shippingMethod === 'DELIVERY' ? 'text-orange-500' : 'text-gray-400'} />
+                            <div className="text-center">
+                                <p className="text-sm font-bold text-stone-900">Antar Kurir</p>
+                                <p className="text-[10px] text-gray-500">Kirim ke alamat</p>
+                            </div>
+                        </div>
+                        <div
+                            onClick={() => {
+                                setShippingMethod('PICKUP');
+                                setShippingData(prev => ({ ...prev, error: null }));
+                            }}
+                            className={`p-3 rounded-xl border-2 cursor-pointer transition-all flex flex-col items-center gap-2 ${shippingMethod === 'PICKUP' ? 'border-orange-500 bg-orange-50' : 'border-gray-100 hover:border-orange-200'}`}
+                        >
+                            <Store size={20} className={shippingMethod === 'PICKUP' ? 'text-orange-500' : 'text-gray-400'} />
+                            <div className="text-center">
+                                <p className="text-sm font-bold text-stone-900">Pickup Mandiri</p>
+                                <p className="text-[10px] text-gray-500">Ambil sendiri</p>
+                            </div>
+                        </div>
+                    </div>
+                    {shippingMethod === 'PICKUP' && (
+                        <div className="mt-3 p-3 bg-blue-50 rounded-lg text-xs text-blue-700 flex items-start gap-2 border border-blue-100">
+                            <HelpCircle size={14} className="shrink-0 mt-0.5" />
+                            <p>Silakan ambil pesanan Anda langsung di toko atau gunakan driver pilihan Anda. Alamat toko tersedia di halaman Detail Toko.</p>
+                        </div>
+                    )}
+                </div>
+
                 {/* Shipping Address Section */}
                 <div>
                     <div className="flex items-center justify-between mb-3">
                         <h3 className="text-stone-900 font-bold flex items-center gap-2">
                             <MapPin size={18} className="text-orange-500" />
-                            Alamat Pengiriman
+                            {shippingMethod === 'DELIVERY' ? 'Alamat Pengiriman' : 'Informasi Kontak'}
                         </h3>
                     </div>
 
@@ -563,14 +614,16 @@ export default function CheckoutPage() {
                                 <p className="text-[10px] text-gray-400">Pastikan alamat lengkap untuk penghitungan ongkir akurat.</p>
                             </div>
 
-                            <button
-                                onClick={calculateShippingForGuest}
-                                disabled={shippingData.isCalculating || !guestInfo.address}
-                                className="w-full py-3 bg-slate-800 text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2 hover:bg-black transition-all disabled:opacity-50"
-                            >
-                                {shippingData.isCalculating ? <Loader2 size={16} className="animate-spin" /> : <Navigation size={16} />}
-                                {shippingData.isCalculating ? 'Menghitung...' : 'Hitung Ongkir'}
-                            </button>
+                            {shippingMethod === 'DELIVERY' && (
+                                <button
+                                    onClick={calculateShippingForGuest}
+                                    disabled={shippingData.isCalculating || !guestInfo.address}
+                                    className="w-full py-3 bg-slate-800 text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2 hover:bg-black transition-all disabled:opacity-50"
+                                >
+                                    {shippingData.isCalculating ? <Loader2 size={16} className="animate-spin" /> : <Navigation size={16} />}
+                                    {shippingData.isCalculating ? 'Menghitung...' : 'Hitung Ongkir'}
+                                </button>
+                            )}
 
                             {shippingData.distance !== null && !shippingData.error && (
                                 <div className="bg-emerald-50 border border-emerald-100 p-3 rounded-lg text-sm text-emerald-800 flex flex-col gap-1">
@@ -600,6 +653,7 @@ export default function CheckoutPage() {
                         </div>
                     )}
                 </div>
+
 
                 {/* Product Summary Section */}
                 <div>

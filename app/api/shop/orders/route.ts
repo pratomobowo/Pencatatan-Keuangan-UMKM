@@ -57,6 +57,7 @@ export async function POST(request: NextRequest) {
             addressPhone,
             addressFull,
             paymentMethod,
+            shippingMethod,
             notes,
             voucherCode
         } = body;
@@ -142,6 +143,7 @@ export async function POST(request: NextRequest) {
                     grandTotal,
                     source: 'ONLINE',
                     paymentMethod: paymentMethod || 'cod',
+                    shippingMethod: shippingMethod || 'DELIVERY',
                     notes: notes ? `${addressLabel ? `[${addressLabel}] ` : ''}${notes}` : (addressLabel ? `[${addressLabel}]` : null),
                     items: {
                         create: items.map((item: any) => ({
