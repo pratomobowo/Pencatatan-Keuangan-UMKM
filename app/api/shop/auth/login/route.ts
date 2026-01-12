@@ -41,17 +41,21 @@ export async function POST(request: NextRequest) {
             }
         }
 
-        // If not found as admin, try as shop customer (by phone)
+        // If not found as admin, try as shop customer (by phone or email)
         if (userType === 'customer') {
             const identifier = phone || email;
-            // Use unified Customer model
-            // Note: Currently only finding by phone as it's the unique identifier
+
+            // Flexible phone matching (same as OTP flow)
+            const phoneMatch = typeof identifier === 'string' ? identifier.replace(/\D/g, '') : identifier;
+
             const customer = await prisma.customer.findFirst({
                 where: {
                     OR: [
                         { phone: identifier },
-                        // Optional: Allow finding by email if provided and configured
-                        // { email: identifier }
+                        { email: identifier },
+                        { phone: phoneMatch },
+                        { phone: '0' + phoneMatch.replace(/^62/, '') },
+                        { phone: '62' + phoneMatch.replace(/^0/, '') },
                     ]
                 },
             });

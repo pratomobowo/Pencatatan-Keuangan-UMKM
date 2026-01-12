@@ -290,7 +290,7 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
   // Handle AI Description Generation
   const handleGenerateDescription = async () => {
     if (!formData.name) {
-      alert('Tolong isi nama produk dulu ya Puh!');
+      alert('Tolong isi nama produk dulu ya kak!');
       return;
     }
 
@@ -303,7 +303,7 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
       });
 
       if (!response.ok) {
-        throw new Error('Gagal generate deskripsi Puh.');
+        throw new Error('Gagal generate deskripsi Kak.');
       }
 
       const data = await response.json();

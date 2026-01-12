@@ -289,9 +289,9 @@ export default function ForgotPasswordPage() {
                                     </div>
                                 </div>
                                 <div className="space-y-2">
-                                    <h3 className="text-2xl font-bold text-gray-800">Beres, Puh!</h3>
+                                    <h3 className="text-2xl font-bold text-gray-800">Alhamdulillah Beres!</h3>
                                     <p className="text-gray-600">
-                                        Password Bunda sudah berhasil diperbarui. Sekarang silakan login kembali pakai password baru ya.
+                                        Password kakak sudah berhasil diperbarui. Sekarang silakan login kembali pakai password baru ya.
                                     </p>
                                 </div>
                                 <button

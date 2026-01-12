@@ -296,7 +296,7 @@ export default function AIChatbot() {
             }
             setMessages(prev => [...prev, { role: 'assistant', content: data.response }]);
         } catch (error: any) {
-            setMessages(prev => [...prev, { role: 'assistant', content: `Maaf Puh, sepertinya Minsar lagi gangguan: ${error.message}` }]);
+            setMessages(prev => [...prev, { role: 'assistant', content: `Maaf Kak, sepertinya Minsar lagi gangguan: ${error.message}` }]);
         } finally {
             setIsLoading(false);
         }

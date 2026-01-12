@@ -47,12 +47,13 @@ export async function GET(request: NextRequest) {
             );
         }
 
-        // Find customer by ID (if from shop-token) or email (if from NextAuth)
-        let customer = await prisma.customer.findFirst({
+        // Find customer by ID (if from shop-token) or email/phone (if from NextAuth or phone login)
+        const customer = await prisma.customer.findFirst({
             where: {
                 OR: [
                     { id: tokenData.userId },
-                    { email: tokenData.identifier }
+                    { email: tokenData.identifier },
+                    { phone: tokenData.identifier }
                 ]
             } as any,
             select: {
@@ -69,10 +70,11 @@ export async function GET(request: NextRequest) {
             } as any,
         });
 
-        // If from NextAuth and customer record doesn't exist, auto-create it
-        if (!customer && tokenData.type === 'next-auth') {
+        // If not found and from NextAuth, auto-create it
+        let finalCustomer = customer;
+        if (!finalCustomer && tokenData.type === 'next-auth') {
             const session = await auth();
-            customer = await prisma.customer.create({
+            finalCustomer = await prisma.customer.create({
                 data: {
                     name: session?.user?.name || 'Customer',
                     email: tokenData.identifier,
@@ -93,14 +95,15 @@ export async function GET(request: NextRequest) {
             });
         }
 
-        if (!customer) {
+        if (!finalCustomer) {
+            console.warn('Customer not found for token data:', tokenData);
             return NextResponse.json(
                 { error: 'Customer not found' },
                 { status: 404 }
             );
         }
 
-        return NextResponse.json(customer);
+        return NextResponse.json(finalCustomer);
     } catch (error: any) {
         console.error('Error fetching customer:', error);
         return NextResponse.json(
