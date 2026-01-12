@@ -89,7 +89,12 @@ export async function GET(request: NextRequest) {
             }
         });
 
-        return NextResponse.json(orders);
+        const ordersWithDate = orders.map(order => ({
+            ...order,
+            date: (order as any).date || order.createdAt.toISOString()
+        }));
+
+        return NextResponse.json(ordersWithDate);
     } catch (error) {
         console.error('Error fetching orders:', error);
         return NextResponse.json(

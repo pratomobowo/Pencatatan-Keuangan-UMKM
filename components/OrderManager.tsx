@@ -466,7 +466,7 @@ export const OrderManager: React.FC<OrderManagerProps> = ({
                       <p className="font-medium text-slate-900">{order.orderNumber}</p>
                     </td>
                     <td className="px-4 py-3 text-slate-600 whitespace-nowrap">
-                      {new Date(order.date).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}
+                      {new Date(order.date || (order as any).createdAt).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}
                     </td>
                     <td className="px-4 py-3">
                       <p className="font-medium text-slate-900">{order.customerName}</p>
@@ -862,7 +862,7 @@ export const OrderManager: React.FC<OrderManagerProps> = ({
                   <div className="text-right">
                     <p className="text-sm text-slate-500 mb-1">Tanggal:</p>
                     <p className="font-semibold text-slate-900">
-                      {new Date(selectedOrder.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
+                      {new Date(selectedOrder.date || (selectedOrder as any).createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
                     </p>
                     <p className="text-sm mt-2">{getStatusBadge(selectedOrder.status)}</p>
                     <div className="mt-2 flex flex-col items-end gap-1 capitalize">
