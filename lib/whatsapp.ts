@@ -1,4 +1,14 @@
 import { prisma } from './prisma';
+import { Order } from './types';
+
+const formatCurrency = (amount: any) => {
+    const val = typeof amount === 'number' ? amount : Number(amount);
+    return new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        minimumFractionDigits: 0
+    }).format(isNaN(val) ? 0 : val);
+};
 
 export async function sendWhatsAppMessage(phone: string, message: string) {
     try {
@@ -78,4 +88,53 @@ export async function sendWhatsAppMessage(phone: string, message: string) {
 export async function sendOTP(phone: string, code: string) {
     const message = `Halo Bunda! Kode OTP untuk reset password Pasarantar adalah: *${code}*.\n\nKode ini berlaku selama 5 menit. Mohon tidak memberikan kode ini kepada siapapun demi keamanan akun Bunda.`;
     return sendWhatsAppMessage(phone, message);
+}
+
+export function formatOrderMessage(order: any) {
+    const items = order.items.map((item: any, idx: number) =>
+        `${idx + 1}. ${item.productName || item.name} (${item.qty || item.quantity} ${item.unit || 'pcs'}) - ${formatCurrency(item.total || (item.price * item.quantity))}`
+    ).join('\n');
+
+    let message = `*PASARANTAR - PESANAN BARU* 🌿\n\n`;
+    message += `Halo Kak ${order.customerName || order.recipientName}, pesanan Kakak berhasil dibuat!\n`;
+    message += `No. Order: *${order.orderNumber}*\n\n`;
+    message += `*Detail Pesanan:*\n${items}\n\n`;
+    message += `--------------------------------\n`;
+    message += `Subtotal: ${formatCurrency(order.subtotal)}\n`;
+
+    if (order.shippingFee > 0 || order.shippingMethod === 'PICKUP') {
+        message += `Ongkir: ${order.shippingMethod === 'PICKUP' ? 'GRATIS (Pickup Mandiri)' : formatCurrency(order.shippingFee)}\n`;
+    }
+
+    if (order.serviceFee > 0) {
+        message += `Biaya Layanan: ${formatCurrency(order.serviceFee)}\n`;
+    }
+
+    if (order.discount > 0) {
+        message += `Voucher: -${formatCurrency(order.discount)}\n`;
+    }
+
+    message += `*TOTAL: ${formatCurrency(order.grandTotal)}*\n`;
+    message += `--------------------------------\n\n`;
+    message += `Metode Bayar: ${order.paymentMethod?.toUpperCase() || 'COD'}\n`;
+    message += `Metode Kirim: ${order.shippingMethod === 'PICKUP' ? 'Pickup Mandiri' : 'Antar Kurir'}\n\n`;
+
+    if (order.shippingMethod === 'PICKUP') {
+        message += `Silakan ambil pesanan Kakak langsung di toko atau gunakan driver pilihan Kakak. Alamat toko tersedia di halaman Detail Toko.\n\n`;
+    }
+
+    message += `Terima kasih sudah berbelanja di Pasarantar! 🙏`;
+
+    return message;
+}
+
+export function formatAdminNotification(order: any) {
+    let message = `*📢 NOTIFIKASI ORDER BARU*\n\n`;
+    message += `Ada pesanan baru masuk dari Website!\n`;
+    message += `No. Order: *${order.orderNumber}*\n`;
+    message += `Pelanggan: ${order.customerName || order.recipientName}\n`;
+    message += `Total: *${formatCurrency(order.grandTotal)}*\n\n`;
+    message += `Silakan cek detailnya di Dashboard Admin.`;
+
+    return message;
 }

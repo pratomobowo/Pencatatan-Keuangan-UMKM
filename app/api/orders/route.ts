@@ -4,6 +4,7 @@ import { generateOrderNumber } from '@/lib/utils';
 import { jwtVerify } from 'jose';
 import { auth } from '@/lib/auth';
 import { getJwtSecret } from '@/lib/jwt';
+import { sendWhatsAppMessage, formatOrderMessage } from '@/lib/whatsapp';
 
 const JWT_SECRET = getJwtSecret();
 
@@ -171,6 +172,18 @@ export async function POST(request: NextRequest) {
                 items: true
             }
         });
+
+        // Send WhatsApp Notification to customer (Async)
+        if (customerPhone) {
+            (async () => {
+                try {
+                    const customerMsg = formatOrderMessage(order);
+                    await sendWhatsAppMessage(customerPhone, customerMsg);
+                } catch (notifyError) {
+                    console.error('Error sending WhatsApp notification (POS):', notifyError);
+                }
+            })();
+        }
 
         return NextResponse.json(order);
     } catch (error) {

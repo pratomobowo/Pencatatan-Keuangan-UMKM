@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { jwtVerify } from 'jose';
 import { auth } from '@/lib/auth';
 import { generateOrderNumber } from '@/lib/utils';
+import { sendWhatsAppMessage, formatOrderMessage, formatAdminNotification } from '@/lib/whatsapp';
 
 const JWT_SECRET = new TextEncoder().encode(
     process.env.JWT_SECRET || 'shop-customer-secret-key-change-in-production'
@@ -161,8 +162,41 @@ export async function POST(request: NextRequest) {
                         })),
                     },
                 } as any,
+                include: { items: true }
             });
         });
+
+        // 4. Send WhatsApp Notifications (Async)
+        // We do this in the background and don't await if we want it to be super fast, 
+        // but for reliability we can await or use a background job.
+        // For now, let's just trigger it.
+        (async () => {
+            try {
+                // Fetch admin phone from shop config
+                const config = await prisma.shopConfig.findUnique({
+                    where: { id: 'global' }
+                });
+
+                if (config) {
+                    const contactInfo = JSON.parse(config.contactInfo || '{}');
+                    const adminPhone = contactInfo.phone || contactInfo.whatsapp;
+
+                    // a. Notify Admin
+                    if (adminPhone) {
+                        const adminMsg = formatAdminNotification(result);
+                        await sendWhatsAppMessage(adminPhone, adminMsg);
+                    }
+
+                    // b. Notify Customer
+                    if (addressPhone) {
+                        const customerMsg = formatOrderMessage(result);
+                        await sendWhatsAppMessage(addressPhone, customerMsg);
+                    }
+                }
+            } catch (notifyError) {
+                console.error('Error sending WhatsApp notifications:', notifyError);
+            }
+        })();
 
         return NextResponse.json({
             message: 'Order berhasil dibuat',
