@@ -334,7 +334,7 @@ export default function CheckoutPage() {
     };
 
     const handlePlaceOrder = async () => {
-        if (shippingData.fee === 0 && !shippingData.isFreeShipping && !shippingData.requiresManualConfirmation) {
+        if (shippingMethod !== 'PICKUP' && shippingData.fee === 0 && !shippingData.isFreeShipping && !shippingData.requiresManualConfirmation) {
             setError('Hitung ongkir terlebih dahulu');
             return;
         }
@@ -909,7 +909,7 @@ export default function CheckoutPage() {
                     onClick={handlePlaceOrder}
                     disabled={
                         isProcessing ||
-                        (shippingData.fee === 0 && !shippingData.isFreeShipping && !shippingData.requiresManualConfirmation) ||
+                        (shippingMethod !== 'PICKUP' && shippingData.fee === 0 && !shippingData.isFreeShipping && !shippingData.requiresManualConfirmation) ||
                         !!shippingData.error
                     }
                     className="w-full bg-orange-500 hover:bg-orange-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-lg"
