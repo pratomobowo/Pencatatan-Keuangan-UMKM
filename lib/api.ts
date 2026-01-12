@@ -72,6 +72,10 @@ export const ordersAPI = {
     delete: (id: string) => fetchAPI<{ message: string }>(`/orders/${id}`, {
         method: 'DELETE',
     }),
+    deleteBulk: (ids: string[]) => fetchAPI<{ message: string }>('/orders', {
+        method: 'DELETE',
+        body: JSON.stringify({ ids }),
+    }),
 };
 
 // Admin Shop Orders API

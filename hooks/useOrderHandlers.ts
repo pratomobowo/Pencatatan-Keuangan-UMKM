@@ -80,5 +80,18 @@ export function useOrderHandlers({
         }
     };
 
-    return { addOrder, updateOrderStatus, deleteOrder };
+    const deleteBulkOrders = async (ids: string[]) => {
+        try {
+            await ordersAPI.deleteBulk(ids);
+            setOrders(prev => prev.filter(o => !ids.includes(o.id)));
+            // Refresh products to get updated stock
+            const updatedProducts = await productsAPI.getAll();
+            setProducts(updatedProducts);
+        } catch (error) {
+            console.error('Failed to delete bulk orders:', error);
+            alert('Gagal menghapus beberapa order');
+        }
+    };
+
+    return { addOrder, updateOrderStatus, deleteOrder, deleteBulkOrders };
 }

@@ -10,6 +10,7 @@ interface OrderManagerProps {
   onAddOrder?: (order: Order) => void;
   onUpdateStatus?: (id: string, status: 'PAID' | 'CANCELLED' | ShopOrderStatus) => void;
   onDeleteOrder?: (id: string) => void;
+  onBulkDelete?: (ids: string[]) => void;
   initialCustomerId?: string | null;
   onClearInitialCustomer?: () => void;
 }
@@ -47,6 +48,7 @@ export const OrderManager: React.FC<OrderManagerProps> = ({
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   // Form State
   const [formData, setFormData] = useState<{
@@ -222,7 +224,6 @@ export const OrderManager: React.FC<OrderManagerProps> = ({
   const unprocessedOrdersCount = orders.filter(o => ['PENDING', 'CONFIRMED'].includes(o.status)).length;
   const inProcessOrdersCount = orders.filter(o => ['PREPARING', 'SHIPPING'].includes(o.status)).length;
   const completedOrdersCount = orders.filter(o => ['DELIVERED'].includes(o.status)).length;
-
   const filteredOrders = orders
     .filter(o => statusFilter === 'ALL' || o.status === statusFilter)
     .filter(o =>
@@ -231,6 +232,30 @@ export const OrderManager: React.FC<OrderManagerProps> = ({
       (o.customerPhone || '').includes(searchTerm)
     )
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+  const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.checked) {
+      setSelectedIds(filteredOrders.map(o => o.id));
+    } else {
+      setSelectedIds([]);
+    }
+  };
+
+  const handleSelectOne = (id: string) => {
+    setSelectedIds(prev =>
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    );
+  };
+
+  const handleDeleteBulk = async () => {
+    if (selectedIds.length === 0) return;
+    if (confirm(`Hapus ${selectedIds.length} pesanan terpilih?`)) {
+      if (onBulkDelete) {
+        await onBulkDelete(selectedIds);
+        setSelectedIds([]);
+      }
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -305,7 +330,16 @@ export const OrderManager: React.FC<OrderManagerProps> = ({
               />
             </div>
           </div>
-          <div className="flex gap-2 w-full sm:w-auto">
+          <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+            {selectedIds.length > 0 && (
+              <button
+                onClick={handleDeleteBulk}
+                className="flex items-center gap-2 px-4 py-2 bg-rose-100 text-rose-700 rounded-lg hover:bg-rose-200 transition-colors whitespace-nowrap"
+              >
+                <Trash2 size={18} />
+                Hapus ({selectedIds.length})
+              </button>
+            )}
             <select
               className="px-3 py-2 border border-slate-300 rounded-lg text-sm flex-1 sm:flex-none"
               value={statusFilter}
@@ -335,6 +369,14 @@ export const OrderManager: React.FC<OrderManagerProps> = ({
           <table className="w-full">
             <thead className="bg-slate-50">
               <tr className="border-b border-slate-200">
+                <th className="px-4 py-3 text-left w-10">
+                  <input
+                    type="checkbox"
+                    className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                    onChange={handleSelectAll}
+                    checked={filteredOrders.length > 0 && selectedIds.length === filteredOrders.length}
+                  />
+                </th>
                 <th className="text-left px-4 py-3 text-sm font-semibold text-slate-700">No. Order</th>
                 <th className="text-left px-4 py-3 text-sm font-semibold text-slate-700">Tanggal</th>
                 <th className="text-left px-4 py-3 text-sm font-semibold text-slate-700">Pelanggan</th>
@@ -353,7 +395,15 @@ export const OrderManager: React.FC<OrderManagerProps> = ({
                 </tr>
               ) : (
                 filteredOrders.map((order) => (
-                  <tr key={order.id} className="border-b border-slate-100 hover:bg-slate-50/50 transition-colors">
+                  <tr key={order.id} className={`border-b border-slate-100 hover:bg-slate-50/50 transition-colors ${selectedIds.includes(order.id) ? 'bg-blue-50/50' : ''}`}>
+                    <td className="px-4 py-3">
+                      <input
+                        type="checkbox"
+                        className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                        checked={selectedIds.includes(order.id)}
+                        onChange={() => handleSelectOne(order.id)}
+                      />
+                    </td>
                     <td className="px-4 py-3">
                       <p className="font-medium text-slate-900">{order.orderNumber}</p>
                     </td>
@@ -421,292 +471,298 @@ export const OrderManager: React.FC<OrderManagerProps> = ({
         </div>
 
         {/* Item Count */}
-        {filteredOrders.length > 0 && (
-          <div className="mt-4 pt-4 border-t border-slate-200 text-sm text-slate-500">
-            Menampilkan {filteredOrders.length} dari {orders.length} pesanan
-          </div>
-        )}
-      </Card>
+        {
+          filteredOrders.length > 0 && (
+            <div className="mt-4 pt-4 border-t border-slate-200 text-sm text-slate-500">
+              Menampilkan {filteredOrders.length} dari {orders.length} pesanan
+            </div>
+          )
+        }
+      </Card >
 
       {/* Add Order Modal */}
-      {showFormModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 z-10 flex items-center justify-between p-4 border-b bg-white">
-              <h2 className="text-xl font-bold text-slate-800">Tambah Pesanan Baru</h2>
-              <button
-                onClick={handleCancel}
-                className="p-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100 transition-colors"
-              >
-                <X size={24} />
-              </button>
-            </div>
-
-            <div className="p-6">
-              <form onSubmit={handleSubmit} className="space-y-4">
-                {/* Customer Selection */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="col-span-2">
-                    <label className="block text-sm text-slate-700 mb-1">Pilih Pelanggan (Opsional)</label>
-                    <select
-                      value={formData.customerId || ''}
-                      onChange={(e) => handleCustomerSelect(e.target.value)}
-                      className="w-full p-2.5 bg-white border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
-                    >
-                      <option value="">-- Pelanggan Baru --</option>
-                      {customers.map(c => (
-                        <option key={c.id} value={c.id}>{c.name} {c.phone ? `(${c.phone})` : ''}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm text-slate-700 mb-1">Nama Pelanggan *</label>
-                    <input
-                      type="text"
-                      required
-                      value={formData.customerName}
-                      onChange={(e) => setFormData({ ...formData, customerName: e.target.value })}
-                      className="w-full p-2.5 bg-white border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm text-slate-700 mb-1">Telepon *</label>
-                    <input
-                      type="tel"
-                      required
-                      value={formData.customerPhone}
-                      onChange={(e) => setFormData({ ...formData, customerPhone: e.target.value })}
-                      className="w-full p-2.5 bg-white border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
-                    />
-                  </div>
-
-                  <div className="col-span-2">
-                    <label className="block text-sm text-slate-700 mb-1">Alamat</label>
-                    <input
-                      type="text"
-                      value={formData.customerAddress || ''}
-                      onChange={(e) => setFormData({ ...formData, customerAddress: e.target.value })}
-                      className="w-full p-2.5 bg-white border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm text-slate-700 mb-1">Tanggal</label>
-                    <input
-                      type="date"
-                      required
-                      value={formData.date}
-                      onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                      className="w-full p-2.5 bg-white border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
-                    />
-                  </div>
-                </div>
-
-                {/* Items */}
-                <div>
-                  <label className="block text-sm text-slate-700 mb-2">Produk</label>
-                  <div className="space-y-2">
-                    {formData.items.map((item, index) => (
-                      <div key={index} className="flex gap-2">
-                        <select
-                          value={item.productName}
-                          onChange={(e) => handleProductSelect(index, e.target.value)}
-                          className="flex-1 p-2 bg-white border border-slate-300 rounded-lg text-sm"
-                          required
-                        >
-                          <option value="">Pilih Produk</option>
-                          {products.map(p => (
-                            <option key={p.id} value={p.name}>{p.name} - {formatCurrency(p.price)}/{p.unit}</option>
-                          ))}
-                        </select>
-                        <input
-                          type="number"
-                          min="0.1"
-                          step="0.1"
-                          value={item.qty}
-                          onChange={(e) => updateItem(index, 'qty', parseFloat(e.target.value))}
-                          className="w-20 p-2 border border-slate-300 rounded-lg text-sm"
-                          placeholder="Qty"
-                          required
-                        />
-                        <button
-                          type="button"
-                          onClick={() => removeItem(index)}
-                          className="p-2 text-rose-600 hover:bg-rose-50 rounded-lg"
-                          disabled={formData.items.length === 1}
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                  <button
-                    type="button"
-                    onClick={addItem}
-                    className="mt-2 text-sm text-blue-600 hover:text-blue-700"
-                  >
-                    + Tambah Item
-                  </button>
-                </div>
-
-                {/* Notes */}
-                <div>
-                  <label className="block text-sm text-slate-700 mb-1">Catatan</label>
-                  <textarea
-                    rows={2}
-                    value={formData.notes}
-                    onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                    className="w-full p-2.5 bg-white border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm resize-none"
-                  />
-                </div>
-
-                {/* Subtotal Preview */}
-                <div className="bg-slate-50 p-4 rounded-lg">
-                  <p className="text-sm text-slate-600">Subtotal:</p>
-                  <p className="text-2xl font-bold text-slate-900">
-                    {formatCurrency(formData.items.reduce((sum, item) => sum + (item.qty * item.price), 0))}
-                  </p>
-                </div>
-
-                <div className="flex gap-3 pt-4">
-                  <button
-                    type="button"
-                    onClick={handleCancel}
-                    className="flex-1 px-4 py-2 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors"
-                  >
-                    Batal
-                  </button>
-                  <button
-                    type="submit"
-                    className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                  >
-                    Simpan Pesanan
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Invoice Modal */}
-      {showInvoiceModal && selectedOrder && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 z-10 flex items-center justify-between p-4 border-b bg-white print:hidden">
-              <h2 className="text-xl font-bold text-slate-800">Invoice</h2>
-              <div className="flex gap-2">
+      {
+        showFormModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+            <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+              <div className="sticky top-0 z-10 flex items-center justify-between p-4 border-b bg-white">
+                <h2 className="text-xl font-bold text-slate-800">Tambah Pesanan Baru</h2>
                 <button
-                  onClick={() => sendToWhatsApp(selectedOrder)}
-                  className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                  title="Kirim ke WhatsApp"
-                >
-                  <MessageSquare size={20} />
-                </button>
-                <button
-                  onClick={handlePrintInvoice}
-                  className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                  title="Print"
-                >
-                  <Printer size={20} />
-                </button>
-                <button
-                  onClick={() => setShowInvoiceModal(false)}
+                  onClick={handleCancel}
                   className="p-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100 transition-colors"
                 >
                   <X size={24} />
                 </button>
               </div>
-            </div>
 
-            <div className="p-8">
-              <div className="text-center mb-6">
-                <h1 className="text-2xl font-bold text-slate-900">INVOICE</h1>
-                <p className="text-slate-600">{selectedOrder.orderNumber}</p>
-              </div>
-
-              <div className="grid grid-cols-2 gap-6 mb-6">
-                <div>
-                  <p className="text-sm text-slate-500 mb-1">Pelanggan:</p>
-                  <p className="font-semibold text-slate-900">{selectedOrder.customerName}</p>
-                  <p className="text-sm text-slate-600">{selectedOrder.customerPhone}</p>
-                  {selectedOrder.customerAddress && (
-                    <p className="text-sm text-slate-600">{selectedOrder.customerAddress}</p>
-                  )}
-                </div>
-                <div className="text-right">
-                  <p className="text-sm text-slate-500 mb-1">Tanggal:</p>
-                  <p className="font-semibold text-slate-900">
-                    {new Date(selectedOrder.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
-                  </p>
-                  <p className="text-sm mt-2">{getStatusBadge(selectedOrder.status)}</p>
-                </div>
-              </div>
-
-              <table className="w-full mb-6">
-                <thead>
-                  <tr className="border-b-2 border-slate-300">
-                    <th className="text-left py-2 text-sm font-semibold text-slate-700">Item</th>
-                    <th className="text-center py-2 text-sm font-semibold text-slate-700">Qty</th>
-                    <th className="text-right py-2 text-sm font-semibold text-slate-700">Harga</th>
-                    <th className="text-right py-2 text-sm font-semibold text-slate-700">Total</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {selectedOrder.items.map((item, idx) => (
-                    <React.Fragment key={idx}>
-                      <tr className="border-b border-slate-200">
-                        <td className="py-2 text-slate-900">{item.productName}</td>
-                        <td className="py-2 text-center text-slate-600">{item.qty} {item.unit}</td>
-                        <td className="py-2 text-right text-slate-600">{formatCurrency(item.price)}</td>
-                        <td className="py-2 text-right font-semibold text-slate-900">{formatCurrency(item.total)}</td>
-                      </tr>
-                      {(item as any).note && (
-                        <tr className="border-b border-slate-100">
-                          <td colSpan={4} className="py-1 px-2">
-                            <div className="flex items-start gap-2 bg-amber-50 p-2 rounded text-xs text-amber-800">
-                              <MessageSquare size={12} className="shrink-0 mt-0.5" />
-                              <span>{(item as any).note}</span>
-                            </div>
-                          </td>
-                        </tr>
-                      )}
-                    </React.Fragment>
-                  ))}
-                </tbody>
-              </table>
-
-              <div className="flex justify-end">
-                <div className="w-64">
-                  <div className="flex justify-between py-2">
-                    <span className="text-slate-600">Subtotal:</span>
-                    <span className="font-semibold text-slate-900">{formatCurrency(selectedOrder.subtotal)}</span>
-                  </div>
-                  {selectedOrder.shippingFee && selectedOrder.shippingFee > 0 && (
-                    <div className="flex justify-between py-2">
-                      <span className="text-slate-600">Ongkir:</span>
-                      <span className="font-semibold text-slate-900">{formatCurrency(selectedOrder.shippingFee)}</span>
+              <div className="p-6">
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  {/* Customer Selection */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="col-span-2">
+                      <label className="block text-sm text-slate-700 mb-1">Pilih Pelanggan (Opsional)</label>
+                      <select
+                        value={formData.customerId || ''}
+                        onChange={(e) => handleCustomerSelect(e.target.value)}
+                        className="w-full p-2.5 bg-white border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
+                      >
+                        <option value="">-- Pelanggan Baru --</option>
+                        {customers.map(c => (
+                          <option key={c.id} value={c.id}>{c.name} {c.phone ? `(${c.phone})` : ''}</option>
+                        ))}
+                      </select>
                     </div>
-                  )}
-                  <div className="flex justify-between py-2 border-t-2 border-slate-300">
-                    <span className="font-bold text-slate-900">TOTAL:</span>
-                    <span className="font-bold text-xl text-slate-900">{formatCurrency(selectedOrder.grandTotal)}</span>
-                  </div>
-                </div>
-              </div>
 
-              {selectedOrder.notes && (
-                <div className="mt-6 p-4 bg-slate-50 rounded-lg">
-                  <p className="text-sm text-slate-500 mb-1">Catatan:</p>
-                  <p className="text-slate-700">{selectedOrder.notes}</p>
-                </div>
-              )}
+                    <div>
+                      <label className="block text-sm text-slate-700 mb-1">Nama Pelanggan *</label>
+                      <input
+                        type="text"
+                        required
+                        value={formData.customerName}
+                        onChange={(e) => setFormData({ ...formData, customerName: e.target.value })}
+                        className="w-full p-2.5 bg-white border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm text-slate-700 mb-1">Telepon *</label>
+                      <input
+                        type="tel"
+                        required
+                        value={formData.customerPhone}
+                        onChange={(e) => setFormData({ ...formData, customerPhone: e.target.value })}
+                        className="w-full p-2.5 bg-white border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
+                      />
+                    </div>
+
+                    <div className="col-span-2">
+                      <label className="block text-sm text-slate-700 mb-1">Alamat</label>
+                      <input
+                        type="text"
+                        value={formData.customerAddress || ''}
+                        onChange={(e) => setFormData({ ...formData, customerAddress: e.target.value })}
+                        className="w-full p-2.5 bg-white border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm text-slate-700 mb-1">Tanggal</label>
+                      <input
+                        type="date"
+                        required
+                        value={formData.date}
+                        onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                        className="w-full p-2.5 bg-white border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Items */}
+                  <div>
+                    <label className="block text-sm text-slate-700 mb-2">Produk</label>
+                    <div className="space-y-2">
+                      {formData.items.map((item, index) => (
+                        <div key={index} className="flex gap-2">
+                          <select
+                            value={item.productName}
+                            onChange={(e) => handleProductSelect(index, e.target.value)}
+                            className="flex-1 p-2 bg-white border border-slate-300 rounded-lg text-sm"
+                            required
+                          >
+                            <option value="">Pilih Produk</option>
+                            {products.map(p => (
+                              <option key={p.id} value={p.name}>{p.name} - {formatCurrency(p.price)}/{p.unit}</option>
+                            ))}
+                          </select>
+                          <input
+                            type="number"
+                            min="0.1"
+                            step="0.1"
+                            value={item.qty}
+                            onChange={(e) => updateItem(index, 'qty', parseFloat(e.target.value))}
+                            className="w-20 p-2 border border-slate-300 rounded-lg text-sm"
+                            placeholder="Qty"
+                            required
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeItem(index)}
+                            className="p-2 text-rose-600 hover:bg-rose-50 rounded-lg"
+                            disabled={formData.items.length === 1}
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={addItem}
+                      className="mt-2 text-sm text-blue-600 hover:text-blue-700"
+                    >
+                      + Tambah Item
+                    </button>
+                  </div>
+
+                  {/* Notes */}
+                  <div>
+                    <label className="block text-sm text-slate-700 mb-1">Catatan</label>
+                    <textarea
+                      rows={2}
+                      value={formData.notes}
+                      onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                      className="w-full p-2.5 bg-white border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm resize-none"
+                    />
+                  </div>
+
+                  {/* Subtotal Preview */}
+                  <div className="bg-slate-50 p-4 rounded-lg">
+                    <p className="text-sm text-slate-600">Subtotal:</p>
+                    <p className="text-2xl font-bold text-slate-900">
+                      {formatCurrency(formData.items.reduce((sum, item) => sum + (item.qty * item.price), 0))}
+                    </p>
+                  </div>
+
+                  <div className="flex gap-3 pt-4">
+                    <button
+                      type="button"
+                      onClick={handleCancel}
+                      className="flex-1 px-4 py-2 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors"
+                    >
+                      Batal
+                    </button>
+                    <button
+                      type="submit"
+                      className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                      Simpan Pesanan
+                    </button>
+                  </div>
+                </form>
+              </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        )
+      }
+
+      {/* Invoice Modal */}
+      {
+        showInvoiceModal && selectedOrder && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+            <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+              <div className="sticky top-0 z-10 flex items-center justify-between p-4 border-b bg-white print:hidden">
+                <h2 className="text-xl font-bold text-slate-800">Invoice</h2>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => sendToWhatsApp(selectedOrder)}
+                    className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                    title="Kirim ke WhatsApp"
+                  >
+                    <MessageSquare size={20} />
+                  </button>
+                  <button
+                    onClick={handlePrintInvoice}
+                    className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                    title="Print"
+                  >
+                    <Printer size={20} />
+                  </button>
+                  <button
+                    onClick={() => setShowInvoiceModal(false)}
+                    className="p-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100 transition-colors"
+                  >
+                    <X size={24} />
+                  </button>
+                </div>
+              </div>
+
+              <div className="p-8">
+                <div className="text-center mb-6">
+                  <h1 className="text-2xl font-bold text-slate-900">INVOICE</h1>
+                  <p className="text-slate-600">{selectedOrder.orderNumber}</p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-6 mb-6">
+                  <div>
+                    <p className="text-sm text-slate-500 mb-1">Pelanggan:</p>
+                    <p className="font-semibold text-slate-900">{selectedOrder.customerName}</p>
+                    <p className="text-sm text-slate-600">{selectedOrder.customerPhone}</p>
+                    {selectedOrder.customerAddress && (
+                      <p className="text-sm text-slate-600">{selectedOrder.customerAddress}</p>
+                    )}
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm text-slate-500 mb-1">Tanggal:</p>
+                    <p className="font-semibold text-slate-900">
+                      {new Date(selectedOrder.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
+                    </p>
+                    <p className="text-sm mt-2">{getStatusBadge(selectedOrder.status)}</p>
+                  </div>
+                </div>
+
+                <table className="w-full mb-6">
+                  <thead>
+                    <tr className="border-b-2 border-slate-300">
+                      <th className="text-left py-2 text-sm font-semibold text-slate-700">Item</th>
+                      <th className="text-center py-2 text-sm font-semibold text-slate-700">Qty</th>
+                      <th className="text-right py-2 text-sm font-semibold text-slate-700">Harga</th>
+                      <th className="text-right py-2 text-sm font-semibold text-slate-700">Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {selectedOrder.items.map((item, idx) => (
+                      <React.Fragment key={idx}>
+                        <tr className="border-b border-slate-200">
+                          <td className="py-2 text-slate-900">{item.productName}</td>
+                          <td className="py-2 text-center text-slate-600">{item.qty} {item.unit}</td>
+                          <td className="py-2 text-right text-slate-600">{formatCurrency(item.price)}</td>
+                          <td className="py-2 text-right font-semibold text-slate-900">{formatCurrency(item.total)}</td>
+                        </tr>
+                        {(item as any).note && (
+                          <tr className="border-b border-slate-100">
+                            <td colSpan={4} className="py-1 px-2">
+                              <div className="flex items-start gap-2 bg-amber-50 p-2 rounded text-xs text-amber-800">
+                                <MessageSquare size={12} className="shrink-0 mt-0.5" />
+                                <span>{(item as any).note}</span>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
+                    ))}
+                  </tbody>
+                </table>
+
+                <div className="flex justify-end">
+                  <div className="w-64">
+                    <div className="flex justify-between py-2">
+                      <span className="text-slate-600">Subtotal:</span>
+                      <span className="font-semibold text-slate-900">{formatCurrency(selectedOrder.subtotal)}</span>
+                    </div>
+                    {selectedOrder.shippingFee && selectedOrder.shippingFee > 0 && (
+                      <div className="flex justify-between py-2">
+                        <span className="text-slate-600">Ongkir:</span>
+                        <span className="font-semibold text-slate-900">{formatCurrency(selectedOrder.shippingFee)}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between py-2 border-t-2 border-slate-300">
+                      <span className="font-bold text-slate-900">TOTAL:</span>
+                      <span className="font-bold text-xl text-slate-900">{formatCurrency(selectedOrder.grandTotal)}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {selectedOrder.notes && (
+                  <div className="mt-6 p-4 bg-slate-50 rounded-lg">
+                    <p className="text-sm text-slate-500 mb-1">Catatan:</p>
+                    <p className="text-slate-700">{selectedOrder.notes}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )
+      }
+    </div >
   );
 };
