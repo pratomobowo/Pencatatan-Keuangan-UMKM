@@ -182,14 +182,18 @@ export default function AccountPage() {
             <div className="px-4 -mt-6">
                 <div className="bg-white rounded-2xl shadow-lg p-4 flex justify-around border border-orange-100">
                     <Link href="/orders" className="flex flex-col items-center">
-                        <span className="text-2xl font-bold text-stone-900">-</span>
+                        <span className="text-2xl font-bold text-stone-900">
+                            {(customer as any)?._count?.orders || 0}
+                        </span>
                         <span className="text-xs text-gray-500 mt-1">Pesanan</span>
                     </Link>
                     <div className="w-px bg-gray-200"></div>
-                    <div className="flex flex-col items-center">
-                        <span className="text-2xl font-bold text-stone-900">0</span>
+                    <Link href="/favorites" className="flex flex-col items-center">
+                        <span className="text-2xl font-bold text-stone-900">
+                            {(customer as any)?._count?.favorites || 0}
+                        </span>
                         <span className="text-xs text-gray-500 mt-1">Favorit</span>
-                    </div>
+                    </Link>
                     <div className="w-px bg-gray-200"></div>
                     <Link href="/loyalty" className="flex flex-col items-center">
                         <span className="text-2xl font-bold text-orange-600">{customer?.points || 0}</span>

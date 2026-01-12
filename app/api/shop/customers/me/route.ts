@@ -62,9 +62,11 @@ export async function GET(request: NextRequest) {
                 phone: true,
                 email: true,
                 createdAt: true,
+                points: true,
                 _count: {
                     select: {
                         orders: true,
+                        favorites: true,
                     },
                 },
             } as any,
