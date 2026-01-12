@@ -2,12 +2,20 @@ import { prisma } from './prisma';
 
 export async function sendWhatsAppMessage(phone: string, message: string) {
     try {
-        const config = await prisma.gowaConfig.findUnique({
+        const dbConfig = await prisma.gowaConfig.findUnique({
             where: { id: 'global' }
         });
 
-        if (!config || !config.endpoint) {
-            console.error('WhatsApp GOWA configuration missing');
+        // Use database config if available, fallback to environment variables
+        const config = {
+            endpoint: dbConfig?.endpoint || process.env.GOWA_ENDPOINT,
+            username: dbConfig?.username || process.env.GOWA_USERNAME,
+            password: dbConfig?.password || process.env.GOWA_PASSWORD,
+            apiKey: dbConfig?.apiKey || process.env.GOWA_API_KEY,
+        };
+
+        if (!config.endpoint) {
+            console.error('WhatsApp GOWA configuration missing (both DB and ENV)');
             return { success: false, error: 'WhatsApp service not configured' };
         }
 
