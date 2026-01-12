@@ -114,6 +114,10 @@ export const OrderManager: React.FC<OrderManagerProps> = ({
     customerPhone: string;
     date: string;
     items: Omit<OrderItem, 'id' | 'total'>[];
+    paymentMethod: string;
+    shippingMethod: string;
+    shippingFee: number;
+    discount: number;
     notes: string;
   }>({
     customerName: '',
@@ -121,6 +125,10 @@ export const OrderManager: React.FC<OrderManagerProps> = ({
     customerPhone: '',
     date: new Date().toISOString().split('T')[0],
     items: [{ productName: '', qty: 1, unit: 'kg', price: 0 }],
+    paymentMethod: 'CASH',
+    shippingMethod: 'DELIVERY',
+    shippingFee: 0,
+    discount: 0,
     notes: ''
   });
 
@@ -174,6 +182,7 @@ export const OrderManager: React.FC<OrderManagerProps> = ({
     }));
 
     const subtotal = itemsWithTotal.reduce((sum, item) => sum + item.total, 0);
+    const grandTotal = subtotal + Number(formData.shippingFee) - Number(formData.discount);
 
     const newOrder: Order = {
       id: crypto.randomUUID(),
@@ -182,11 +191,14 @@ export const OrderManager: React.FC<OrderManagerProps> = ({
       customerName: formData.customerName,
       customerPhone: formData.customerPhone,
       customerAddress: formData.customerAddress,
-      items: itemsWithTotal,
+      items: itemsWithTotal as any,
       subtotal,
-      shippingFee: 0,
+      shippingFee: Number(formData.shippingFee),
+      shippingMethod: formData.shippingMethod,
+      paymentMethod: formData.paymentMethod,
+      discount: Number(formData.discount),
       serviceFee: 0,
-      grandTotal: subtotal,
+      grandTotal,
       status: 'PENDING',
       notes: formData.notes,
       createdAt: new Date().toISOString(),
@@ -204,6 +216,10 @@ export const OrderManager: React.FC<OrderManagerProps> = ({
       customerPhone: '',
       date: new Date().toISOString().split('T')[0],
       items: [{ productName: '', qty: 1, unit: 'kg', price: 0 }],
+      paymentMethod: 'CASH',
+      shippingMethod: 'DELIVERY',
+      shippingFee: 0,
+      discount: 0,
       notes: ''
     });
   };
@@ -672,10 +688,66 @@ export const OrderManager: React.FC<OrderManagerProps> = ({
                     <button
                       type="button"
                       onClick={addItem}
-                      className="mt-2 text-sm text-blue-600 hover:text-blue-700"
+                      className="mt-2 text-sm text-blue-600 hover:text-blue-700 font-medium"
                     >
                       + Tambah Item
                     </button>
+                  </div>
+
+                  {/* Payment & Shipping */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-1">Metode Pembayaran</label>
+                      <select
+                        value={formData.paymentMethod}
+                        onChange={(e) => setFormData({ ...formData, paymentMethod: e.target.value })}
+                        className="w-full p-2.5 bg-white border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
+                      >
+                        <option value="CASH">Tunai (Cash)</option>
+                        <option value="TRANSFER">Transfer Bank</option>
+                        <option value="QRIS">QRIS</option>
+                        <option value="COD">COD</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-1">Metode Pengiriman</label>
+                      <select
+                        value={formData.shippingMethod}
+                        onChange={(e) => setFormData({ ...formData, shippingMethod: e.target.value })}
+                        className="w-full p-2.5 bg-white border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
+                      >
+                        <option value="DELIVERY">Kurir Pasarantar</option>
+                        <option value="PICKUP">Pickup Mandiri</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-1">Ongkos Kirim</label>
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">Rp</span>
+                        <input
+                          type="number"
+                          value={formData.shippingFee}
+                          disabled={formData.shippingMethod === 'PICKUP'}
+                          onChange={(e) => setFormData({ ...formData, shippingFee: Number(e.target.value) })}
+                          className="w-full pl-9 pr-3 py-2.5 bg-white border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm disabled:bg-slate-50 disabled:text-slate-400"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-1">Diskon</label>
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">Rp</span>
+                        <input
+                          type="number"
+                          value={formData.discount}
+                          onChange={(e) => setFormData({ ...formData, discount: Number(e.target.value) })}
+                          className="w-full pl-9 pr-3 py-2.5 bg-white border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
+                        />
+                      </div>
+                    </div>
                   </div>
 
                   {/* Notes */}
@@ -690,11 +762,33 @@ export const OrderManager: React.FC<OrderManagerProps> = ({
                   </div>
 
                   {/* Subtotal Preview */}
-                  <div className="bg-slate-50 p-4 rounded-lg">
-                    <p className="text-sm text-slate-600">Subtotal:</p>
-                    <p className="text-2xl font-bold text-slate-900">
-                      {formatCurrency(formData.items.reduce((sum, item) => sum + (item.qty * item.price), 0))}
-                    </p>
+                  <div className="bg-slate-50 p-4 rounded-xl space-y-2">
+                    <div className="flex justify-between text-sm text-slate-600">
+                      <span>Subtotal:</span>
+                      <span>{formatCurrency(formData.items.reduce((sum, item) => sum + (item.qty * item.price), 0))}</span>
+                    </div>
+                    {formData.shippingMethod !== 'PICKUP' && formData.shippingFee > 0 && (
+                      <div className="flex justify-between text-sm text-slate-600">
+                        <span>Ongkir:</span>
+                        <span>+ {formatCurrency(formData.shippingFee)}</span>
+                      </div>
+                    )}
+                    {formData.discount > 0 && (
+                      <div className="flex justify-between text-sm text-rose-600">
+                        <span>Diskon:</span>
+                        <span>- {formatCurrency(formData.discount)}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between items-center pt-2 border-t border-slate-200">
+                      <span className="font-bold text-slate-900">Total:</span>
+                      <span className="text-2xl font-black text-blue-600">
+                        {formatCurrency(
+                          formData.items.reduce((sum, item) => sum + (item.qty * item.price), 0) +
+                          (formData.shippingMethod === 'PICKUP' ? 0 : Number(formData.shippingFee)) -
+                          Number(formData.discount)
+                        )}
+                      </span>
+                    </div>
                   </div>
 
                   <div className="flex gap-3 pt-4">
@@ -771,11 +865,19 @@ export const OrderManager: React.FC<OrderManagerProps> = ({
                       {new Date(selectedOrder.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
                     </p>
                     <p className="text-sm mt-2">{getStatusBadge(selectedOrder.status)}</p>
-                    <div className="mt-2 flex items-center justify-end gap-1 capitalize">
-                      <span className="text-[10px] text-slate-500">Metode:</span>
-                      <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${selectedOrder.shippingMethod === 'PICKUP' ? 'bg-blue-100 text-blue-700' : 'bg-orange-100 text-orange-700'}`}>
-                        {selectedOrder.shippingMethod === 'PICKUP' ? 'Pickup Mandiri' : 'Antar Kurir'}
-                      </span>
+                    <div className="mt-2 flex flex-col items-end gap-1 capitalize">
+                      <div className="flex items-center gap-1">
+                        <span className="text-[10px] text-slate-500">Pengiriman:</span>
+                        <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${selectedOrder.shippingMethod === 'PICKUP' ? 'bg-blue-100 text-blue-700' : 'bg-orange-100 text-orange-700'}`}>
+                          {selectedOrder.shippingMethod === 'PICKUP' ? 'Pickup Mandiri' : 'Antar Kurir'}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span className="text-[10px] text-slate-500">Pembayaran:</span>
+                        <span className="px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 text-[10px] font-bold">
+                          {selectedOrder.paymentMethod || 'CASH'}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -819,10 +921,16 @@ export const OrderManager: React.FC<OrderManagerProps> = ({
                       <span className="text-slate-600">Subtotal:</span>
                       <span className="font-semibold text-slate-900">{formatCurrency(selectedOrder.subtotal)}</span>
                     </div>
-                    {selectedOrder.shippingFee && selectedOrder.shippingFee > 0 && (
+                    {selectedOrder.shippingFee && Number(selectedOrder.shippingFee) > 0 && (
                       <div className="flex justify-between py-2">
                         <span className="text-slate-600">Ongkir:</span>
                         <span className="font-semibold text-slate-900">{formatCurrency(selectedOrder.shippingFee)}</span>
+                      </div>
+                    )}
+                    {selectedOrder.discount && Number(selectedOrder.discount) > 0 && (
+                      <div className="flex justify-between py-2 text-rose-600">
+                        <span>Diskon:</span>
+                        <span className="font-semibold">- {formatCurrency(selectedOrder.discount)}</span>
                       </div>
                     )}
                     <div className="flex justify-between py-2 border-t-2 border-slate-300">
