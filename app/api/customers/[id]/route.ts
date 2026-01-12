@@ -46,9 +46,22 @@ export async function PUT(
         const { id } = await params;
         const body = await request.json();
 
+        // Sanitize data: remove relations and read-only fields that Prisma doesn't like in direct updates
+        const {
+            id: _id,
+            createdAt: _createdAt,
+            updatedAt: _updatedAt,
+            orders: _orders,
+            addresses: _addresses,
+            pointsHistory: _pointsHistory,
+            rewardRedemptions: _rewardRedemptions,
+            _count: _count,
+            ...updateData
+        } = body;
+
         const customer = await prisma.customer.update({
             where: { id },
-            data: body,
+            data: updateData,
         });
 
         return NextResponse.json(customer);
