@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Eye, EyeOff, Loader2, KeyRound, Smartphone, CheckCircle2 } from 'lucide-react';
+import { Eye, EyeOff, Loader2, KeyRound, Smartphone, CheckCircle2 } from 'lucide-react';
 
 type Step = 'phone' | 'otp' | 'password' | 'success';
 
@@ -123,35 +123,21 @@ export default function ForgotPasswordPage() {
 
     return (
         <div className="min-h-screen bg-gray-50 flex justify-center">
-            <div className="w-full max-w-md bg-white shadow-2xl overflow-hidden min-h-screen flex flex-col relative">
-                <div className="absolute inset-0 bg-gradient-to-br from-orange-500 to-orange-600 z-0 h-[300px]" />
-
-                <div className="relative z-10 flex flex-col h-full">
-                    {/* Header */}
-                    <header className="flex items-center px-4 py-3">
-                        <Link
-                            href="/login"
-                            className="flex size-10 items-center justify-center rounded-full bg-white/20 text-white hover:bg-white/30 transition-colors"
-                        >
-                            <ArrowLeft size={24} />
-                        </Link>
-                    </header>
-
-                    {/* Title */}
-                    <div className="px-6 pt-12 pb-8 text-center flex flex-col items-center">
-                        <h1 className="text-4xl font-extrabold text-white tracking-tighter mb-2 drop-shadow-sm">
-                            Lupa Password
-                        </h1>
-                        <p className="text-white/90 font-medium text-lg">
-                            {step === 'phone' && 'Verifikasi Nomor HP'}
-                            {step === 'otp' && 'Masukkan Kode OTP'}
-                            {step === 'password' && 'Password Baru'}
-                            {step === 'success' && 'Reset Berhasil'}
-                        </p>
-                    </div>
-
+            <div className="w-full max-w-md bg-white shadow-2xl overflow-hidden min-h-screen flex flex-col pt-12">
+                <div className="flex flex-col h-full">
                     {/* Content Card */}
-                    <div className="flex-1 bg-white rounded-t-3xl px-6 pt-10 pb-12 shadow-[0_-4px_20px_-4px_rgba(0,0,0,0.1)]">
+                    <div className="flex-1 px-6 pb-12">
+                        <div className="mb-10">
+                            <h1 className="text-3xl font-bold text-slate-800 tracking-tight mb-1">
+                                Lupa Password
+                            </h1>
+                            <p className="text-slate-500 text-sm">
+                                {step === 'phone' && 'Masukkan nomor HP untuk verifikasi WhatsApp.'}
+                                {step === 'otp' && 'Masukkan 6 digit kode yang kami kirim.'}
+                                {step === 'password' && 'Buat password baru yang aman.'}
+                                {step === 'success' && 'Reset password berhasil!'}
+                            </p>
+                        </div>
 
                         {/* Error Message */}
                         {error && (
