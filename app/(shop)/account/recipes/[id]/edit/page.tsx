@@ -44,8 +44,21 @@ export default function EditRecipePage({ params }: { params: Promise<{ id: strin
 
             setTitle(data.title);
             setDescription(data.description || '');
-            setIngredients(data.ingredients || []);
-            setSteps(data.steps || []);
+
+            // Normalize ingredients (handle string array vs object array)
+            const normalizedIngredients = (data.ingredients || []).map((ing: any) => {
+                if (typeof ing === 'string') return { item: ing, amount: '' };
+                return ing;
+            });
+            setIngredients(normalizedIngredients);
+
+            // Normalize steps (handle string array vs object array)
+            const normalizedSteps = (data.steps || []).map((step: any) => {
+                if (typeof step === 'string') return { content: step };
+                return step;
+            });
+            setSteps(normalizedSteps);
+
             setClosing(data.closing || '');
             setImage(data.image);
         } catch (error) {

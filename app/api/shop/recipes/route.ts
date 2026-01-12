@@ -110,8 +110,8 @@ export async function POST(request: NextRequest) {
         // Let's await it to provide immediate feedback.
         interface RecipeFormat {
             description: string;
-            ingredients: string[];
-            steps: string[];
+            ingredients: { item: string; amount: string }[];
+            steps: { content: string }[];
             closing: string;
         }
 
@@ -129,11 +129,11 @@ export async function POST(request: NextRequest) {
             
             Requirements:
             1. description: A warm, friendly introduction (max 2 sentences, Ibu-ibu style).
-            2. ingredients: Array of strings (fix typos).
-            3. steps: Array of strings (clear instructions).
+            2. ingredients: Array of objects { item: string, amount: string } (fix typos, split item name and its amount/quantity).
+            3. steps: Array of objects { content: string } (clear instructions).
             4. closing: A sweet closing sentence (e.g., "Selamat mencoba!").
             
-            Output strictly valid JSON: { "description": "...", "ingredients": [], "steps": [], "closing": "..." }
+            Output strictly valid JSON: { "description": "...", "ingredients": [{ "item": "...", "amount": "..." }], "steps": [{ "content": "..." }], "closing": "..." }
             `;
 
             const aiResponse = await ChatbotService.getGenericCompletion(

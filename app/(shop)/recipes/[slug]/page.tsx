@@ -208,10 +208,12 @@ export default function RecipeDetailPage({ params }: { params: Promise<{ slug: s
                             Bahan-bahan
                         </h3>
                         <ul className="space-y-3">
-                            {recipe.ingredients.map((item, idx) => (
+                            {(recipe.ingredients as any[]).map((ing, idx) => (
                                 <li key={idx} className="flex items-start gap-3 p-3 bg-stone-50 rounded-xl">
                                     <div className="size-1.5 mt-2 rounded-full bg-orange-400 shrink-0" />
-                                    <span className="text-stone-700 text-sm">{item}</span>
+                                    <span className="text-stone-700 text-sm">
+                                        {typeof ing === 'string' ? ing : `${ing.amount || ''} ${ing.item}`.trim()}
+                                    </span>
                                 </li>
                             ))}
                         </ul>
@@ -224,12 +226,14 @@ export default function RecipeDetailPage({ params }: { params: Promise<{ slug: s
                             Cara Membuat
                         </h3>
                         <div className="space-y-6 relative border-l-2 border-orange-100 ml-3 pl-6 pb-2">
-                            {recipe.steps.map((step, idx) => (
+                            {(recipe.steps as any[]).map((step, idx) => (
                                 <div key={idx} className="relative">
                                     <span className="absolute -left-[31px] top-0 size-6 rounded-full bg-orange-500 text-white flex items-center justify-center text-xs font-bold border-2 border-white shadow-sm">
                                         {idx + 1}
                                     </span>
-                                    <p className="text-stone-700 text-sm leading-relaxed">{step}</p>
+                                    <p className="text-stone-700 text-sm leading-relaxed">
+                                        {typeof step === 'string' ? step : step.content}
+                                    </p>
                                 </div>
                             ))}
                         </div>
