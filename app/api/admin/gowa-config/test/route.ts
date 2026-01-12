@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
     try {
-        const { endpoint, username, password, apiKey } = await request.json();
+        const { endpoint, username, password, apiKey, deviceId } = await request.json();
 
         if (!endpoint) {
             return NextResponse.json({ error: 'Endpoint is required' }, { status: 400 });
@@ -10,10 +10,14 @@ export async function POST(request: Request) {
 
         // Normalize endpoint (remove trailing slash)
         const baseUrl = endpoint.replace(/\/+$/, '');
-        const testUrl = `${baseUrl}/devices`;
+        const testUrlObj = new URL(`${baseUrl}/devices`);
+        if (deviceId) {
+            testUrlObj.searchParams.append('device_id', deviceId);
+        }
 
         const headers: Record<string, string> = {
             'Content-Type': 'application/json',
+            'X-Device-Id': deviceId || '',
         };
 
         if (username && password) {
@@ -23,7 +27,7 @@ export async function POST(request: Request) {
             headers['Authorization'] = `Bearer ${apiKey}`;
         }
 
-        const response = await fetch(testUrl, {
+        const response = await fetch(testUrlObj.toString(), {
             headers,
             // Add a timeout to avoid hangs
             signal: AbortSignal.timeout(10000)

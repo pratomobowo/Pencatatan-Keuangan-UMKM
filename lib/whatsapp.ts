@@ -32,15 +32,21 @@ export async function sendWhatsAppMessage(phone: string, message: string) {
             targetPhone = '62' + targetPhone;
         }
 
-        const url = `${config.endpoint}/send/message`;
+        // Inclusion of device_id in query and headers for broader GOWA compatibility
+        const urlObj = new URL(`${config.endpoint}/send/message`);
+        if (config.deviceId) {
+            urlObj.searchParams.append('device_id', config.deviceId);
+        }
+
         const body = {
             phone: targetPhone,
             message: message,
-            device: config.deviceId || undefined, // GOWA v8 uses 'device' key
+            device: config.deviceId || undefined, // GOWA v8 specific
         };
 
         const headers: Record<string, string> = {
             'Content-Type': 'application/json',
+            'X-Device-Id': config.deviceId || '',
         };
 
         if (config.username && config.password) {
@@ -50,7 +56,7 @@ export async function sendWhatsAppMessage(phone: string, message: string) {
             headers['Authorization'] = `Bearer ${config.apiKey}`;
         }
 
-        const response = await fetch(url, {
+        const response = await fetch(urlObj.toString(), {
             method: 'POST',
             headers,
             body: JSON.stringify(body),
