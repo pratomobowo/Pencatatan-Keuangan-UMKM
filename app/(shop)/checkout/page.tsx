@@ -553,6 +553,11 @@ export default function CheckoutPage() {
                                     rows={3}
                                     value={guestInfo.address}
                                     onChange={(e) => setGuestInfo({ ...guestInfo, address: e.target.value })}
+                                    onFocus={(e) => {
+                                        setTimeout(() => {
+                                            e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                        }, 300);
+                                    }}
                                     className="w-full px-4 py-3 bg-gray-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-orange-200 transition-all outline-none resize-none"
                                 />
                                 <p className="text-[10px] text-gray-400">Pastikan alamat lengkap untuk penghitungan ongkir akurat.</p>
@@ -845,7 +850,7 @@ export default function CheckoutPage() {
             </div>
 
             {/* Checkout Button */}
-            <div className="fixed bottom-[70px] left-0 w-full bg-white border-t border-gray-100 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] px-4 py-4 z-40">
+            <div className="fixed bottom-[72px] left-0 w-full bg-white border-t border-gray-100 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] px-4 py-4 z-40">
                 <button
                     onClick={handlePlaceOrder}
                     disabled={

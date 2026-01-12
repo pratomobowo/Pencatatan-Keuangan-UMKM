@@ -111,7 +111,8 @@ export default function CreateRecipePage() {
                 <h1 className="font-bold text-lg text-stone-900">Tulis Resep Baru</h1>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-4 max-w-lg mx-auto space-y-6">
+            {/* Form */}
+            <form onSubmit={handleSubmit} className="p-4 max-w-lg mx-auto space-y-6 pb-40">
                 {/* Image Upload */}
                 <div
                     onClick={() => fileInputRef.current?.click()}
@@ -171,18 +172,23 @@ export default function CreateRecipePage() {
                         <textarea
                             value={rawInput}
                             onChange={(e) => setRawInput(e.target.value)}
+                            onFocus={(e) => {
+                                setTimeout(() => {
+                                    e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                }, 300);
+                            }}
                             placeholder="Ceritakan resepmu di sini, Bun! Boleh curhat dikit, terus tulis bahan dan cara masaknya ya. Nanti Minsar yang bantu rapihin formatnya! &#10;&#10;Contoh:&#10;Resep ini favorit si Kakak. Bahannya simpel cuma ayam, bawang, kecap. Cara masaknya tumis bumbu, masukin ayam, kasih kecap..."
                             className="w-full h-64 px-4 py-3 rounded-xl border border-stone-200 focus:border-orange-500 focus:outline-none bg-white text-stone-900 resize-none leading-relaxed"
                         />
                     </div>
                 </div>
 
-                {/* Submit */}
-                <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-stone-100 md:static md:border-0 md:bg-transparent md:p-0">
+                {/* Submit Container - Adjusted to be above BottomNav */}
+                <div className="fixed bottom-[72px] left-0 right-0 p-4 bg-white/80 backdrop-blur-md border-t border-stone-100 md:static md:border-0 md:bg-transparent md:p-0 z-40">
                     <button
                         type="submit"
                         disabled={isSubmitting || isUploading || !title || !rawInput}
-                        className="w-full bg-orange-500 text-white font-bold py-4 rounded-xl shadow-lg shadow-orange-500/20 disabled:opacity-50 disabled:shadow-none hover:bg-orange-600 transition-all flex items-center justify-center gap-2"
+                        className="w-full bg-orange-500 text-white font-bold py-4 rounded-xl shadow-lg shadow-orange-500/30 disabled:opacity-50 disabled:shadow-none hover:bg-orange-600 transition-all flex items-center justify-center gap-2"
                     >
                         {isSubmitting ? (
                             <>

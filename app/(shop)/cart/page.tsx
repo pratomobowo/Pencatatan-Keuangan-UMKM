@@ -161,7 +161,7 @@ export default function CartPage() {
 
             {/* Checkout Bar */}
             {cartItems.length > 0 && (
-                <div className="fixed bottom-[70px] left-0 w-full bg-white border-t border-gray-100 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] px-4 py-4 z-40">
+                <div className="fixed bottom-[72px] left-0 w-full bg-white border-t border-gray-100 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] px-4 py-4 z-40">
                     <div className="flex items-center justify-between gap-4 max-w-md mx-auto">
                         <div className="flex flex-col">
                             <span className="text-xs text-gray-500 font-medium">Subtotal</span>

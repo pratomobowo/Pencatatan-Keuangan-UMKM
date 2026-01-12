@@ -130,7 +130,7 @@ export async function POST(request: NextRequest) {
             1. description: A warm, friendly introduction (max 2 sentences, Ibu-ibu style).
             2. ingredients: Array of strings (fix typos).
             3. steps: Array of strings (clear instructions).
-            4. closing: A sweet closing sentence (e.g., "Selamat mencoba, Bun!").
+            4. closing: A sweet closing sentence (e.g., "Selamat mencoba!").
             
             Output strictly valid JSON: { "description": "...", "ingredients": [], "steps": [], "closing": "..." }
             `;
