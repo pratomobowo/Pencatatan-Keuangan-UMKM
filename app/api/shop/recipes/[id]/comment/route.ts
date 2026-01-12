@@ -55,7 +55,7 @@ export async function POST(
             },
             include: {
                 customer: {
-                    select: { name: true, image: true }
+                    select: { name: true }
                 }
             }
         });

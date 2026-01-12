@@ -14,7 +14,6 @@ interface Recipe {
     description: string | null;
     author: {
         name: string;
-        image: string | null;
     };
     _count: {
         likes: number;

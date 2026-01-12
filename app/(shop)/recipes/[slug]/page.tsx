@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Heart, MessageCircle, Share2, ChefHat, Send } from 'lucide-react';
+import { ArrowLeft, Heart, MessageCircle, Share2, ChefHat, Send, User as UserIcon } from 'lucide-react';
 import { useShopAuth } from '@/contexts/ShopAuthContext';
 import { use } from 'react';
 
@@ -14,7 +14,6 @@ interface Comment {
     createdAt: string;
     customer: {
         name: string;
-        image: string | null;
     };
 }
 
@@ -29,7 +28,6 @@ interface RecipeDetail {
     closing: string | null; // Outro
     author: {
         name: string;
-        image: string | null;
     };
     views: number;
     _count: {
@@ -169,13 +167,8 @@ export default function RecipeDetailPage({ params }: { params: Promise<{ slug: s
                 <h1 className="text-2xl font-bold text-stone-900 mb-2">{recipe.title}</h1>
                 <div className="flex items-center justify-between mb-6">
                     <div className="flex items-center gap-2">
-                        <div className="size-8 rounded-full bg-stone-100 overflow-hidden relative">
-                            <Image
-                                src={recipe.author.image || '/images/user-placeholder.png'}
-                                alt={recipe.author.name}
-                                fill
-                                className="object-cover"
-                            />
+                        <div className="size-8 rounded-full bg-orange-100 flex items-center justify-center text-orange-600">
+                            <ChefHat size={16} />
                         </div>
                         <div>
                             <p className="text-xs font-semibold text-stone-900">{recipe.author.name}</p>
@@ -292,13 +285,8 @@ export default function RecipeDetailPage({ params }: { params: Promise<{ slug: s
                     <div className="space-y-6">
                         {recipe.comments.map((comment) => (
                             <div key={comment.id} className="flex gap-3">
-                                <div className="size-8 rounded-full bg-stone-100 overflow-hidden relative shrink-0">
-                                    <Image
-                                        src={comment.customer.image || '/images/user-placeholder.png'}
-                                        alt={comment.customer.name}
-                                        fill
-                                        className="object-cover"
-                                    />
+                                <div className="size-8 rounded-full bg-stone-100 flex items-center justify-center text-stone-400 shrink-0">
+                                    <UserIcon size={16} />
                                 </div>
                                 <div>
                                     <div className="bg-stone-50 rounded-2xl rounded-tl-none px-4 py-2">

@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { Heart, MessageCircle } from 'lucide-react';
+import { Heart, MessageCircle, ChefHat } from 'lucide-react';
 
 interface RecipeCardProps {
     recipe: {
@@ -13,7 +13,6 @@ interface RecipeCardProps {
         description: string | null;
         author: {
             name: string;
-            image: string | null;
         };
         _count: {
             likes: number;
@@ -38,13 +37,8 @@ export const RecipeCard = ({ recipe }: RecipeCardProps) => {
 
                     {/* Author overlay */}
                     <div className="absolute bottom-3 left-3 flex items-center gap-2">
-                        <div className="size-6 rounded-full bg-white/20 backdrop-blur-sm overflow-hidden border border-white/50 relative">
-                            <Image
-                                src={recipe.author.image || '/images/user-placeholder.png'}
-                                alt={recipe.author.name}
-                                fill
-                                className="object-cover"
-                            />
+                        <div className="size-6 rounded-full bg-white/20 backdrop-blur-sm overflow-hidden border border-white/50 flex items-center justify-center">
+                            <ChefHat size={12} className="text-white" />
                         </div>
                         <span className="text-white text-xs font-medium truncate max-w-[120px]">
                             {recipe.author.name}

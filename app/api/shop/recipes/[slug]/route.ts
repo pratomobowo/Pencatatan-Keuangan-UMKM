@@ -38,14 +38,14 @@ export async function GET(
             where: isUuid ? { id: slug } : { slug },
             include: {
                 author: {
-                    select: { name: true, image: true }
+                    select: { name: true }
                 },
                 _count: {
                     select: { likes: true, comments: true }
                 },
                 comments: {
                     include: {
-                        customer: { select: { name: true, image: true } }
+                        customer: { select: { name: true } }
                     },
                     orderBy: { createdAt: 'desc' }
                 }

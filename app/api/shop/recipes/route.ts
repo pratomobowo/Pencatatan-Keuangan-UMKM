@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
                 where,
                 include: {
                     author: {
-                        select: { name: true, image: true }
+                        select: { name: true }
                     },
                     _count: {
                         select: { likes: true, comments: true }
@@ -107,7 +107,14 @@ export async function POST(request: NextRequest) {
         // 2. Call AI to format the recipe
         // We do this BEFORE saving if fast enough, or update after.
         // Let's await it to provide immediate feedback.
-        let formattedData = {
+        interface RecipeFormat {
+            description: string;
+            ingredients: string[];
+            steps: string[];
+            closing: string;
+        }
+
+        let formattedData: RecipeFormat = {
             description: '',
             ingredients: [],
             steps: [],
