@@ -177,8 +177,15 @@ export async function POST(request: NextRequest) {
         if (customerPhone) {
             (async () => {
                 try {
-                    const customerMsg = formatOrderMessage(order);
-                    await sendWhatsAppMessage(customerPhone, customerMsg);
+                    // Fetch notification config from GowaConfig
+                    const config = await prisma.gowaConfig.findUnique({
+                        where: { id: 'global' }
+                    });
+
+                    if (config?.notifyCustomer) {
+                        const customerMsg = formatOrderMessage(order);
+                        await sendWhatsAppMessage(customerPhone, customerMsg);
+                    }
                 } catch (notifyError) {
                     console.error('Error sending WhatsApp notification (POS):', notifyError);
                 }

@@ -7,7 +7,7 @@ import {
     LayoutDashboard, List, BrainCircuit, ShoppingCart, Package,
     Users as UsersIcon, Image as ImageIcon, Download, PieChart,
     Calculator, LogOut, UserCog, User as UserIcon, Settings, Tags, Gift,
-    MessageSquare, Smartphone, BookOpen
+    MessageSquare, Smartphone, BookOpen, Bell
 } from 'lucide-react';
 import { AdminNotificationBell } from './AdminNotificationBell';
 
@@ -99,6 +99,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
                     <Settings className="text-orange-500" size={20} />
                     <span>Pengaturan Toko</span>
                 </button>
+                <NavButton targetView="NOTIFICATIONS" icon={Bell} label="Notifikasi WhatsApp" />
 
                 <SectionLabel>Keuangan</SectionLabel>
                 <NavButton targetView="TRANSACTIONS" icon={List} label="Buku Transaksi" />

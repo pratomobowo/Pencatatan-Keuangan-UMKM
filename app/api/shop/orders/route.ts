@@ -167,28 +167,22 @@ export async function POST(request: NextRequest) {
         });
 
         // 4. Send WhatsApp Notifications (Async)
-        // We do this in the background and don't await if we want it to be super fast, 
-        // but for reliability we can await or use a background job.
-        // For now, let's just trigger it.
         (async () => {
             try {
-                // Fetch admin phone from shop config
-                const config = await prisma.shopConfig.findUnique({
+                // Fetch notification config from GowaConfig
+                const config = await prisma.gowaConfig.findUnique({
                     where: { id: 'global' }
                 });
 
                 if (config) {
-                    const contactInfo = JSON.parse(config.contactInfo || '{}');
-                    const adminPhone = contactInfo.phone || contactInfo.whatsapp;
-
                     // a. Notify Admin
-                    if (adminPhone) {
+                    if (config.notifyAdmin && config.adminPhone) {
                         const adminMsg = formatAdminNotification(result);
-                        await sendWhatsAppMessage(adminPhone, adminMsg);
+                        await sendWhatsAppMessage(config.adminPhone, adminMsg);
                     }
 
                     // b. Notify Customer
-                    if (addressPhone) {
+                    if (config.notifyCustomer && addressPhone) {
                         const customerMsg = formatOrderMessage(result);
                         await sendWhatsAppMessage(addressPhone, customerMsg);
                     }

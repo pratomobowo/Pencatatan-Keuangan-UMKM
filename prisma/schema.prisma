@@ -483,13 +483,16 @@ model OTP {
 }
 
 model GowaConfig {
-  id        String   @id @default("global")
-  endpoint  String?
-  deviceId  String?
-  apiKey    String?
-  username  String?
-  password  String?
-  updatedAt DateTime @updatedAt
+  id             String   @id @default("global")
+  endpoint       String?
+  deviceId       String?
+  apiKey         String?
+  username       String?
+  password       String?
+  adminPhone     String?  // Phone number for admin notifications
+  notifyCustomer Boolean  @default(true)
+  notifyAdmin    Boolean  @default(true)
+  updatedAt      DateTime @updatedAt
 }
 
 enum RecipeStatus {

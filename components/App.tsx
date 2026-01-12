@@ -16,6 +16,7 @@ import { ShopSettingsManager } from '@/components/ShopSettingsManager';
 import { BannerManager } from '@/components/BannerManager';
 import { CategoryManager } from '@/components/CategoryManager';
 import { LoyaltyManager } from '@/components/LoyaltyManager';
+import { NotificationSettingsManager } from '@/components/NotificationSettingsManager';
 import { ChatLogManager } from '@/components/admin/ChatLogManager';
 import { GowaSettingsManager } from '@/components/GowaSettingsManager';
 import { RecipeManager } from '@/components/admin/RecipeManager';
@@ -132,6 +133,7 @@ const App: React.FC = () => {
         CHAT_LOGS: { title: 'AI Chat Conversations', description: 'Review interaksi konsumen dengan Minsar AI untuk mempelajari perilaku pasar.' },
         GOWA_SETTINGS: { title: 'WhatsApp Gateway (GOWA v8)', description: 'Konfigurasi integrasi WhatsApp untuk pengiriman OTP dan notifikasi.' },
         RECIPE_MANAGEMENT: { title: 'Manajemen Buku Resep', description: 'Moderasi resep yang dikirim pelanggan, review format AI, dan setujui untuk memberi poin.' },
+        NOTIFICATIONS: { title: 'Pengaturan Notifikasi', description: 'Atur pesan otomatis untuk pelanggan dan admin via WhatsApp.' },
     };
 
     return (
@@ -279,6 +281,9 @@ const App: React.FC = () => {
 
                     {view === 'RECIPE_MANAGEMENT' && (
                         <RecipeManager />
+                    )}
+                    {view === 'NOTIFICATIONS' && (
+                        <NotificationSettingsManager />
                     )}
                 </main>
             </div>
