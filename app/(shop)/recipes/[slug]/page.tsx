@@ -162,7 +162,7 @@ export default function RecipeDetailPage({ params }: { params: Promise<{ slug: s
                 </button>
             </div>
 
-            <div className="max-w-2xl mx-auto -mt-6 relative bg-white rounded-t-3xl px-6 pt-8 shadow-sm">
+            <div className="max-w-2xl mx-auto -mt-6 relative bg-white rounded-t-3xl px-6 pt-8 pb-40 shadow-sm transition-all duration-300">
                 {/* Header Info */}
                 <h1 className="text-2xl font-bold text-stone-900 mb-2">{recipe.title}</h1>
                 <div className="flex items-center justify-between mb-6">
@@ -260,6 +260,11 @@ export default function RecipeDetailPage({ params }: { params: Promise<{ slug: s
                                     type="text"
                                     value={commentText}
                                     onChange={(e) => setCommentText(e.target.value)}
+                                    onFocus={(e) => {
+                                        setTimeout(() => {
+                                            e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                        }, 300);
+                                    }}
                                     placeholder="Tulis komentar..."
                                     className="w-full bg-stone-50 border border-transparent focus:bg-white focus:border-orange-500 rounded-xl px-4 py-3 text-sm focus:outline-none transition-all pr-12"
                                     disabled={isSubmittingComment}
