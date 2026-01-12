@@ -33,6 +33,61 @@ const getStatusBadge = (status: string) => {
   return <span className={`px-2 py-1 rounded-full text-xs font-medium ${badge.bg} ${badge.text}`}>{badge.label}</span>;
 };
 
+interface AutocompleteProps {
+  options: { id: string; label: string; sublabel?: string; value: any }[];
+  value: string;
+  onSelect: (value: any) => void;
+  onChange?: (val: string) => void;
+  placeholder?: string;
+  className?: string;
+  required?: boolean;
+}
+
+const Autocomplete: React.FC<AutocompleteProps> = ({ options, value, onSelect, onChange, placeholder, className, required }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const filteredOptions = options.filter(opt =>
+    opt.label.toLowerCase().includes((value || '').toLowerCase()) ||
+    opt.sublabel?.toLowerCase().includes((value || '').toLowerCase())
+  );
+
+  return (
+    <div className="relative w-full">
+      <input
+        type="text"
+        value={value}
+        required={required}
+        onChange={(e) => {
+          onChange?.(e.target.value);
+          setIsOpen(true);
+        }}
+        onFocus={() => setIsOpen(true)}
+        onBlur={() => setTimeout(() => setIsOpen(false), 200)}
+        placeholder={placeholder}
+        className={className}
+      />
+      {isOpen && filteredOptions.length > 0 && (
+        <div className="absolute z-[60] mt-1 w-full bg-white border border-slate-200 rounded-lg shadow-xl max-h-60 overflow-y-auto">
+          {filteredOptions.map((opt) => (
+            <button
+              key={opt.id}
+              type="button"
+              onClick={() => {
+                onSelect(opt.value);
+                setIsOpen(false);
+              }}
+              className="w-full text-left px-4 py-2 hover:bg-slate-50 transition-colors border-b border-slate-50 last:border-none"
+            >
+              <p className="text-sm font-medium text-slate-800">{opt.label}</p>
+              {opt.sublabel && <p className="text-[10px] text-slate-500">{opt.sublabel}</p>}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 export const OrderManager: React.FC<OrderManagerProps> = ({
   orders = [],
   products,
@@ -86,33 +141,6 @@ export const OrderManager: React.FC<OrderManagerProps> = ({
       }
     }
   }, [initialCustomerId, customers, onClearInitialCustomer]);
-
-  const handleCustomerSelect = (customerId: string) => {
-    const customer = customers.find(c => c.id === customerId);
-    if (customer) {
-      setFormData(prev => ({
-        ...prev,
-        customerId: customer.id,
-        customerName: customer.name,
-        customerPhone: customer.phone || '',
-        customerAddress: customer.address || '',
-      }));
-    }
-  };
-
-  const handleProductSelect = (index: number, productName: string) => {
-    const product = products.find(p => p.name === productName);
-    if (product) {
-      const newItems = [...formData.items];
-      newItems[index] = {
-        productName: product.name,
-        qty: 1,
-        unit: product.unit,
-        price: product.price
-      };
-      setFormData({ ...formData, items: newItems });
-    }
-  };
 
   const addItem = () => {
     setFormData({
@@ -519,17 +547,32 @@ export const OrderManager: React.FC<OrderManagerProps> = ({
                   {/* Customer Selection */}
                   <div className="grid grid-cols-2 gap-4">
                     <div className="col-span-2">
-                      <label className="block text-sm text-slate-700 mb-1">Pilih Pelanggan (Opsional)</label>
-                      <select
-                        value={formData.customerId || ''}
-                        onChange={(e) => handleCustomerSelect(e.target.value)}
+                      <label className="block text-sm font-medium text-slate-700 mb-1">Cari Pelanggan</label>
+                      <Autocomplete
+                        placeholder="Ketik nama atau No. HP..."
+                        value={formData.customerName}
+                        onChange={(val) => setFormData({ ...formData, customerName: val })}
+                        options={customers.map(c => ({
+                          id: c.id,
+                          label: c.name,
+                          sublabel: c.phone || '',
+                          value: c
+                        }))}
+                        onSelect={(customer: Customer) => {
+                          setFormData(prev => ({
+                            ...prev,
+                            customerId: customer.id,
+                            customerName: customer.name,
+                            customerPhone: customer.phone || '',
+                            customerAddress: customer.address || '',
+                          }));
+                        }}
                         className="w-full p-2.5 bg-white border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
-                      >
-                        <option value="">-- Pelanggan Baru --</option>
-                        {customers.map(c => (
-                          <option key={c.id} value={c.id}>{c.name} {c.phone ? `(${c.phone})` : ''}</option>
-                        ))}
-                      </select>
+                      />
+                    </div>
+
+                    <div className="hidden">
+                      {/* Name input is now handled by autocomplete above, but let's keep it for fallback/logic if needed, or just let autocomplete handle it */}
                     </div>
 
                     <div>
@@ -582,17 +625,29 @@ export const OrderManager: React.FC<OrderManagerProps> = ({
                     <div className="space-y-2">
                       {formData.items.map((item, index) => (
                         <div key={index} className="flex gap-2">
-                          <select
+                          <Autocomplete
+                            placeholder="Cari Produk..."
                             value={item.productName}
-                            onChange={(e) => handleProductSelect(index, e.target.value)}
-                            className="flex-1 p-2 bg-white border border-slate-300 rounded-lg text-sm"
                             required
-                          >
-                            <option value="">Pilih Produk</option>
-                            {products.map(p => (
-                              <option key={p.id} value={p.name}>{p.name} - {formatCurrency(p.price)}/{p.unit}</option>
-                            ))}
-                          </select>
+                            onChange={(val) => updateItem(index, 'productName', val)}
+                            options={products.map(p => ({
+                              id: p.id,
+                              label: p.name,
+                              sublabel: `${formatCurrency(p.price)}/${p.unit}`,
+                              value: p
+                            }))}
+                            onSelect={(product: Product) => {
+                              const newItems = [...formData.items];
+                              newItems[index] = {
+                                productName: product.name,
+                                qty: item.qty,
+                                unit: product.unit,
+                                price: product.price
+                              };
+                              setFormData({ ...formData, items: newItems });
+                            }}
+                            className="flex-1 p-2 bg-white border border-slate-300 rounded-lg text-sm"
+                          />
                           <input
                             type="number"
                             min="0.1"
