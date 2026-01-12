@@ -40,6 +40,7 @@ export const OrderManager: React.FC<OrderManagerProps> = ({
   onAddOrder,
   onUpdateStatus,
   onDeleteOrder,
+  onBulkDelete,
   initialCustomerId,
   onClearInitialCustomer,
 }) => {
