@@ -463,3 +463,25 @@ model AIAnalysisReport {
   @@index([type])
   @@index([createdAt])
 }
+
+model OTP {
+  id        String   @id @default(uuid())
+  phone     String
+  code      String
+  expiresAt DateTime
+  isUsed    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([phone])
+  @@index([code])
+}
+
+model GowaConfig {
+  id        String   @id @default("global")
+  endpoint  String?
+  deviceId  String?
+  apiKey    String?
+  username  String?
+  password  String?
+  updatedAt DateTime @updatedAt
+}

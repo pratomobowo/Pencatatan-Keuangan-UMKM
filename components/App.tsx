@@ -17,6 +17,7 @@ import { BannerManager } from '@/components/BannerManager';
 import { CategoryManager } from '@/components/CategoryManager';
 import { LoyaltyManager } from '@/components/LoyaltyManager';
 import { ChatLogManager } from '@/components/admin/ChatLogManager';
+import { GowaSettingsManager } from '@/components/GowaSettingsManager';
 import { Loader2 } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { ToastProvider, useToast } from '@/components/ui/Toast';
@@ -128,6 +129,7 @@ const App: React.FC = () => {
         BANNER_MANAGEMENT: { title: 'Manajemen Banner Promo', description: 'Atur visual dan teks banner yang tampil di halaman depan toko.' },
         CATEGORY_MANAGEMENT: { title: 'Manajemen Kategori Produk', description: 'Atur kategori produk untuk mempermudah navigasi di toko online.' },
         CHAT_LOGS: { title: 'AI Chat Conversations', description: 'Review interaksi konsumen dengan Minsar AI untuk mempelajari perilaku pasar.' },
+        GOWA_SETTINGS: { title: 'WhatsApp Gateway (GOWA v8)', description: 'Konfigurasi integrasi WhatsApp untuk pengiriman OTP dan notifikasi.' },
     };
 
     return (
@@ -266,6 +268,10 @@ const App: React.FC = () => {
 
                     {view === 'CHAT_LOGS' && (
                         <ChatLogManager />
+                    )}
+
+                    {view === 'GOWA_SETTINGS' && (
+                        <GowaSettingsManager />
                     )}
                 </main>
             </div>
