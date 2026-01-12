@@ -175,15 +175,19 @@ export async function POST(request: NextRequest) {
                 });
 
                 if (config) {
-                    // a. Notify Admin
-                    if (config.notifyAdmin && config.adminPhone) {
-                        const adminMsg = formatAdminNotification(result);
-                        await sendWhatsAppMessage(config.adminPhone, adminMsg);
+                    const cfg = config as any;
+                    // a. Notify Admins (Broadcast)
+                    if (cfg.notifyAdmin && cfg.adminPhones && cfg.adminPhones.length > 0) {
+                        const adminMsg = formatAdminNotification(result, cfg.adminTemplate || undefined);
+                        // Send to all admin numbers
+                        await Promise.all(cfg.adminPhones.map((phone: string) =>
+                            sendWhatsAppMessage(phone, adminMsg)
+                        ));
                     }
 
                     // b. Notify Customer
-                    if (config.notifyCustomer && addressPhone) {
-                        const customerMsg = formatOrderMessage(result);
+                    if (cfg.notifyCustomer && addressPhone) {
+                        const customerMsg = formatOrderMessage(result, cfg.customerTemplate || undefined);
                         await sendWhatsAppMessage(addressPhone, customerMsg);
                     }
                 }

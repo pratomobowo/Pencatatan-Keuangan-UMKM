@@ -90,7 +90,40 @@ export async function sendOTP(phone: string, code: string) {
     return sendWhatsAppMessage(phone, message);
 }
 
-export function formatOrderMessage(order: any) {
+/**
+ * Replaces placeholders in a template string with actual order data.
+ */
+function renderTemplate(template: string, order: any): string {
+    const items = order.items.map((item: any, idx: number) =>
+        `${idx + 1}. ${item.productName || item.name} (${item.qty || item.quantity} ${item.unit || 'pcs'}) - ${formatCurrency(item.total || (item.price * item.quantity))}`
+    ).join('\n');
+
+    const replacers: Record<string, string | number> = {
+        '{{OrderNumber}}': order.orderNumber,
+        '{{CustomerName}}': order.customerName || order.recipientName || 'Pelanggan',
+        '{{Items}}': items,
+        '{{Total}}': formatCurrency(order.grandTotal),
+        '{{Subtotal}}': formatCurrency(order.subtotal),
+        '{{Ongkir}}': order.shippingMethod === 'PICKUP' ? 'GRATIS (Pickup Mandiri)' : formatCurrency(order.shippingFee),
+        '{{Diskon}}': formatCurrency(order.discount || 0),
+        '{{PaymentMethod}}': order.paymentMethod?.toUpperCase() || 'COD',
+        '{{ShippingMethod}}': order.shippingMethod === 'PICKUP' ? 'Pickup Mandiri' : 'Antar Kurir',
+    };
+
+    let result = template;
+    for (const [key, value] of Object.entries(replacers)) {
+        result = result.replaceAll(key, String(value));
+    }
+
+    return result;
+}
+
+export function formatOrderMessage(order: any, customTemplate?: string) {
+    if (customTemplate) {
+        return renderTemplate(customTemplate, order);
+    }
+
+    // Default Template
     const items = order.items.map((item: any, idx: number) =>
         `${idx + 1}. ${item.productName || item.name} (${item.qty || item.quantity} ${item.unit || 'pcs'}) - ${formatCurrency(item.total || (item.price * item.quantity))}`
     ).join('\n');
@@ -128,7 +161,12 @@ export function formatOrderMessage(order: any) {
     return message;
 }
 
-export function formatAdminNotification(order: any) {
+export function formatAdminNotification(order: any, customTemplate?: string) {
+    if (customTemplate) {
+        return renderTemplate(customTemplate, order);
+    }
+
+    // Default Template
     let message = `*📢 NOTIFIKASI ORDER BARU*\n\n`;
     message += `Ada pesanan baru masuk dari Website!\n`;
     message += `No. Order: *${order.orderNumber}*\n`;

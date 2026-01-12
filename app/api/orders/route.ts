@@ -182,9 +182,12 @@ export async function POST(request: NextRequest) {
                         where: { id: 'global' }
                     });
 
-                    if (config?.notifyCustomer) {
-                        const customerMsg = formatOrderMessage(order);
-                        await sendWhatsAppMessage(customerPhone, customerMsg);
+                    if (config) {
+                        const cfg = config as any;
+                        if (cfg.notifyCustomer) {
+                            const customerMsg = formatOrderMessage(order, cfg.customerTemplate || undefined);
+                            await sendWhatsAppMessage(customerPhone, customerMsg);
+                        }
                     }
                 } catch (notifyError) {
                     console.error('Error sending WhatsApp notification (POS):', notifyError);

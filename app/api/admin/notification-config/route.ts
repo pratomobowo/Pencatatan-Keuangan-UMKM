@@ -20,9 +20,11 @@ export async function GET() {
         }
 
         return NextResponse.json({
-            adminPhone: config.adminPhone || '',
+            adminPhones: config.adminPhones || [],
             notifyCustomer: config.notifyCustomer,
             notifyAdmin: config.notifyAdmin,
+            adminTemplate: config.adminTemplate || '',
+            customerTemplate: config.customerTemplate || '',
         });
     } catch (error) {
         console.error('Error fetching notification config:', error);
@@ -42,15 +44,19 @@ export async function POST(request: Request) {
         const updated = await prisma.gowaConfig.upsert({
             where: { id: 'global' },
             update: {
-                adminPhone: data.adminPhone,
+                adminPhones: data.adminPhones,
                 notifyCustomer: data.notifyCustomer,
                 notifyAdmin: data.notifyAdmin,
+                adminTemplate: data.adminTemplate,
+                customerTemplate: data.customerTemplate,
             },
             create: {
                 id: 'global',
-                adminPhone: data.adminPhone,
+                adminPhones: data.adminPhones || [],
                 notifyCustomer: data.notifyCustomer !== undefined ? data.notifyCustomer : true,
                 notifyAdmin: data.notifyAdmin !== undefined ? data.notifyAdmin : true,
+                adminTemplate: data.adminTemplate || '',
+                customerTemplate: data.customerTemplate || '',
             }
         });
 
