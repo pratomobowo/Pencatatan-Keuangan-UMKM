@@ -12,6 +12,7 @@ export async function sendWhatsAppMessage(phone: string, message: string) {
             username: dbConfig?.username || process.env.GOWA_USERNAME,
             password: dbConfig?.password || process.env.GOWA_PASSWORD,
             apiKey: dbConfig?.apiKey || process.env.GOWA_API_KEY,
+            deviceId: dbConfig?.deviceId || process.env.GOWA_DEVICE_ID,
         };
 
         if (!config.endpoint) {
@@ -35,6 +36,7 @@ export async function sendWhatsAppMessage(phone: string, message: string) {
         const body = {
             phone: targetPhone,
             message: message,
+            device: config.deviceId || undefined, // GOWA v8 uses 'device' key
         };
 
         const headers: Record<string, string> = {
