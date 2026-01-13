@@ -920,18 +920,24 @@ export default function CheckoutPage() {
                             </div>
                         )}
                         <div className="border-t border-dashed border-gray-300 my-2"></div>
-                        <div className="flex justify-between text-base font-bold">
-                            <span>Total Pembayaran</span>
+                        <div className="flex justify-between text-lg font-black pt-2 border-t border-gray-100">
+                            <span className="text-stone-900">Total Tagihan</span>
                             {shippingData.requiresManualConfirmation ? (
                                 <div className="text-right">
-                                    <span className="text-orange-600 block">Rp {total.toLocaleString('id-ID')}</span>
-                                    <span className="text-[10px] text-gray-500 font-normal">+ Ongkir (Menunggu Konfirmasi)</span>
+                                    <span className="text-orange-600 block font-black text-xl">Rp {total.toLocaleString('id-ID')}</span>
+                                    <span className="text-[10px] text-gray-500 font-normal italic">+ Ongkir dihitung manual</span>
                                 </div>
                             ) : (
-                                <span className="text-orange-600">Rp {total.toLocaleString('id-ID')}</span>
+                                <span className="text-orange-600 text-xl font-black">Rp {total.toLocaleString('id-ID')}</span>
                             )}
                         </div>
                     </div>
+                </div>
+
+                {/* Trust Badge */}
+                <div className="flex items-center justify-center gap-2 text-gray-400 py-2">
+                    <ShieldCheck size={14} />
+                    <span className="text-[10px] font-bold uppercase tracking-widest">Transaksi Aman & Terenkripsi</span>
                 </div>
 
                 {error && (
