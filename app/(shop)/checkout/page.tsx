@@ -480,84 +480,7 @@ export default function CheckoutPage() {
             </header>
 
             <div className="p-4 pb-24 flex flex-col gap-6 max-w-md mx-auto">
-                {/* Shipping Method Selection */}
-                <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
-                    <h3 className="text-stone-900 font-bold mb-3 flex items-center gap-2">
-                        <Package size={18} className="text-orange-500" />
-                        Metode Pengiriman
-                    </h3>
-                    <div className="relative">
-                        <div
-                            onClick={() => setIsShippingDropdownOpen(!isShippingDropdownOpen)}
-                            className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border-2 border-transparent hover:border-orange-200 transition-all cursor-pointer group"
-                        >
-                            <div className="flex items-center gap-3">
-                                <div className="size-10 bg-orange-100 rounded-full flex items-center justify-center text-orange-600">
-                                    {shippingMethod === 'DELIVERY' ? <Navigation size={20} /> : <Store size={20} />}
-                                </div>
-                                <div>
-                                    <p className="text-sm font-bold text-stone-900">
-                                        {shippingMethod === 'DELIVERY' ? 'Antar Kurir' : 'Pickup Mandiri'}
-                                    </p>
-                                    <p className="text-[10px] text-gray-500 uppercase font-medium tracking-wider">
-                                        {shippingMethod === 'DELIVERY' ? 'Kirim ke alamat Anda' : 'Ambil di Toko'}
-                                    </p>
-                                </div>
-                            </div>
-                            <ChevronDown size={20} className={`text-gray-400 transition-transform duration-300 ${isShippingDropdownOpen ? 'rotate-180' : ''}`} />
-                        </div>
-
-                        {/* Dropdown Menu */}
-                        {isShippingDropdownOpen && (
-                            <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl border border-gray-100 shadow-xl z-[60] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
-                                <div
-                                    onClick={() => {
-                                        setShippingMethod('DELIVERY');
-                                        setIsShippingDropdownOpen(false);
-                                    }}
-                                    className={`p-4 flex items-center gap-3 cursor-pointer hover:bg-orange-50 transition-colors ${shippingMethod === 'DELIVERY' ? 'bg-orange-50/50' : ''}`}
-                                >
-                                    <div className={`size-10 rounded-full flex items-center justify-center ${shippingMethod === 'DELIVERY' ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-400'}`}>
-                                        <Navigation size={20} />
-                                    </div>
-                                    <div className="flex-1">
-                                        <p className={`text-sm font-bold ${shippingMethod === 'DELIVERY' ? 'text-orange-600' : 'text-stone-900'}`}>Antar Kurir</p>
-                                        <p className="text-[10px] text-gray-500">Estimasi sampai lebih cepat</p>
-                                    </div>
-                                    {shippingMethod === 'DELIVERY' && <CheckCircle2 size={18} className="text-orange-500" />}
-                                </div>
-
-                                <div className="h-px bg-gray-100 mx-4" />
-
-                                <div
-                                    onClick={() => {
-                                        setShippingMethod('PICKUP');
-                                        setShippingData(prev => ({ ...prev, error: null }));
-                                        setIsShippingDropdownOpen(false);
-                                    }}
-                                    className={`p-4 flex items-center gap-3 cursor-pointer hover:bg-orange-50 transition-colors ${shippingMethod === 'PICKUP' ? 'bg-orange-50/50' : ''}`}
-                                >
-                                    <div className={`size-10 rounded-full flex items-center justify-center ${shippingMethod === 'PICKUP' ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-400'}`}>
-                                        <Store size={20} />
-                                    </div>
-                                    <div className="flex-1">
-                                        <p className={`text-sm font-bold ${shippingMethod === 'PICKUP' ? 'text-orange-600' : 'text-stone-900'}`}>Pickup Mandiri</p>
-                                        <p className="text-[10px] text-gray-500">Tidak ada biaya ongkir</p>
-                                    </div>
-                                    {shippingMethod === 'PICKUP' && <CheckCircle2 size={18} className="text-orange-500" />}
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                    {shippingMethod === 'PICKUP' && (
-                        <div className="mt-3 p-3 bg-blue-50 rounded-lg text-xs text-blue-700 flex items-start gap-2 border border-blue-100">
-                            <HelpCircle size={14} className="shrink-0 mt-0.5" />
-                            <p>Silakan ambil pesanan Anda langsung di toko atau gunakan driver pilihan Anda. Alamat toko tersedia di halaman Detail Toko.</p>
-                        </div>
-                    )}
-                </div>
-
-                {/* Shipping Address Section */}
+                {/* 1. Alamat Pengiriman Section */}
                 <div>
                     <div className="flex items-center justify-between mb-3">
                         <h3 className="text-stone-900 font-bold flex items-center gap-2">
@@ -694,9 +617,9 @@ export default function CheckoutPage() {
                 </div>
 
 
-                {/* Product Summary Section */}
-                <div>
-                    <div className="flex items-center justify-between mb-3">
+                {/* 2. Pesanan Anda (Product Summary) Section */}
+                <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+                    <div className="flex items-center justify-between mb-4">
                         <h3 className="text-stone-900 font-bold flex items-center gap-2">
                             <ShieldCheck size={18} className="text-orange-500" />
                             Pesanan Anda
@@ -707,9 +630,9 @@ export default function CheckoutPage() {
                     </div>
                     <div className="flex flex-col gap-3">
                         {items.map((item) => (
-                            <div key={`${item.id}-${item.variant}`} className="flex flex-col bg-white rounded-xl p-3 shadow-sm border border-gray-100">
+                            <div key={`${item.id}-${item.variant}`} className="flex flex-col bg-stone-50/50 rounded-xl p-3 border border-gray-100">
                                 <div className="flex gap-3">
-                                    <div className="relative size-16 rounded-lg overflow-hidden bg-gray-50 shrink-0 border border-gray-100">
+                                    <div className="relative size-16 rounded-lg overflow-hidden bg-white shrink-0 border border-gray-100">
                                         <Image
                                             src={item.image || DEFAULT_IMAGE}
                                             alt={item.name}
@@ -731,14 +654,91 @@ export default function CheckoutPage() {
                                     </div>
                                 </div>
                                 {item.note && (
-                                    <div className="mt-2 pt-2 border-t border-gray-50 flex items-start gap-2 bg-stone-50/50 p-2 rounded-lg">
+                                    <div className="mt-2 pt-2 border-t border-gray-100 flex items-start gap-2">
                                         <MessageSquare size={12} className="text-stone-400 shrink-0 mt-0.5" />
-                                        <p className="text-[10px] text-stone-600 italic leading-tight">"{item.note}"</p>
+                                        <p className="text-[10px] text-stone-600 italic leading-tight px-1">"{item.note}"</p>
                                     </div>
                                 )}
                             </div>
                         ))}
                     </div>
+                </div>
+
+                {/* 3. Metode Pengiriman Dropdown */}
+                <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+                    <h3 className="text-stone-900 font-bold mb-3 flex items-center gap-2">
+                        <Package size={18} className="text-orange-500" />
+                        Pilih Metode Pengiriman
+                    </h3>
+                    <div className="relative">
+                        <div
+                            onClick={() => setIsShippingDropdownOpen(!isShippingDropdownOpen)}
+                            className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border-2 border-transparent hover:border-orange-200 transition-all cursor-pointer group"
+                        >
+                            <div className="flex items-center gap-3">
+                                <div className="size-10 bg-orange-100 rounded-full flex items-center justify-center text-orange-600">
+                                    {shippingMethod === 'DELIVERY' ? <Navigation size={20} /> : <Store size={20} />}
+                                </div>
+                                <div>
+                                    <p className="text-sm font-bold text-stone-900">
+                                        {shippingMethod === 'DELIVERY' ? 'Antar Kurir' : 'Pickup Mandiri'}
+                                    </p>
+                                    <p className="text-[10px] text-gray-500 uppercase font-medium tracking-wider">
+                                        {shippingMethod === 'DELIVERY' ? 'Kirim ke alamat Anda' : 'Ambil di Toko'}
+                                    </p>
+                                </div>
+                            </div>
+                            <ChevronDown size={20} className={`text-gray-400 transition-transform duration-300 ${isShippingDropdownOpen ? 'rotate-180' : ''}`} />
+                        </div>
+
+                        {/* Dropdown Menu */}
+                        {isShippingDropdownOpen && (
+                            <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl border border-gray-100 shadow-xl z-[60] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                                <div
+                                    onClick={() => {
+                                        setShippingMethod('DELIVERY');
+                                        setIsShippingDropdownOpen(false);
+                                    }}
+                                    className={`p-4 flex items-center gap-3 cursor-pointer hover:bg-orange-50 transition-colors ${shippingMethod === 'DELIVERY' ? 'bg-orange-50/50' : ''}`}
+                                >
+                                    <div className={`size-10 rounded-full flex items-center justify-center ${shippingMethod === 'DELIVERY' ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-400'}`}>
+                                        <Navigation size={20} />
+                                    </div>
+                                    <div className="flex-1">
+                                        <p className={`text-sm font-bold ${shippingMethod === 'DELIVERY' ? 'text-orange-600' : 'text-stone-900'}`}>Antar Kurir</p>
+                                        <p className="text-[10px] text-gray-500">Estimasi sampai lebih cepat</p>
+                                    </div>
+                                    {shippingMethod === 'DELIVERY' && <CheckCircle2 size={18} className="text-orange-500" />}
+                                </div>
+
+                                <div className="h-px bg-gray-100 mx-4" />
+
+                                <div
+                                    onClick={() => {
+                                        setShippingMethod('PICKUP');
+                                        setShippingData(prev => ({ ...prev, error: null }));
+                                        setIsShippingDropdownOpen(false);
+                                    }}
+                                    className={`p-4 flex items-center gap-3 cursor-pointer hover:bg-orange-50 transition-colors ${shippingMethod === 'PICKUP' ? 'bg-orange-50/50' : ''}`}
+                                >
+                                    <div className={`size-10 rounded-full flex items-center justify-center ${shippingMethod === 'PICKUP' ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-400'}`}>
+                                        <Store size={20} />
+                                    </div>
+                                    <div className="flex-1">
+                                        <p className={`text-sm font-bold ${shippingMethod === 'PICKUP' ? 'text-orange-600' : 'text-stone-900'}`}>Pickup Mandiri</p>
+                                        <p className="text-[10px] text-gray-500">Tidak ada biaya ongkir</p>
+                                    </div>
+                                    {shippingMethod === 'PICKUP' && <CheckCircle2 size={18} className="text-orange-500" />}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                    {shippingMethod === 'PICKUP' && (
+                        <div className="mt-3 p-3 bg-blue-50 rounded-lg text-xs text-blue-700 flex items-start gap-2 border border-blue-100">
+                            <HelpCircle size={14} className="shrink-0 mt-0.5" />
+                            <p>Silakan ambil pesanan Anda langsung di toko atau gunakan driver pilihan Anda. Alamat toko tersedia di halaman Detail Toko.</p>
+                        </div>
+                    )}
                 </div>
 
                 {/* Payment Method */}
