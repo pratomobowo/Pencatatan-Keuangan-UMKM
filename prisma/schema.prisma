@@ -137,6 +137,7 @@ model Customer {
   updatedAt     DateTime       @updatedAt
   email         String?
   password      String?
+  verifiedAt    DateTime?
   addresses     Address[]
   favorites     Favorite[]
   notifications Notification[]

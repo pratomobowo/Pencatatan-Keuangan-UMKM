@@ -28,7 +28,15 @@ export default function LoginPage() {
             const result = await login(phoneOrEmail, formData.password, false);
 
             if (!result.success) {
-                setError(result.error || 'Gagal login');
+                if ((result as any).requiresVerification) {
+                    setError('Akun Bunda belum diverifikasi. Silakan masukkan nomor WhatsApp Bunda di form Daftar untuk kirim ulang kode OTP.');
+                    // Optionally redirect to register to trigger OTP again
+                    setTimeout(() => {
+                        router.push(`/register?phone=${formData.phone}&verified=false`);
+                    }, 2500);
+                } else {
+                    setError(result.error || 'Gagal login');
+                }
                 return;
             }
 

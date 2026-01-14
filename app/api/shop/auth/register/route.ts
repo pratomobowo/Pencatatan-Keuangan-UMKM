@@ -16,6 +16,10 @@ export async function POST(request: NextRequest) {
             );
         }
 
+        // Generate 6-digit OTP
+        const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+        const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
         // Check if phone already exists
         const existing = await prisma.customer.findUnique({
             where: { phone },
@@ -23,61 +27,75 @@ export async function POST(request: NextRequest) {
 
         if (existing) {
             // Check if customer already has a password (registered)
-            if (existing.password) {
+            if (existing.password && existing.verifiedAt) {
                 return NextResponse.json(
                     { error: 'Nomor HP sudah terdaftar' },
                     { status: 400 }
                 );
             }
 
-            // If customer exists but has no password (manual customer), update it
+            // If customer exists but has no password (manual customer) or is not verified
             const hashedPassword = await bcrypt.hash(password, 10);
 
-            const customer = await prisma.customer.update({
-                where: { id: existing.id },
-                data: {
-                    name, // Update name if provided
-                    password: hashedPassword,
-                    email: email || existing.email,
-                },
-                select: {
-                    id: true,
-                    name: true,
-                    phone: true,
-                    email: true,
-                    createdAt: true,
-                },
-            });
+            await prisma.$transaction([
+                prisma.customer.update({
+                    where: { id: existing.id },
+                    data: {
+                        name,
+                        password: hashedPassword,
+                        email: email || existing.email,
+                        verifiedAt: null, // Reset verification if they are re-registering an unverified account
+                    },
+                }),
+                prisma.oTP.create({
+                    data: {
+                        phone,
+                        code: otpCode,
+                        expiresAt,
+                    },
+                }),
+            ]);
+
+            // Send OTP via WhatsApp
+            await sendOTP(phone, otpCode, 'register');
 
             return NextResponse.json({
-                message: 'Registrasi berhasil (Akun diaktifkan)',
-                customer,
+                message: 'OTP terkirim. Silakan verifikasi nomor WhatsApp Bunda.',
+                requiresVerification: true,
+                phone,
             }, { status: 201 });
         }
 
         // Hash password
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Create new customer
-        const customer = await prisma.customer.create({
-            data: {
-                name,
-                phone,
-                password: hashedPassword,
-                email: email || null,
-            },
-            select: {
-                id: true,
-                name: true,
-                phone: true,
-                email: true,
-                createdAt: true,
-            },
-        });
+        // Create new customer and OTP in transaction
+        await prisma.$transaction([
+            prisma.customer.create({
+                data: {
+                    name,
+                    phone,
+                    password: hashedPassword,
+                    email: email || null,
+                    verifiedAt: null,
+                },
+            }),
+            prisma.oTP.create({
+                data: {
+                    phone,
+                    code: otpCode,
+                    expiresAt,
+                },
+            }),
+        ]);
+
+        // Send OTP via WhatsApp
+        await sendOTP(phone, otpCode, 'register');
 
         return NextResponse.json({
-            message: 'Registrasi berhasil',
-            customer,
+            message: 'Registrasi berhasil. Silakan verifikasi kode OTP yang dikirim ke WhatsApp Bunda.',
+            requiresVerification: true,
+            phone,
         }, { status: 201 });
     } catch (error: any) {
         console.error('Error registering customer:', error);

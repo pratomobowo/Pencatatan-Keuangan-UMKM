@@ -75,6 +75,17 @@ export async function POST(request: NextRequest) {
                 );
             }
 
+            if (!customer.verifiedAt) {
+                return NextResponse.json(
+                    {
+                        error: 'Akun Bunda belum diverifikasi.',
+                        requiresVerification: true,
+                        phone: customer.phone
+                    },
+                    { status: 401 }
+                );
+            }
+
             userId = customer.id;
             userName = customer.name;
             userIdentifier = customer.phone || customer.email || customer.id;

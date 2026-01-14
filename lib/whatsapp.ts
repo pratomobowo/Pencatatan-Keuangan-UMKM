@@ -85,8 +85,13 @@ export async function sendWhatsAppMessage(phone: string, message: string) {
     }
 }
 
-export async function sendOTP(phone: string, code: string) {
-    const message = `Halo Bunda! Kode OTP untuk reset password Pasarantar adalah: *${code}*.\n\nKode ini berlaku selama 5 menit. Mohon tidak memberikan kode ini kepada siapapun demi keamanan akun Bunda.`;
+export async function sendOTP(phone: string, code: string, type: 'reset' | 'register' = 'reset') {
+    let message = '';
+    if (type === 'register') {
+        message = `Halo Bunda! Selamat datang di Pasarantar. 🌿\n\nKode OTP untuk verifikasi pendaftaran Bunda adalah: *${code}*.\n\nMasukkan kode ini di aplikasi untuk menyelesaikan pendaftaran. Selamat belanja!`;
+    } else {
+        message = `Halo Bunda! Kode OTP untuk reset password Pasarantar adalah: *${code}*.\n\nKode ini berlaku selama 5 menit. Mohon tidak memberikan kode ini kepada siapapun demi keamanan akun Bunda.`;
+    }
     return sendWhatsAppMessage(phone, message);
 }
 
