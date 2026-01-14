@@ -43,6 +43,9 @@ export async function POST(request: NextRequest) {
                     counter++;
                 }
 
+                // Formatted Unit for display (e.g., "500 gr" or "1 kg")
+                const displayUnit = (p.qty && p.qty !== 1) ? `${p.qty} ${p.unit}` : p.unit;
+
                 const product = await tx.product.create({
                     data: {
                         sku: productSku,
@@ -52,9 +55,19 @@ export async function POST(request: NextRequest) {
                         price: p.price,
                         costPrice: p.costPrice || p.price * 0.7,
                         stock: p.stock || 0,
-                        unit: p.unit || 'kg',
+                        unit: displayUnit,
                         categoryName: p.category || null,
                         isActive: true,
+                        // Create a default variant with weight info
+                        variants: {
+                            create: {
+                                unit: displayUnit,
+                                unitQty: p.qty || 1,
+                                price: p.price,
+                                costPrice: p.costPrice || p.price * 0.7,
+                                isDefault: true
+                            }
+                        }
                     }
                 });
                 createdProducts.push(product);

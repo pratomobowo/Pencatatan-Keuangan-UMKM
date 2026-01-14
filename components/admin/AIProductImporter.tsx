@@ -4,6 +4,7 @@ import { Card } from '../ui/Card';
 
 interface AIProduct {
     name: string;
+    qty: number;
     unit: string;
     price: number;
     category: string;
@@ -147,6 +148,7 @@ export const AIProductImporter: React.FC<AIProductImporterProps> = ({ onClose, o
                                     <thead className="bg-slate-50 border-b">
                                         <tr>
                                             <th className="px-4 py-3 font-semibold text-slate-700">Nama Produk</th>
+                                            <th className="px-4 py-3 font-semibold text-slate-700">Qty/Berat</th>
                                             <th className="px-4 py-3 font-semibold text-slate-700">Unit</th>
                                             <th className="px-4 py-3 font-semibold text-slate-700">Harga</th>
                                             <th className="px-4 py-3 font-semibold text-slate-700">Kategori</th>
@@ -162,6 +164,16 @@ export const AIProductImporter: React.FC<AIProductImporterProps> = ({ onClose, o
                                                         value={p.name}
                                                         onChange={(e) => handleUpdateProduct(idx, 'name', e.target.value)}
                                                         className="w-full bg-transparent border-none p-1 focus:ring-1 focus:ring-orange-500 rounded"
+                                                    />
+                                                </td>
+                                                <td className="px-4 py-2">
+                                                    <input
+                                                        type="number"
+                                                        step="0.001"
+                                                        value={p.qty}
+                                                        placeholder="500/1/0.25"
+                                                        onChange={(e) => handleUpdateProduct(idx, 'qty', Number(e.target.value))}
+                                                        className="w-20 bg-transparent border-none p-1 focus:ring-1 focus:ring-orange-500 rounded"
                                                     />
                                                 </td>
                                                 <td className="px-4 py-2">
