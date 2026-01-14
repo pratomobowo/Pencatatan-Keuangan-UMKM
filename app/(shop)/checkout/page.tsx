@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -12,6 +12,7 @@ import {
 import { useCart } from '@/contexts/CartContext';
 import { useShopAuth } from '@/contexts/ShopAuthContext';
 import { useNotifications } from '@/contexts/NotificationContext';
+import { ShippingMethod } from '@/lib/types';
 
 const DEFAULT_IMAGE = '/images/coming-soon.jpg';
 
@@ -76,7 +77,8 @@ export default function CheckoutPage() {
         error: null,
         requiresManualConfirmation: false,
     });
-    const [shippingMethod, setShippingMethod] = useState<'DELIVERY' | 'PICKUP'>('DELIVERY');
+    const [availableMethods, setAvailableMethods] = useState<ShippingMethod[]>([]);
+    const [selectedMethod, setSelectedMethod] = useState<ShippingMethod | null>(null);
 
     const [serviceFee, setServiceFee] = useState(0);
 
@@ -93,6 +95,7 @@ export default function CheckoutPage() {
     // Load initial data
     useEffect(() => {
         fetchShopConfig();
+        fetchShippingMethods();
         if (isAuthenticated) {
             fetchAddresses();
         } else {
@@ -101,19 +104,21 @@ export default function CheckoutPage() {
     }, [isAuthenticated, authLoading]);
 
     useEffect(() => {
-        if (isAuthenticated && selectedAddress && shippingMethod === 'DELIVERY') {
-            calculateShippingForAddress(selectedAddress);
-        } else if (shippingMethod === 'PICKUP') {
-            setShippingData({
-                fee: 0,
-                distance: null,
-                isFreeShipping: false,
-                isCalculating: false,
-                error: null,
-                requiresManualConfirmation: false,
-            });
+        if (selectedMethod) {
+            if (isAuthenticated && selectedAddress && selectedMethod.type !== 'PICKUP') {
+                calculateShippingForAddress(selectedAddress, selectedMethod.id);
+            } else if (selectedMethod.type === 'PICKUP') {
+                setShippingData({
+                    fee: 0,
+                    distance: null,
+                    isFreeShipping: false,
+                    isCalculating: false,
+                    error: null,
+                    requiresManualConfirmation: false,
+                });
+            }
         }
-    }, [selectedAddress, isAuthenticated, shippingMethod]);
+    }, [selectedAddress, isAuthenticated, selectedMethod]);
 
     const fetchShopConfig = async () => {
         try {
@@ -125,6 +130,23 @@ export default function CheckoutPage() {
             }
         } catch (err) {
             console.error('Error fetching shop config:', err);
+        }
+    };
+
+    const fetchShippingMethods = async () => {
+        try {
+            const res = await fetch('/api/shop/shipping-methods');
+            if (res.ok) {
+                const data = await res.json();
+                setAvailableMethods(data);
+                // Set default method
+                if (data.length > 0) {
+                    const defaultMethod = data.find((m: any) => m.type === 'DISTANCE') || data[0];
+                    setSelectedMethod(defaultMethod);
+                }
+            }
+        } catch (err) {
+            console.error('Error fetching shipping methods:', err);
         }
     };
 
@@ -144,7 +166,10 @@ export default function CheckoutPage() {
         }
     };
 
-    const calculateShippingForAddress = async (addr: Address) => {
+    const calculateShippingForAddress = async (addr: Address, methodId?: string) => {
+        const targetMethodId = methodId || selectedMethod?.id;
+        if (!targetMethodId) return;
+
         if (!addr.latitude || !addr.longitude) {
             // Re-geocode if coordinates missing
             setShippingData(prev => ({ ...prev, isCalculating: true, error: null, requiresManualConfirmation: false }));
@@ -191,7 +216,8 @@ export default function CheckoutPage() {
                 body: JSON.stringify({
                     latitude: addr.latitude,
                     longitude: addr.longitude,
-                    subtotal
+                    subtotal,
+                    shippingMethodId: targetMethodId
                 }),
             });
 
@@ -266,7 +292,12 @@ export default function CheckoutPage() {
             const shippingRes = await fetch('/api/shop/calculate-shipping', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ latitude, longitude, subtotal }),
+                body: JSON.stringify({
+                    latitude,
+                    longitude,
+                    subtotal,
+                    shippingMethodId: selectedMethod?.id
+                }),
             });
 
             if (!shippingRes.ok) throw new Error('Gagal menghitung ongkir');
@@ -335,7 +366,7 @@ export default function CheckoutPage() {
     };
 
     const handlePlaceOrder = async () => {
-        if (shippingMethod !== 'PICKUP' && shippingData.fee === 0 && !shippingData.isFreeShipping && !shippingData.requiresManualConfirmation) {
+        if (selectedMethod?.type !== 'PICKUP' && shippingData.fee === 0 && !shippingData.isFreeShipping && !shippingData.requiresManualConfirmation) {
             setError('Hitung ongkir terlebih dahulu');
             return;
         }
@@ -351,7 +382,7 @@ export default function CheckoutPage() {
         }
 
         if (!isAuthenticated) {
-            if (!guestInfo.name || !guestInfo.phone || (shippingMethod === 'DELIVERY' && !guestInfo.address)) {
+            if (!guestInfo.name || !guestInfo.phone || (selectedMethod?.type !== 'PICKUP' && !guestInfo.address)) {
                 setError('Lengkapi data pengiriman');
                 return;
             }
@@ -377,7 +408,8 @@ export default function CheckoutPage() {
                 addressPhone: isAuthenticated ? selectedAddress?.phone : guestInfo.phone,
                 addressFull: isAuthenticated ? selectedAddress?.address : guestInfo.address,
                 paymentMethod: selectedPayment,
-                shippingMethod: shippingMethod,
+                shippingMethod: selectedMethod?.name || 'Unknown',
+                shippingMethodId: selectedMethod?.id || null,
                 shippingFee: shippingData.requiresManualConfirmation ? 0 : shippingData.fee, // 0 if manual
                 serviceFee: serviceFee,
                 voucherCode: appliedVoucher?.code || null,
@@ -485,7 +517,7 @@ export default function CheckoutPage() {
                     <div className="flex items-center justify-between mb-3">
                         <h3 className="text-stone-900 font-bold flex items-center gap-2">
                             <MapPin size={18} className="text-orange-500" />
-                            {shippingMethod === 'DELIVERY' ? 'Alamat Pengiriman' : 'Informasi Kontak'}
+                            {selectedMethod?.type !== 'PICKUP' ? 'Alamat Pengiriman' : 'Informasi Kontak'}
                         </h3>
                     </div>
 
@@ -576,10 +608,10 @@ export default function CheckoutPage() {
                                 <p className="text-[10px] text-gray-400">Pastikan alamat lengkap untuk penghitungan ongkir akurat.</p>
                             </div>
 
-                            {shippingMethod === 'DELIVERY' && (
+                            {selectedMethod?.type !== 'PICKUP' && (
                                 <button
                                     onClick={calculateShippingForGuest}
-                                    disabled={shippingData.isCalculating || !guestInfo.address}
+                                    disabled={shippingData.isCalculating || !guestInfo.address || !selectedMethod}
                                     className="w-full py-3 bg-slate-800 text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2 hover:bg-black transition-all disabled:opacity-50"
                                 >
                                     {shippingData.isCalculating ? <Loader2 size={16} className="animate-spin" /> : <Navigation size={16} />}
@@ -677,14 +709,14 @@ export default function CheckoutPage() {
                         >
                             <div className="flex items-center gap-3">
                                 <div className="size-10 bg-orange-100 rounded-full flex items-center justify-center text-orange-600">
-                                    {shippingMethod === 'DELIVERY' ? <Navigation size={20} /> : <Store size={20} />}
+                                    {selectedMethod?.type === 'PICKUP' ? <Store size={20} /> : <Navigation size={20} />}
                                 </div>
                                 <div>
                                     <p className="text-sm font-bold text-stone-900">
-                                        {shippingMethod === 'DELIVERY' ? 'Antar Kurir' : 'Pickup Mandiri'}
+                                        {selectedMethod?.name || 'Pilih Pengiriman'}
                                     </p>
                                     <p className="text-[10px] text-gray-500 uppercase font-medium tracking-wider">
-                                        {shippingMethod === 'DELIVERY' ? 'Kirim ke alamat Anda' : 'Ambil di Toko'}
+                                        {selectedMethod?.type === 'PICKUP' ? 'Ambil di Toko' : 'Kirim ke alamat Anda'}
                                     </p>
                                 </div>
                             </div>
@@ -694,46 +726,34 @@ export default function CheckoutPage() {
                         {/* Dropdown Menu */}
                         {isShippingDropdownOpen && (
                             <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl border border-gray-100 shadow-xl z-[60] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
-                                <div
-                                    onClick={() => {
-                                        setShippingMethod('DELIVERY');
-                                        setIsShippingDropdownOpen(false);
-                                    }}
-                                    className={`p-4 flex items-center gap-3 cursor-pointer hover:bg-orange-50 transition-colors ${shippingMethod === 'DELIVERY' ? 'bg-orange-50/50' : ''}`}
-                                >
-                                    <div className={`size-10 rounded-full flex items-center justify-center ${shippingMethod === 'DELIVERY' ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-400'}`}>
-                                        <Navigation size={20} />
-                                    </div>
-                                    <div className="flex-1">
-                                        <p className={`text-sm font-bold ${shippingMethod === 'DELIVERY' ? 'text-orange-600' : 'text-stone-900'}`}>Antar Kurir</p>
-                                        <p className="text-[10px] text-gray-500">Estimasi sampai lebih cepat</p>
-                                    </div>
-                                    {shippingMethod === 'DELIVERY' && <CheckCircle2 size={18} className="text-orange-500" />}
-                                </div>
-
-                                <div className="h-px bg-gray-100 mx-4" />
-
-                                <div
-                                    onClick={() => {
-                                        setShippingMethod('PICKUP');
-                                        setShippingData(prev => ({ ...prev, error: null }));
-                                        setIsShippingDropdownOpen(false);
-                                    }}
-                                    className={`p-4 flex items-center gap-3 cursor-pointer hover:bg-orange-50 transition-colors ${shippingMethod === 'PICKUP' ? 'bg-orange-50/50' : ''}`}
-                                >
-                                    <div className={`size-10 rounded-full flex items-center justify-center ${shippingMethod === 'PICKUP' ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-400'}`}>
-                                        <Store size={20} />
-                                    </div>
-                                    <div className="flex-1">
-                                        <p className={`text-sm font-bold ${shippingMethod === 'PICKUP' ? 'text-orange-600' : 'text-stone-900'}`}>Pickup Mandiri</p>
-                                        <p className="text-[10px] text-gray-500">Tidak ada biaya ongkir</p>
-                                    </div>
-                                    {shippingMethod === 'PICKUP' && <CheckCircle2 size={18} className="text-orange-500" />}
-                                </div>
+                                {availableMethods.map((method, idx) => (
+                                    <React.Fragment key={method.id}>
+                                        <div
+                                            onClick={() => {
+                                                setSelectedMethod(method);
+                                                if (method.type === 'PICKUP') {
+                                                    setShippingData(prev => ({ ...prev, error: null, fee: 0, distance: null }));
+                                                }
+                                                setIsShippingDropdownOpen(false);
+                                            }}
+                                            className={`p-4 flex items-center gap-3 cursor-pointer hover:bg-orange-50 transition-colors ${selectedMethod?.id === method.id ? 'bg-orange-50/50' : ''}`}
+                                        >
+                                            <div className={`size-10 rounded-full flex items-center justify-center ${selectedMethod?.id === method.id ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-400'}`}>
+                                                {method.type === 'PICKUP' ? <Store size={20} /> : <Navigation size={20} />}
+                                            </div>
+                                            <div className="flex-1">
+                                                <p className={`text-sm font-bold ${selectedMethod?.id === method.id ? 'text-orange-600' : 'text-stone-900'}`}>{method.name}</p>
+                                                <p className="text-[10px] text-gray-500">{method.description || (method.type === 'PICKUP' ? 'Tidak ada biaya ongkir' : 'Estimasi lebih cepat')}</p>
+                                            </div>
+                                            {selectedMethod?.id === method.id && <CheckCircle2 size={18} className="text-orange-500" />}
+                                        </div>
+                                        {idx < availableMethods.length - 1 && <div className="h-px bg-gray-100 mx-4" />}
+                                    </React.Fragment>
+                                ))}
                             </div>
                         )}
                     </div>
-                    {shippingMethod === 'PICKUP' && (
+                    {selectedMethod?.type === 'PICKUP' && (
                         <div className="mt-3 p-3 bg-blue-50 rounded-lg text-xs text-blue-700 flex items-start gap-2 border border-blue-100">
                             <HelpCircle size={14} className="shrink-0 mt-0.5" />
                             <p>Silakan ambil pesanan Anda langsung di toko atau gunakan driver pilihan Anda. Alamat toko tersedia di halaman Detail Toko.</p>
@@ -954,7 +974,7 @@ export default function CheckoutPage() {
                     onClick={handlePlaceOrder}
                     disabled={
                         isProcessing ||
-                        (shippingMethod !== 'PICKUP' && shippingData.fee === 0 && !shippingData.isFreeShipping && !shippingData.requiresManualConfirmation) ||
+                        (selectedMethod?.type !== 'PICKUP' && shippingData.fee === 0 && !shippingData.isFreeShipping && !shippingData.requiresManualConfirmation) ||
                         !!shippingData.error
                     }
                     className="w-full bg-orange-500 hover:bg-orange-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-lg"

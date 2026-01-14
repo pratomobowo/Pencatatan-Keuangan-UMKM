@@ -88,7 +88,7 @@ export async function sendWhatsAppMessage(phone: string, message: string) {
 export async function sendOTP(phone: string, code: string, type: 'reset' | 'register' = 'reset') {
     let message = '';
     if (type === 'register') {
-        message = `Halo Bunda! Selamat datang di Pasarantar. 🌿\n\nKode OTP untuk verifikasi pendaftaran Bunda adalah: *${code}*.\n\nMasukkan kode ini di aplikasi untuk menyelesaikan pendaftaran. Selamat belanja!`;
+        message = `Halo Bunda! Selamat datang di Pasarantar.\n\nKode OTP untuk verifikasi pendaftaran Bunda adalah: *${code}*.\n\nMasukkan kode ini di aplikasi untuk menyelesaikan pendaftaran. Selamat belanja!`;
     } else {
         message = `Halo Bunda! Kode OTP untuk reset password Pasarantar adalah: *${code}*.\n\nKode ini berlaku selama 5 menit. Mohon tidak memberikan kode ini kepada siapapun demi keamanan akun Bunda.`;
     }
@@ -109,10 +109,10 @@ function renderTemplate(template: string, order: any): string {
         '{{Items}}': items,
         '{{Total}}': formatCurrency(order.grandTotal),
         '{{Subtotal}}': formatCurrency(order.subtotal),
-        '{{Ongkir}}': order.shippingMethod === 'PICKUP' ? 'GRATIS (Pickup Mandiri)' : formatCurrency(order.shippingFee),
+        '{{Ongkir}}': order.method?.type === 'PICKUP' ? 'GRATIS (Pickup Mandiri)' : formatCurrency(order.shippingFee),
         '{{Diskon}}': formatCurrency(order.discount || 0),
         '{{PaymentMethod}}': order.paymentMethod?.toUpperCase() || 'COD',
-        '{{ShippingMethod}}': order.shippingMethod === 'PICKUP' ? 'Pickup Mandiri' : 'Antar Kurir',
+        '{{ShippingMethod}}': order.shippingMethod || (order.method?.type === 'PICKUP' ? 'Pickup Mandiri' : 'Antar Kurir'),
     };
 
     let result = template;
@@ -133,15 +133,15 @@ export function formatOrderMessage(order: any, customTemplate?: string) {
         `${idx + 1}. ${item.productName || item.name} (${item.qty || item.quantity} ${item.unit || 'pcs'}) - ${formatCurrency(item.total || (item.price * item.quantity))}`
     ).join('\n');
 
-    let message = `*PASARANTAR - PESANAN BARU* 🌿\n\n`;
+    let message = `*PASARANTAR - PESANAN BARU*\n\n`;
     message += `Halo Kak ${order.customerName || order.recipientName}, pesanan Bunda berhasil dibuat!\n`;
     message += `No. Order: *${order.orderNumber}*\n\n`;
     message += `*Detail Pesanan:*\n${items}\n\n`;
     message += `--------------------------------\n`;
     message += `Subtotal: ${formatCurrency(order.subtotal)}\n`;
 
-    if (order.shippingFee > 0 || order.shippingMethod === 'PICKUP') {
-        message += `Ongkir: ${order.shippingMethod === 'PICKUP' ? 'GRATIS (Pickup Mandiri)' : formatCurrency(order.shippingFee)}\n`;
+    if (order.shippingFee > 0 || order.method?.type === 'PICKUP') {
+        message += `Ongkir: ${order.method?.type === 'PICKUP' ? 'GRATIS (Pickup Mandiri)' : formatCurrency(order.shippingFee)}\n`;
     }
 
     if (order.serviceFee > 0) {
@@ -155,9 +155,9 @@ export function formatOrderMessage(order: any, customTemplate?: string) {
     message += `*TOTAL: ${formatCurrency(order.grandTotal)}*\n`;
     message += `--------------------------------\n\n`;
     message += `Metode Bayar: ${order.paymentMethod?.toUpperCase() || 'COD'}\n`;
-    message += `Metode Kirim: ${order.shippingMethod === 'PICKUP' ? 'Pickup Mandiri' : 'Antar Kurir'}\n\n`;
+    message += `Metode Kirim: ${order.shippingMethod || (order.method?.type === 'PICKUP' ? 'Pickup Mandiri' : 'Antar Kurir')}\n\n`;
 
-    if (order.shippingMethod === 'PICKUP') {
+    if (order.method?.type === 'PICKUP') {
         message += `Silakan ambil pesanan Bunda langsung di toko atau gunakan driver pilihan Bunda. Alamat toko tersedia di halaman Detail Toko.\n\n`;
     }
 

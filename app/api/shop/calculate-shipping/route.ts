@@ -5,6 +5,7 @@ interface CalculateShippingRequest {
     latitude: number;
     longitude: number;
     subtotal?: number; // For free shipping check
+    shippingMethodId?: string; // New field
 }
 
 interface OSRMResponse {
@@ -19,7 +20,7 @@ interface OSRMResponse {
 export async function POST(request: NextRequest) {
     try {
         const body: CalculateShippingRequest = await request.json();
-        const { latitude, longitude, subtotal = 0 } = body;
+        const { latitude, longitude, subtotal = 0, shippingMethodId } = body;
 
         if (!latitude || !longitude) {
             return NextResponse.json(
@@ -28,7 +29,7 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Get shop config
+        // Get shop config for store location and global fees
         const config = await prisma.shopConfig.findUnique({
             where: { id: 'global' }
         });
@@ -40,16 +41,63 @@ export async function POST(request: NextRequest) {
             );
         }
 
+        // Fetch selected shipping method
+        let selectedMethod = null;
+        if (shippingMethodId) {
+            selectedMethod = await prisma.shippingMethod.findUnique({
+                where: { id: shippingMethodId }
+            });
+        }
+
+        // Fallback or default logic if no method selected
+        if (!selectedMethod) {
+            // Find first active distance-based method as fallback
+            selectedMethod = await prisma.shippingMethod.findFirst({
+                where: { isActive: true, type: 'DISTANCE' }
+            });
+        }
+
         const storeLatitude = config.storeLatitude ? Number(config.storeLatitude) : null;
         const storeLongitude = config.storeLongitude ? Number(config.storeLongitude) : null;
 
-        if (!storeLatitude || !storeLongitude) {
-            // If store location not set, return flat fee
+        // If it's a PICKUP method, fee is 0
+        if (selectedMethod?.type === 'PICKUP') {
             return NextResponse.json({
                 distance_km: null,
-                shippingFee: config.baseShippingFee,
+                shippingFee: 0,
+                breakdown: { baseFee: 0, distanceFee: 0 },
+                isFreeShipping: true,
+                isOutOfRange: false,
+                serviceFee: config.serviceFee,
+                minimumOrder: selectedMethod.minOrder ? Number(selectedMethod.minOrder) : config.minimumOrder,
+            });
+        }
+
+        // If it's FLAT fee, skip distance calculation
+        if (selectedMethod?.type === 'FLAT') {
+            const flatFee = Number(selectedMethod.baseFee);
+            const freeShippingMin = selectedMethod.freeShippingMin ? Number(selectedMethod.freeShippingMin) : config.freeShippingMinimum;
+            const isFreeShipping = freeShippingMin > 0 && subtotal >= freeShippingMin;
+
+            return NextResponse.json({
+                distance_km: null,
+                shippingFee: isFreeShipping ? 0 : flatFee,
+                breakdown: { baseFee: flatFee, distanceFee: 0, type: 'FLAT' },
+                isFreeShipping,
+                isOutOfRange: false,
+                serviceFee: config.serviceFee,
+                minimumOrder: selectedMethod.minOrder ? Number(selectedMethod.minOrder) : config.minimumOrder,
+            });
+        }
+
+        // DISTANCE LOGIC (Existing + Method Overrides)
+        if (!storeLatitude || !storeLongitude) {
+            const baseFee = selectedMethod ? Number(selectedMethod.baseFee) : config.baseShippingFee;
+            return NextResponse.json({
+                distance_km: null,
+                shippingFee: baseFee,
                 breakdown: {
-                    baseFee: config.baseShippingFee,
+                    baseFee: baseFee,
                     distanceFee: 0,
                 },
                 isFreeShipping: config.freeShippingMinimum > 0 && subtotal >= config.freeShippingMinimum,
@@ -68,24 +116,14 @@ export async function POST(request: NextRequest) {
             const osrmData: OSRMResponse = await osrmResponse.json();
 
             if (osrmData.code !== 'Ok' || !osrmData.routes || osrmData.routes.length === 0) {
-                // Fallback to straight-line distance using Haversine formula
-                distanceKm = calculateHaversineDistance(
-                    storeLatitude, storeLongitude,
-                    latitude, longitude
-                );
+                distanceKm = calculateHaversineDistance(storeLatitude, storeLongitude, latitude, longitude);
             } else {
-                // OSRM returns distance in meters
                 distanceKm = osrmData.routes[0].distance / 1000;
             }
         } catch (osrmError) {
-            console.error('OSRM API error, using Haversine fallback:', osrmError);
-            distanceKm = calculateHaversineDistance(
-                storeLatitude, storeLongitude,
-                latitude, longitude
-            );
+            distanceKm = calculateHaversineDistance(storeLatitude, storeLongitude, latitude, longitude);
         }
 
-        // Round to 1 decimal
         distanceKm = Math.round(distanceKm * 10) / 10;
 
         // Check if out of delivery range
@@ -100,12 +138,17 @@ export async function POST(request: NextRequest) {
             });
         }
 
-        // Calculate shipping fee
-        const distanceFee = Math.round(distanceKm * config.pricePerKm);
-        let shippingFee = config.baseShippingFee + distanceFee;
+        // Calculate shipping fee using method or config
+        const baseFee = selectedMethod ? Number(selectedMethod.baseFee) : config.baseShippingFee;
+        const pricePerKm = selectedMethod ? Number(selectedMethod.pricePerKm) : config.pricePerKm;
+
+        const distanceFee = Math.round(distanceKm * pricePerKm);
+        let shippingFee = baseFee + distanceFee;
 
         // Check for free shipping
-        const isFreeShipping = config.freeShippingMinimum > 0 && subtotal >= config.freeShippingMinimum;
+        const freeShippingMin = selectedMethod?.freeShippingMin ? Number(selectedMethod.freeShippingMin) : config.freeShippingMinimum;
+        const isFreeShipping = freeShippingMin > 0 && subtotal >= freeShippingMin;
+
         if (isFreeShipping) {
             shippingFee = 0;
         }
@@ -114,14 +157,14 @@ export async function POST(request: NextRequest) {
             distance_km: distanceKm,
             shippingFee,
             breakdown: {
-                baseFee: config.baseShippingFee,
+                baseFee,
                 distanceFee,
-                pricePerKm: config.pricePerKm,
+                pricePerKm,
             },
             isFreeShipping,
             isOutOfRange: false,
             serviceFee: config.serviceFee,
-            minimumOrder: config.minimumOrder,
+            minimumOrder: selectedMethod?.minOrder ? Number(selectedMethod.minOrder) : config.minimumOrder,
         });
     } catch (error) {
         console.error('Error calculating shipping:', error);

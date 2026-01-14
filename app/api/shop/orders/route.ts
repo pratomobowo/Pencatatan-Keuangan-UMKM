@@ -59,6 +59,7 @@ export async function POST(request: NextRequest) {
             addressFull,
             paymentMethod,
             shippingMethod,
+            shippingMethodId,
             notes,
             voucherCode
         } = body;
@@ -154,6 +155,7 @@ export async function POST(request: NextRequest) {
                     source: 'ONLINE',
                     paymentMethod: paymentMethod || 'cod',
                     shippingMethod: shippingMethod || 'DELIVERY',
+                    shippingMethodId: shippingMethodId || null,
                     notes: notes ? `${addressLabel ? `[${addressLabel}] ` : ''}${notes}` : (addressLabel ? `[${addressLabel}]` : null),
                     items: {
                         create: items.map((item: any) => ({
@@ -171,7 +173,7 @@ export async function POST(request: NextRequest) {
                         })),
                     },
                 } as any,
-                include: { items: true }
+                include: { items: true, method: true }
             });
         });
 

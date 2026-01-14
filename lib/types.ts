@@ -234,3 +234,20 @@ export interface CategoryForm {
   order: number;
   isActive: boolean;
 }
+
+export type ShippingType = 'DISTANCE' | 'FLAT' | 'PICKUP';
+
+export interface ShippingMethod {
+  id: string;
+  name: string;
+  description?: string | null;
+  type: ShippingType;
+  isActive: boolean;
+  baseFee: number;
+  pricePerKm: number;
+  minOrder: number;
+  freeShippingMin?: number | null;
+  order: number;
+  createdAt?: string;
+  updatedAt?: string;
+}

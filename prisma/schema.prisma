@@ -228,10 +228,12 @@ model Order {
   recipientPhone  String?
   serviceFee      Decimal     @default(0) @db.Decimal(10, 2)
   shippingAddress String?
-  shippingFee     Decimal     @default(0) @db.Decimal(10, 2)
-  shippingMethod  String      @default("DELIVERY")
-  source          OrderSource @default(MANUAL)
-  customer        Customer?   @relation(fields: [customerId], references: [id])
+  shippingFee     Decimal          @default(0) @db.Decimal(10, 2)
+  shippingMethod  String           @default("DELIVERY")
+  shippingMethodId String?
+  source          OrderSource      @default(MANUAL)
+  customer        Customer?        @relation(fields: [customerId], references: [id])
+  method          ShippingMethod?  @relation(fields: [shippingMethodId], references: [id])
   items           OrderItem[]
 
   @@index([customerId])
@@ -591,4 +593,29 @@ model RecipeComment {
   customer  Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
 
   @@index([recipeId])
+}
+
+enum ShippingType {
+  DISTANCE
+  FLAT
+  PICKUP
+}
+
+model ShippingMethod {
+  id              String       @id @default(uuid())
+  name            String
+  description     String?
+  type            ShippingType
+  isActive        Boolean      @default(true)
+  baseFee         Decimal      @default(0) @db.Decimal(10, 2)
+  pricePerKm      Decimal      @default(0) @db.Decimal(10, 2)
+  minOrder        Decimal      @default(0) @db.Decimal(10, 2)
+  freeShippingMin Decimal?     @db.Decimal(10, 2)
+  order           Int          @default(0)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  orders          Order[]
+
+  @@index([isActive])
+  @@index([order])
 }

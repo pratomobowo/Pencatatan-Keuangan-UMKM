@@ -1,5 +1,5 @@
 // API utility functions for frontend
-import { Product, Customer, Order, Transaction, CostComponent, User, ShopOrder, ShopCustomer, ShopOrderStatus, PromoBanner, Category, CategoryForm } from '@/lib/types';
+import { Product, Customer, Order, Transaction, CostComponent, User, ShopOrder, ShopCustomer, ShopOrderStatus, PromoBanner, Category, CategoryForm, ShippingMethod } from '@/lib/types';
 
 const API_BASE = '/api';
 
@@ -188,4 +188,24 @@ export const categoriesAPI = {
     }),
     // Public shop API
     getPublic: () => fetchAPI<Category[]>('/shop/categories'),
+};
+
+// Shipping Methods API
+export const shippingMethodsAPI = {
+    getActive: () => fetchAPI<ShippingMethod[]>('/shop/shipping-methods'),
+};
+
+export const adminShippingMethodsAPI = {
+    getAll: () => fetchAPI<ShippingMethod[]>('/admin/shipping-methods'),
+    create: (data: Omit<ShippingMethod, 'id'>) => fetchAPI<ShippingMethod>('/admin/shipping-methods', {
+        method: 'POST',
+        body: JSON.stringify(data),
+    }),
+    update: (id: string, data: Partial<ShippingMethod>) => fetchAPI<ShippingMethod>(`/admin/shipping-methods/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(data),
+    }),
+    delete: (id: string) => fetchAPI<{ success: boolean }>(`/admin/shipping-methods/${id}`, {
+        method: 'DELETE',
+    }),
 };
