@@ -175,8 +175,101 @@ function RegisterForm() {
         }
     };
 
+    const [showTerms, setShowTerms] = useState(false);
+    const [showPrivacy, setShowPrivacy] = useState(false);
+
+    // Legal Content Modals
+    const LegalModal = ({ isOpen, onClose, title, content }: { isOpen: boolean, onClose: () => void, title: string, content: React.ReactNode }) => {
+        if (!isOpen) return null;
+        return (
+            <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200">
+                <div className="absolute inset-0 bg-stone-900/60 backdrop-blur-sm" onClick={onClose} />
+                <div className="relative w-full max-w-lg bg-white rounded-t-[32px] sm:rounded-3xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden animate-in slide-in-from-bottom-full sm:slide-in-from-bottom-8 duration-300">
+                    <div className="flex items-center justify-between px-6 py-4 border-b border-stone-100">
+                        <h3 className="font-bold text-lg text-stone-900">{title}</h3>
+                        <button onClick={onClose} className="p-2 hover:bg-stone-50 rounded-full transition-colors text-stone-400">&times;</button>
+                    </div>
+                    <div className="flex-1 overflow-y-auto p-6 text-stone-600 space-y-6">
+                        {content}
+                    </div>
+                    <div className="p-6 bg-stone-50 border-t border-stone-100">
+                        <button
+                            onClick={onClose}
+                            className="w-full bg-orange-500 text-white font-bold py-4 rounded-xl hover:bg-orange-600 transition-all active:scale-95"
+                        >
+                            Saya Mengerti
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
+    const termsContent = (
+        <>
+            <section className="space-y-3">
+                <div className="font-bold text-stone-900 flex items-center gap-2">
+                    <span className="size-2 bg-orange-500 rounded-full" />
+                    Layanan Pasarantar
+                </div>
+                <p className="text-sm leading-relaxed pl-4">Pasarantar adalah platform belanja kebutuhan rumah tangga yang menghubungkan Bunda dengan produk-produk berkualitas pilihan kami. Dengan mendaftar, Bunda setuju bahwa data yang diberikan benar dan akan digunakan untuk proses pesanan.</p>
+            </section>
+            <section className="space-y-3">
+                <div className="font-bold text-stone-900 flex items-center gap-2">
+                    <span className="size-2 bg-orange-500 rounded-full" />
+                    Proses Pesanan & Pembayaran
+                </div>
+                <ul className="text-sm leading-relaxed pl-4 list-disc space-y-2">
+                    <li>Pesanan diproses pada jam operasional kami.</li>
+                    <li>Pembayaran melalui Transfer Bank, QRIS, maupun COD.</li>
+                    <li>Metode COD wajib memastikan Bunda ada di lokasi saat kurir tiba.</li>
+                </ul>
+            </section>
+            <section className="space-y-3">
+                <div className="font-bold text-stone-900 flex items-center gap-2">
+                    <span className="size-2 bg-orange-500 rounded-full" />
+                    Pengembalian & Pembatalan
+                </div>
+                <p className="text-sm leading-relaxed pl-4">Pembatalan hanya bisa sebelum status "Diproses". Komplain barang rusak/tidak sesuai maksimal 1x24 jam dengan bukti foto/video unboxing.</p>
+            </section>
+        </>
+    );
+
+    const privacyContent = (
+        <>
+            <section className="space-y-3">
+                <div className="font-bold text-stone-900 flex items-center gap-2">
+                    <span className="size-2 bg-orange-500 rounded-full" />
+                    Data yang Kami Kumpulkan
+                </div>
+                <p className="text-sm leading-relaxed pl-4">Nama Lengkap, Nomor WhatsApp (OTP), Alamat Pengiriman, dan Riwayat Pesanan Bunda.</p>
+            </section>
+            <section className="space-y-3">
+                <div className="font-bold text-stone-900 flex items-center gap-2">
+                    <span className="size-2 bg-orange-500 rounded-full" />
+                    Keamanan Data
+                </div>
+                <p className="text-sm leading-relaxed pl-4">Data Bunda HANYA digunakan untuk proses pesanan dan info promo spesial. Kami menjamin tidak akan menyebarkan atau menjual data Bunda ke pihak manapun.</p>
+            </section>
+        </>
+    );
+
     return (
         <div className="min-h-screen bg-gray-50 flex justify-center">
+            {/* Legal Modals */}
+            <LegalModal
+                isOpen={showTerms}
+                onClose={() => setShowTerms(false)}
+                title="Syarat & Ketentuan"
+                content={termsContent}
+            />
+            <LegalModal
+                isOpen={showPrivacy}
+                onClose={() => setShowPrivacy(false)}
+                title="Kebijakan Privasi"
+                content={privacyContent}
+            />
+
             <div className="w-full max-w-md bg-white shadow-2xl overflow-hidden min-h-screen flex flex-col relative">
                 <div className="absolute inset-0 bg-gradient-to-br from-orange-500 to-orange-600 z-0 h-[300px]" />
 
@@ -283,9 +376,21 @@ function RegisterForm() {
                                     </button>
                                     <span className="text-sm text-gray-600 leading-relaxed">
                                         Saya setuju dengan{' '}
-                                        <Link href="/terms" className="text-orange-500 font-medium">Syarat & Ketentuan</Link>
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowTerms(true)}
+                                            className="text-orange-500 font-medium hover:underline"
+                                        >
+                                            Syarat & Ketentuan
+                                        </button>
                                         {' '}dan{' '}
-                                        <Link href="/privacy" className="text-orange-500 font-medium">Kebijakan Privasi</Link>
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowPrivacy(true)}
+                                            className="text-orange-500 font-medium hover:underline"
+                                        >
+                                            Kebijakan Privasi
+                                        </button>
                                     </span>
                                 </label>
 
