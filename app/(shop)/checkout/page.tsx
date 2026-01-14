@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import {
     ArrowLeft, MapPin, Banknote, Building2, ShieldCheck, ArrowRight,
     Loader2, Navigation, CheckCircle2, AlertCircle, HelpCircle, Copy, Check, QrCode, Gift, MessageSquare,
-    Package, Store, ChevronDown
+    Package, Store, ChevronDown, Download
 } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useShopAuth } from '@/contexts/ShopAuthContext';
@@ -449,6 +449,16 @@ export default function CheckoutPage() {
         setTimeout(() => setCopied(null), 2000);
     }
 
+    const handleDownloadQRIS = () => {
+        if (!qrisImage) return;
+        const link = document.createElement('a');
+        link.href = qrisImage;
+        link.download = `QRIS-Pasarantar-${orderNumber}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
     if (authLoading || loadingAddresses) {
         return (
             <div className="flex items-center justify-center py-20">
@@ -473,7 +483,26 @@ export default function CheckoutPage() {
                     )}
                 </p>
                 <div className="flex flex-col gap-3 w-full max-w-xs">
-                    <Link href={`/orders/${orderNumber}`} className="w-full bg-orange-500 text-white font-bold py-3 rounded-xl shadow-lg shadow-orange-200 transition-all">
+                    {selectedPayment === 'qris' && qrisImage && (
+                        <div className="mb-4 bg-purple-50 p-4 rounded-2xl border border-purple-100 flex flex-col items-center">
+                            <p className="text-[10px] font-black text-purple-600 uppercase tracking-widest mb-3">Scan Untuk Membayar</p>
+                            <img
+                                src={qrisImage}
+                                alt="QRIS Payment"
+                                className="w-full max-w-[180px] aspect-square rounded-xl border border-gray-200 shadow-sm bg-white p-2"
+                            />
+                            <button
+                                onClick={handleDownloadQRIS}
+                                className="mt-4 flex items-center gap-2 text-xs font-bold text-purple-600 hover:text-purple-700 bg-white px-4 py-2 rounded-full border border-purple-200 shadow-sm active:scale-95 transition-all"
+                            >
+                                <Download size={14} />
+                                Simpan / Download QRIS
+                            </button>
+                            <p className="text-[10px] text-gray-500 mt-3 text-center italic">Mohon segera selesaikan pembayaran agar pesanan bisa diproses Admin.</p>
+                        </div>
+                    )}
+
+                    <Link href={`/orders/${orderNumber}`} className="w-full bg-orange-500 text-white font-bold py-3 rounded-xl shadow-lg shadow-orange-200 transition-all text-center">
                         Lihat Detail Pesanan
                     </Link>
                     <Link href="/" className="w-full bg-stone-100 text-stone-600 font-bold py-3 rounded-xl hover:bg-stone-200 transition-all">
@@ -797,14 +826,8 @@ export default function CheckoutPage() {
                                     </div>
 
                                     {selectedPayment === 'qris' && (
-                                        <div className="mt-2 p-4 bg-white rounded-lg border border-orange-200 border-dashed animate-in fade-in slide-in-from-top-1 duration-200 flex flex-col items-center">
-                                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Scan QR Code</p>
-                                            <img
-                                                src={qrisImage}
-                                                alt="QRIS Payment"
-                                                className="w-full max-w-[220px] rounded-lg border border-gray-200 shadow-sm"
-                                            />
-                                            <p className="text-xs text-gray-500 mt-3 text-center">Scan menggunakan aplikasi e-wallet / mobile banking</p>
+                                        <div className="mt-2 text-xs text-orange-600 bg-orange-100/50 px-3 py-2 rounded-lg border border-orange-200">
+                                            Lanjutkan checkout untuk melihat kode QRIS pembayaran.
                                         </div>
                                     )}
                                 </div>
