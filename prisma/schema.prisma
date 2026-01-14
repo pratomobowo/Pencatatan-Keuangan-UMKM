@@ -83,6 +83,7 @@ model Product {
   variants       ProductVariant[]
   loyaltyRewards LoyaltyReward[]
   vouchers       Voucher[]
+  cartItems      CartItem[]
 
   @@index([sku])
   @@index([name])
@@ -153,9 +154,40 @@ model Customer {
   recipeLikes   RecipeLike[]
   recipeComments RecipeComment[]
 
+  // Cart Relation
+  cart          Cart?
+
   @@index([phone])
   @@index([email])
   @@index([name])
+}
+
+model Cart {
+  id         String     @id @default(uuid())
+  customerId String     @unique
+  customer   Customer   @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  items      CartItem[]
+  updatedAt  DateTime   @updatedAt
+  createdAt  DateTime   @default(now())
+}
+
+model CartItem {
+  id           String   @id @default(uuid())
+  cartId       String
+  productId    String
+  qty          Int
+  variant      String   // Using variant label (e.g., "1kg")
+  price        Decimal  @db.Decimal(10, 2)
+  originalPrice Decimal? @db.Decimal(10, 2)
+  image        String?
+  note         String?
+  cart         Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  product      Product  @relation(fields: [productId], references: [id])
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([cartId])
+  @@index([productId])
 }
 
 model Address {

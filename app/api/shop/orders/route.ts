@@ -126,7 +126,16 @@ export async function POST(request: NextRequest) {
                 });
             }
 
-            // c. Create order
+            // c. Clear database cart
+            if (customerId) {
+                await tx.cart.delete({
+                    where: { customerId: customerId }
+                }).catch(() => {
+                    // Ignore if cart doesn't exist
+                });
+            }
+
+            // d. Create order
             return await tx.order.create({
                 data: {
                     orderNumber: orderNumber,

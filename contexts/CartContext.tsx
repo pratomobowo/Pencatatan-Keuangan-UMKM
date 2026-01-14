@@ -1,7 +1,8 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode, useRef } from 'react';
 import { useNotifications } from '@/contexts/NotificationContext';
+import { useShopAuth } from '@/contexts/ShopAuthContext';
 
 export interface CartItem {
     id: string;
@@ -30,10 +31,12 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: ReactNode }) {
     const { addNotification } = useNotifications();
+    const { isAuthenticated, isLoading: authLoading } = useShopAuth();
     const [items, setItems] = useState<CartItem[]>([]);
     const [isInitialized, setIsInitialized] = useState(false);
+    const syncTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-    // Load cart from localStorage on mount
+    // Initial load from localStorage
     useEffect(() => {
         const savedCart = localStorage.getItem('pasarantar-cart');
         if (savedCart) {
@@ -46,12 +49,81 @@ export function CartProvider({ children }: { children: ReactNode }) {
         setIsInitialized(true);
     }, []);
 
-    // Save cart to localStorage on change
+    // Handle authentication change: Fetch from DB and Merge if needed
     useEffect(() => {
-        if (isInitialized) {
-            localStorage.setItem('pasarantar-cart', JSON.stringify(items));
+        if (!isInitialized || authLoading) return;
+
+        if (isAuthenticated) {
+            fetchAndMergeCart();
         }
-    }, [items, isInitialized]);
+    }, [isAuthenticated, authLoading, isInitialized]);
+
+    const fetchAndMergeCart = async () => {
+        try {
+            const res = await fetch('/api/shop/cart');
+            if (res.ok) {
+                const dbData = await res.json();
+                const dbItems: CartItem[] = dbData.items || [];
+
+                setItems(currentItems => {
+                    // Logic: Merge guest items into DB items
+                    // If item exists in both, use the max quantity or keep DB?
+                    // Usually, for "shopping as guest then login", we merge.
+                    const mergedItems = [...dbItems];
+
+                    currentItems.forEach(guestItem => {
+                        const existingIdx = mergedItems.findIndex(i => i.id === guestItem.id && i.variant === guestItem.variant);
+                        if (existingIdx > -1) {
+                            // Already in DB, maybe update quantity if guest has more? 
+                            // Or just keep DB as source of truth? 
+                            // Let's use max quantity to be helpful.
+                            mergedItems[existingIdx].quantity = Math.max(mergedItems[existingIdx].quantity, guestItem.quantity);
+                        } else {
+                            mergedItems.push(guestItem);
+                        }
+                    });
+
+                    // Trigger a sync if we added guest items
+                    if (currentItems.length > 0) {
+                        syncCartToDB(mergedItems);
+                    }
+
+                    return mergedItems;
+                });
+            }
+        } catch (error) {
+            console.error('Error fetching/merging cart:', error);
+        }
+    };
+
+    const syncCartToDB = async (cartItems: CartItem[]) => {
+        if (!isAuthenticated) return;
+
+        try {
+            await fetch('/api/shop/cart', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ items: cartItems }),
+            });
+        } catch (error) {
+            console.error('Error syncing cart to DB:', error);
+        }
+    };
+
+    // Save to localStorage & Sync to DB on change
+    useEffect(() => {
+        if (!isInitialized) return;
+
+        localStorage.setItem('pasarantar-cart', JSON.stringify(items));
+
+        // Debounce DB sync to avoid excessive requests
+        if (isAuthenticated) {
+            if (syncTimeoutRef.current) clearTimeout(syncTimeoutRef.current);
+            syncTimeoutRef.current = setTimeout(() => {
+                syncCartToDB(items);
+            }, 1000);
+        }
+    }, [items, isInitialized, isAuthenticated]);
 
     const addItem = (item: Omit<CartItem, 'quantity'>, quantity = 1) => {
         setItems(currentItems => {
@@ -100,6 +172,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         if (typeof window !== 'undefined') {
             localStorage.removeItem('pasarantar-cart');
         }
+        // DB clear is handled by the orders API automatically on success
     };
 
     const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
