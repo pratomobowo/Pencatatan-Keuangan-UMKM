@@ -1145,7 +1145,7 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
 const AIImporterWrapper = ({ show, onClose, onSuccess }: any) => {
   if (!show) return null;
   return (
-    <AIProductImporter 
+    <AIProductImporter
       onClose={onClose}
       onSuccess={onSuccess}
     />
