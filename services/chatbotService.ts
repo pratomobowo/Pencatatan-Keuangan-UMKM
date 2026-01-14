@@ -176,4 +176,72 @@ export class ChatbotService {
             throw error;
         }
     }
+
+    static async parseBulkProducts(text: string): Promise<any[]> {
+        if (!ARK_API_KEY) {
+            console.error("ARK_API_KEY is not defined in environment variables");
+            throw new Error("Konfigurasi AI belum lengkap.");
+        }
+
+        const prompt = `Tugas Anda adalah mengekstrak daftar produk dari teks yang diberikan ke dalam format JSON.
+        Format Input:
+        - Baris teks dengan nama produk, jumlah/unit, dan harga.
+        - Contoh: "Cabe keriting merah 1/4 20.000", "Jagung manis 1kg 15.000"
+
+        Aturan Ekstraksi:
+        1. Name: Nama produk (contoh: "Cabe keriting merah").
+        2. Unit: Satuan/jumlah (contoh: "1/4", "1kg", "500g", "1 ikat", "pack"). Jika tidak ada info, kosongkan.
+        3. Price: Angka harga saja tanpa titik/koma (contoh: 20000).
+        4. Category: Pilih kategori yang paling cocok dari daftar ini: "ikan-laut", "seafood", "ayam", "daging-sapi", "sayur", "bumbu", "sembako".
+
+        Output harus berupa JSON ARRAY murni dengan struktur:
+        [
+            { "name": "...", "unit": "...", "price": 0, "category": "..." },
+            ...
+        ]
+
+        Hanya berikan respons JSON saja, tanpa teks penjelasan tambahan.
+
+        Teks yang akan diproses:
+        ${text}`;
+
+        const payload = {
+            model: MODEL_ID,
+            messages: [
+                { role: 'system', content: "Anda adalah asisten ekstraksi data yang hanya merespon dengan format JSON murni." },
+                { role: 'user', content: prompt }
+            ],
+            temperature: 0.1, // Low temperature for consistent JSON output
+        };
+
+        try {
+            const response = await fetch(ARK_ENDPOINT, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${ARK_API_KEY}`,
+                },
+                body: JSON.stringify(payload),
+            });
+
+            if (!response.ok) {
+                throw new Error("Gagal mendapatkan data dari AI.");
+            }
+
+            const data = await response.json();
+            let content = data.choices[0]?.message?.content?.trim() || "[]";
+
+            // Cleanup markdown code blocks if present
+            if (content.startsWith('```json')) {
+                content = content.replace(/^```json/, '').replace(/```$/, '').trim();
+            } else if (content.startsWith('```')) {
+                content = content.replace(/^```/, '').replace(/```$/, '').trim();
+            }
+
+            return JSON.parse(content);
+        } catch (error) {
+            console.error("ChatbotService Error (Parsing Products):", error);
+            throw error;
+        }
+    }
 }

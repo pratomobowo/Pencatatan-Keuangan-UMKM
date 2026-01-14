@@ -2,8 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Product, TransactionType, ProductVariant, Category } from '@/lib/types'; // Import Category
 import { categoriesAPI } from '@/lib/api'; // Import categoriesAPI
 import { Card } from './ui/Card';
-import { Plus, Edit2, Trash2, Package, Search, Download, Upload, FileSpreadsheet, TrendingUp, ShoppingBasket, X, ImageIcon, Loader2, Sparkles, ChevronLeft, ChevronRight, Filter } from 'lucide-react';
 import * as XLSX from 'xlsx';
+import { AIProductImporter } from './admin/AIProductImporter';
 
 interface ProductManagerProps {
   products: Product[];
@@ -36,6 +36,7 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
   const [isUploading, setIsUploading] = useState(false);
   const [dbCategories, setDbCategories] = useState<Category[]>([]);
   const [isGeneratingDescription, setIsGeneratingDescription] = useState(false);
+  const [showAIImporter, setShowAIImporter] = useState(false);
 
   // State for Restock Modal
   const [restockProduct, setRestockProduct] = useState<Product | null>(null);
@@ -482,10 +483,17 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
                     <Download size={16} /> <span className="hidden sm:inline">Export</span>
                   </button>
                   <button
+                    onClick={() => setShowAIImporter(true)}
+                    className="flex items-center gap-2 px-3 py-2 bg-orange-50 text-orange-700 rounded-lg hover:bg-orange-100 text-sm font-medium transition-colors border border-orange-200"
+                    title="Tambah produk dengan AI"
+                  >
+                    <Sparkles size={16} /> <span className="hidden sm:inline">AI Import</span>
+                  </button>
+                  <button
                     onClick={() => setShowFormModal(true)}
                     className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium transition-colors"
                   >
-                    <Plus size={16} /> Tambah Produk
+                    <Plus size={16} /> <span className="hidden sm:inline">Tambah Produk</span>
                   </button>
                 </div>
               </div>
