@@ -40,6 +40,8 @@ export async function POST(request: NextRequest) {
         }
 
         // Mark OTP as used and update customer verifiedAt in transaction
+        const basePhone = phoneMatch.replace(/^(0|62)/, '');
+
         await prisma.$transaction([
             prisma.oTP.update({
                 where: { id: otpRecord.id },
@@ -50,8 +52,9 @@ export async function POST(request: NextRequest) {
                     OR: [
                         { phone: phone },
                         { phone: phoneMatch },
-                        { phone: '0' + phoneMatch.replace(/^62/, '') },
-                        { phone: '62' + phoneMatch.replace(/^0/, '') },
+                        { phone: basePhone },
+                        { phone: '0' + basePhone },
+                        { phone: '62' + basePhone },
                     ],
                 },
                 data: { verifiedAt: new Date() },
