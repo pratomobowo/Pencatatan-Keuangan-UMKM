@@ -1141,3 +1141,13 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
     </>
   );
 };
+/* AI Product Importer Modal */
+const AIImporterWrapper = ({ show, onClose, onSuccess }: any) => {
+  if (!show) return null;
+  return (
+    <AIProductImporter 
+      onClose={onClose}
+      onSuccess={onSuccess}
+    />
+  );
+};
