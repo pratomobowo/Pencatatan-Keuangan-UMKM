@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
+import { sendOTP } from '@/lib/whatsapp';
 
 // POST /api/shop/auth/register - Register new shop customer
 export async function POST(request: NextRequest) {

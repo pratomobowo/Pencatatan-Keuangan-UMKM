@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeft, Eye, EyeOff, Loader2, Check } from 'lucide-react';
 
-export default function RegisterPage() {
+function RegisterForm() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const [showPassword, setShowPassword] = useState(false);
@@ -16,6 +16,13 @@ export default function RegisterPage() {
         password: '',
         confirmPassword: '',
     });
+
+    const [error, setError] = useState('');
+    const [step, setStep] = useState<'details' | 'otp'>('details');
+    const [otpCode, setOtpCode] = useState('');
+    const [isVerifying, setIsVerifying] = useState(false);
+    const [resendCountdown, setResendCountdown] = useState(0);
+    const [agreed, setAgreed] = useState(false);
 
     useEffect(() => {
         const phone = searchParams.get('phone');
@@ -29,12 +36,6 @@ export default function RegisterPage() {
             setError('Silakan lengkapi pendaftaran Bunda dengan verifikasi WhatsApp.');
         }
     }, [searchParams]);
-    const [step, setStep] = useState<'details' | 'otp'>('details');
-    const [otpCode, setOtpCode] = useState('');
-    const [isVerifying, setIsVerifying] = useState(false);
-    const [resendCountdown, setResendCountdown] = useState(0);
-    const [error, setError] = useState('');
-    const [agreed, setAgreed] = useState(false);
 
     // Filter non-digits for phone input
     const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -380,6 +381,18 @@ export default function RegisterPage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+export default function RegisterPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-orange-500 flex items-center justify-center">
+                <Loader2 className="animate-spin text-white" size={48} />
+            </div>
+        }>
+            <RegisterForm />
+        </Suspense>
     );
 }
 
