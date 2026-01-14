@@ -4,6 +4,7 @@ import { categoriesAPI } from '@/lib/api'; // Import categoriesAPI
 import { Card } from './ui/Card';
 import * as XLSX from 'xlsx';
 import { AIProductImporter } from './admin/AIProductImporter';
+import { Plus, Edit2, Trash2, Package, Search, Download, Upload, FileSpreadsheet, TrendingUp, ShoppingBasket, X, ImageIcon, Loader2, Sparkles, ChevronLeft, ChevronRight, Filter } from 'lucide-react';
 
 interface ProductManagerProps {
   products: Product[];
@@ -1128,6 +1129,15 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
         </div>
       )}
 
+      {/* AI Product Importer Modal */}
+      <AIImporterWrapper
+        show={showAIImporter}
+        onClose={() => setShowAIImporter(false)}
+        onSuccess={() => {
+          alert('Produk berhasil ditambahkan! Silakan refresh halaman.');
+          window.location.reload();
+        }}
+      />
     </>
   );
 };
