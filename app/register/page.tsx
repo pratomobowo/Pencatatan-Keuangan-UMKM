@@ -4,10 +4,12 @@ import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeft, Eye, EyeOff, Loader2, Check } from 'lucide-react';
+import { useShopAuth } from '@/contexts/ShopAuthContext';
 
 function RegisterForm() {
     const router = useRouter();
     const searchParams = useSearchParams();
+    const { login } = useShopAuth();
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [formData, setFormData] = useState({
@@ -128,8 +130,13 @@ function RegisterForm() {
             if (!response.ok) {
                 setError(data.error || 'Kode OTP salah');
             } else {
-                // Success! Redirect to login
-                router.push('/login?verified=true');
+                // Success! Auto login
+                const loginResult = await login(formData.phone, formData.password, false);
+                if (loginResult.success) {
+                    router.push('/account');
+                } else {
+                    router.push('/login?verified=true');
+                }
             }
         } catch (err) {
             setError('Terjadi kesalahan saat verifikasi');

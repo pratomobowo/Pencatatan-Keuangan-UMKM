@@ -45,19 +45,17 @@ export async function POST(request: NextRequest) {
         if (userType === 'customer') {
             const identifier = phone || email;
 
-            // Comprehensive flexible phone matching
-            const phoneDigits = typeof identifier === 'string' ? identifier.replace(/\D/g, '') : '';
-            const basePhone = phoneDigits.replace(/^(0|62)/, ''); // Strip leading 0 or 62
+            // Flexible phone matching (same as OTP flow)
+            const phoneMatch = typeof identifier === 'string' ? identifier.replace(/\D/g, '') : identifier;
 
             const customer = await prisma.customer.findFirst({
                 where: {
                     OR: [
                         { phone: identifier },
                         { email: identifier },
-                        { phone: phoneDigits },
-                        { phone: basePhone },
-                        { phone: '0' + basePhone },
-                        { phone: '62' + basePhone },
+                        { phone: phoneMatch },
+                        { phone: '0' + phoneMatch.replace(/^62/, '') },
+                        { phone: '62' + phoneMatch.replace(/^0/, '') },
                     ]
                 },
             });

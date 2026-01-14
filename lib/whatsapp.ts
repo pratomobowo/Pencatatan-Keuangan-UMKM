@@ -134,7 +134,7 @@ export function formatOrderMessage(order: any, customTemplate?: string) {
     ).join('\n');
 
     let message = `*PASARANTAR - PESANAN BARU* 🌿\n\n`;
-    message += `Halo Kak ${order.customerName || order.recipientName}, pesanan Kakak berhasil dibuat!\n`;
+    message += `Halo Kak ${order.customerName || order.recipientName}, pesanan Bunda berhasil dibuat!\n`;
     message += `No. Order: *${order.orderNumber}*\n\n`;
     message += `*Detail Pesanan:*\n${items}\n\n`;
     message += `--------------------------------\n`;
@@ -158,7 +158,7 @@ export function formatOrderMessage(order: any, customTemplate?: string) {
     message += `Metode Kirim: ${order.shippingMethod === 'PICKUP' ? 'Pickup Mandiri' : 'Antar Kurir'}\n\n`;
 
     if (order.shippingMethod === 'PICKUP') {
-        message += `Silakan ambil pesanan Kakak langsung di toko atau gunakan driver pilihan Kakak. Alamat toko tersedia di halaman Detail Toko.\n\n`;
+        message += `Silakan ambil pesanan Bunda langsung di toko atau gunakan driver pilihan Bunda. Alamat toko tersedia di halaman Detail Toko.\n\n`;
     }
 
     message += `Terima kasih sudah berbelanja di Pasarantar! 🙏`;

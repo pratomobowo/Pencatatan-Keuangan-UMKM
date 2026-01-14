@@ -21,20 +21,9 @@ export async function POST(request: NextRequest) {
         const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
         const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
-        // Check if phone already exists (flexible lookup)
-        const phoneDigits = phone.replace(/\D/g, '');
-        const basePhone = phoneDigits.replace(/^(0|62)/, ''); // Strip leading 0 or 62
-
-        const existing = await prisma.customer.findFirst({
-            where: {
-                OR: [
-                    { phone: phone },
-                    { phone: phoneDigits },
-                    { phone: basePhone },
-                    { phone: '0' + basePhone },
-                    { phone: '62' + basePhone },
-                ]
-            },
+        // Check if phone already exists
+        const existing = await prisma.customer.findUnique({
+            where: { phone },
         });
 
         if (existing) {

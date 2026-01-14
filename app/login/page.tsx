@@ -29,7 +29,7 @@ export default function LoginPage() {
 
             if (!result.success) {
                 if ((result as any).requiresVerification) {
-                    setError('Akun Bunda belum diverifikasi. Silakan masukkan nomor WhatsApp Bunda di form Daftar untuk kirim ulang kode OTP.');
+                    setError('Akun Bunda belum diverifikasi. Silakan masukkan nomor WhatsApp di form Daftar untuk kirim ulang kode OTP.');
                     // Optionally redirect to register to trigger OTP again
                     setTimeout(() => {
                         router.push(`/register?phone=${formData.phone}&verified=false`);

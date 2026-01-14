@@ -191,8 +191,8 @@ export const OrderManager: React.FC<OrderManagerProps> = ({
   const sendToWhatsApp = (order: Order) => {
     let message = `*INVOICE PASARANTAR*\n`;
     message += `--------------------------------\n`;
-    message += `Halo Kak ${order.customerName},\n`;
-    message += `Berikut rincian pesanan Kakak:\n\n`;
+    message += `Halo Bund ${order.customerName},\n`;
+    message += `Berikut rincian pesanan Bunda:\n\n`;
 
     order.items.forEach((item, idx) => {
       message += `${idx + 1}. ${item.productName} (${item.qty} ${item.unit}) - ${formatCurrency(item.total)}\n`;
