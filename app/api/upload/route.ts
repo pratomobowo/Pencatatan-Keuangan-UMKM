@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Validate folder to prevent path traversal
-        const validFolders = ['products', 'banners', 'categories', 'general'];
+        const validFolders = ['products', 'banners', 'categories', 'general', 'qris'];
         if (!validFolders.includes(folder)) {
             return NextResponse.json(
                 { error: 'Invalid upload folder' },
@@ -60,7 +60,8 @@ export async function POST(request: NextRequest) {
             'products': 'product',
             'categories': 'category',
             'banners': 'banner',
-            'shop': 'shop'
+            'shop': 'shop',
+            'qris': 'qris'
         };
         const prefix = prefixMap[folder] || 'upload';
         const filename = `${prefix}-${timestamp}.${ext}`;
