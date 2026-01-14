@@ -17,7 +17,6 @@ import { ShippingMethod } from '@/lib/types';
 const DEFAULT_IMAGE = '/images/coming-soon.jpg';
 
 const paymentMethods = [
-    { id: 'cod', label: 'COD (Bayar di Tempat)', description: 'Bayar tunai saat kurir sampai', icon: Banknote, color: 'bg-green-100 text-green-600' },
     { id: 'transfer', label: 'Transfer Bank', description: 'BCA, Mandiri, BNI, BRI', icon: Building2, color: 'bg-blue-100 text-blue-600' },
 ];
 
@@ -46,7 +45,7 @@ export default function CheckoutPage() {
     const { isAuthenticated, isLoading: authLoading } = useShopAuth();
     const { addNotification } = useNotifications();
 
-    const [selectedPayment, setSelectedPayment] = useState('cod');
+    const [selectedPayment, setSelectedPayment] = useState('qris');
     const [shopPaymentMethods, setShopPaymentMethods] = useState<any[]>([]);
     const [qrisImage, setQrisImage] = useState<string | null>(null);
     const [isShippingDropdownOpen, setIsShippingDropdownOpen] = useState(false);
@@ -794,21 +793,6 @@ export default function CheckoutPage() {
                 <div>
                     <h3 className="text-stone-900 font-bold mb-3">Metode Pembayaran</h3>
                     <div className="space-y-2">
-                        {/* COD Option */}
-                        <div
-                            onClick={() => setSelectedPayment('cod')}
-                            className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${selectedPayment === 'cod' ? 'border-orange-500 bg-orange-50' : 'border-gray-200 bg-white hover:border-orange-300'}`}
-                        >
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 rounded-lg bg-green-100 text-green-600"><Banknote size={20} /></div>
-                                <div className="flex-1">
-                                    <p className="font-semibold text-sm text-stone-900">COD (Bayar di Tempat)</p>
-                                    <p className="text-xs text-gray-500">Bayar tunai saat kurir sampai</p>
-                                </div>
-                                {selectedPayment === 'cod' && <CheckCircle2 size={20} className="text-orange-500" />}
-                            </div>
-                        </div>
-
                         {/* QRIS Option */}
                         {qrisImage && (
                             <div
