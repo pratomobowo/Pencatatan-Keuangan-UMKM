@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { slugify } from '@/lib/utils';
+import { revalidatePath } from 'next/cache';
 
 // GET /api/products - Get all products with variants
 export async function GET() {
@@ -88,6 +89,10 @@ export async function POST(request: NextRequest) {
                 variants: true
             }
         });
+
+        // Revalidate paths to clear cache
+        revalidatePath('/');
+        revalidatePath('/products');
 
         return NextResponse.json(product, { status: 201 });
     } catch (error: any) {

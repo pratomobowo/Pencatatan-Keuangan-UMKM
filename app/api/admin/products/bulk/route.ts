@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { slugify } from '@/lib/utils';
 import { auth } from '@/lib/auth';
+import { revalidatePath } from 'next/cache';
 
 export async function POST(request: NextRequest) {
     try {
@@ -97,6 +98,10 @@ export async function POST(request: NextRequest) {
 
             return createdProducts;
         });
+
+        // Revalidate paths to clear cache
+        revalidatePath('/');
+        revalidatePath('/products');
 
         return NextResponse.json({
             message: `Berhasil menambahkan ${results.length} produk.`,

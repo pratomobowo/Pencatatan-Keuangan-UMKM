@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { slugify } from '@/lib/utils';
+import { revalidatePath } from 'next/cache';
 
 // GET /api/products/[id] - Get single product with variants
 export async function GET(
@@ -139,8 +140,18 @@ export async function PUT(
                 include: { variants: true }
             });
 
+            // Revalidate paths to clear cache
+            revalidatePath('/');
+            revalidatePath('/products');
+            revalidatePath(`/products/${updatedProduct?.slug || id}`);
+
             return NextResponse.json(updatedProduct);
         }
+
+        // Revalidate paths to clear cache
+        revalidatePath('/');
+        revalidatePath('/products');
+        revalidatePath(`/products/${product.slug || id}`);
 
         return NextResponse.json(product);
     } catch (error: any) {
@@ -170,6 +181,10 @@ export async function DELETE(
         await prisma.product.delete({
             where: { id },
         });
+
+        // Revalidate paths to clear cache
+        revalidatePath('/');
+        revalidatePath('/products');
 
         return NextResponse.json({ message: 'Product deleted successfully' });
     } catch (error: any) {

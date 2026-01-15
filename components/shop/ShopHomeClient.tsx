@@ -25,7 +25,7 @@ export default function ShopHomeClient({
     initialHasMore,
 }: ShopHomeClientProps) {
     const [products, setProducts] = useState<ShopProduct[]>(initialProducts);
-    const [promoProducts] = useState<ShopProduct[]>(initialPromoProducts);
+    const promoProducts = initialPromoProducts;
     const [categories] = useState<Category[]>(initialCategories);
     const [loading, setLoading] = useState(false);
     const [loadingMore, setLoadingMore] = useState(false);
