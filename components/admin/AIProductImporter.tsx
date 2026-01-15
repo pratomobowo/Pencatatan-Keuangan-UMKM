@@ -2,23 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { X, Sparkles, Loader2, Check, AlertCircle, Edit2, Trash2, ArrowRight } from 'lucide-react';
 import { Card } from '../ui/Card';
 
-const PRODUCT_UNITS = [
-    'kg',
-    'gr',
-    'ikat',
-    'pack',
-    'pcs', // pieces
-    'ekor',
-    'porsi',
-    'bungkus',
-    'box', // box/kardus
-    'tray', // tray/piring
-    'liter',
-    'butir',
-    'sisir', // pisang
-    'ruas', // jahe/lengkuas
-    'batang', // sereh
-];
+// Removed static PRODUCT_UNITS
+// Units will be fetched from API
+
 
 interface AIProduct {
     name: string;
@@ -49,20 +35,34 @@ export const AIProductImporter: React.FC<AIProductImporterProps> = ({ onClose, o
     const [step, setStep] = useState<'input' | 'review'>('input');
     const [error, setError] = useState<string | null>(null);
     const [categories, setCategories] = useState<Category[]>([]);
+    const [units, setUnits] = useState<string[]>([]);
+    const [isLoadingRef, setIsLoadingRef] = useState(true);
 
     useEffect(() => {
-        const fetchCategories = async () => {
+        const loadReferenceData = async () => {
             try {
-                const res = await fetch('/api/admin/categories');
-                if (res.ok) {
-                    const data = await res.json();
+                const [catRes, unitRes] = await Promise.all([
+                    fetch('/api/admin/categories'),
+                    fetch('/api/admin/units')
+                ]);
+
+                if (catRes.ok) {
+                    const data = await catRes.json();
                     setCategories(data);
                 }
+
+                if (unitRes.ok) {
+                    const data = await unitRes.json();
+                    // Map to symbols only for now, as AI uses symbols
+                    setUnits(data.map((u: any) => u.symbol));
+                }
             } catch (err) {
-                console.error('Failed to fetch categories:', err);
+                console.error('Failed to fetch reference data:', err);
+            } finally {
+                setIsLoadingRef(false);
             }
         };
-        fetchCategories();
+        loadReferenceData();
     }, []);
 
     const findBestCategory = (aiCategory: string) => {
@@ -245,8 +245,8 @@ export const AIProductImporter: React.FC<AIProductImporterProps> = ({ onClose, o
                                             const isNameInvalid = !p.name.trim();
                                             const isQtyInvalid = p.qty <= 0;
                                             const isPriceInvalid = p.price < 0;
-                                            // Check if unit is NOT in the allowed list
-                                            const isUnitInvalid = !PRODUCT_UNITS.includes(p.unit);
+                                            // Check if unit is NOT in the allowed list (and list is loaded)
+                                            const isUnitInvalid = units.length > 0 && !units.includes(p.unit);
 
                                             return (
                                                 <tr key={idx} className="hover:bg-slate-50/50">
@@ -276,7 +276,7 @@ export const AIProductImporter: React.FC<AIProductImporterProps> = ({ onClose, o
                                                                     className={`w-20 bg-transparent border-none p-1 focus:ring-1 rounded text-xs ${isUnitInvalid ? 'ring-1 ring-rose-500 bg-rose-50 text-rose-600 font-bold' : 'focus:ring-orange-500'}`}
                                                                     title={isUnitInvalid ? "Unit tidak dikenal. Mohon perbaiki." : ""}
                                                                 >
-                                                                    {PRODUCT_UNITS.map(u => (
+                                                                    {units.map(u => (
                                                                         <option key={u} value={u}>{u}</option>
                                                                     ))}
                                                                     {/* Show invalid unit as an option so it's visible */}
@@ -309,40 +309,40 @@ export const AIProductImporter: React.FC<AIProductImporterProps> = ({ onClose, o
                                                             className={`w-24 bg-transparent border-none p-1 focus:ring-1 rounded ${isPriceInvalid ? 'ring-1 ring-rose-500 bg-rose-50' : 'focus:ring-orange-500'}`}
                                                         />
                                                     </td>
+
                                                     <td className="px-4 py-2">
-                                                        <td className="px-4 py-2">
-                                                            <select
-                                                                value={p.categoryId || ''}
-                                                                onChange={(e) => {
-                                                                    const catId = e.target.value;
-                                                                    const catName = categories.find(c => c.id === catId)?.name || '';
-                                                                    // Update both ID and Name for display/logic
-                                                                    const newProducts = [...parsedProducts];
-                                                                    newProducts[idx] = {
-                                                                        ...newProducts[idx],
-                                                                        categoryId: catId,
-                                                                        category: catName
-                                                                    };
-                                                                    setParsedProducts(newProducts);
-                                                                }}
-                                                                className="w-full bg-transparent border-none p-1 focus:ring-1 focus:ring-orange-500 rounded text-xs"
-                                                            >
-                                                                <option value="">Pilih Kategori</option>
-                                                                {categories.map((c) => (
-                                                                    <option key={c.id} value={c.id}>
-                                                                        {c.name}
-                                                                    </option>
-                                                                ))}
-                                                            </select>
-                                                        </td>
-                                                        <td className="px-4 py-2 text-center">
-                                                            <button
-                                                                onClick={() => handleRemoveProduct(idx)}
-                                                                className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50"
-                                                            >
-                                                                <Trash2 size={16} />
-                                                            </button>
-                                                        </td>
+                                                        <select
+                                                            value={p.categoryId || ''}
+                                                            onChange={(e) => {
+                                                                const catId = e.target.value;
+                                                                const catName = categories.find(c => c.id === catId)?.name || '';
+                                                                // Update both ID and Name for display/logic
+                                                                const newProducts = [...parsedProducts];
+                                                                newProducts[idx] = {
+                                                                    ...newProducts[idx],
+                                                                    categoryId: catId,
+                                                                    category: catName
+                                                                };
+                                                                setParsedProducts(newProducts);
+                                                            }}
+                                                            className="w-full bg-transparent border-none p-1 focus:ring-1 focus:ring-orange-500 rounded text-xs"
+                                                        >
+                                                            <option value="">Pilih Kategori</option>
+                                                            {categories.map((c) => (
+                                                                <option key={c.id} value={c.id}>
+                                                                    {c.name}
+                                                                </option>
+                                                            ))}
+                                                        </select>
+                                                    </td>
+                                                    <td className="px-4 py-2 text-center">
+                                                        <button
+                                                            onClick={() => handleRemoveProduct(idx)}
+                                                            className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50"
+                                                        >
+                                                            <Trash2 size={16} />
+                                                        </button>
+                                                    </td>
                                                 </tr>
                                             );
                                         })}

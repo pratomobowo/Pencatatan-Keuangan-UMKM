@@ -109,6 +109,19 @@ model Category {
   @@index([isActive])
 }
 
+model Unit {
+  id        String   @id @default(uuid())
+  name      String   @unique // e.g., "Kilogram", "Pieces"
+  symbol    String   @unique // e.g., "kg", "pcs" -- This is what we display
+  order     Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isActive])
+  @@index([order])
+}
+
 model ProductVariant {
   id        String   @id @default(uuid())
   productId String

@@ -4,6 +4,8 @@ export interface ChatMessage {
     content: string;
 }
 
+import { prisma } from '@/lib/prisma';
+
 const ARK_API_KEY = process.env.ARK_API_KEY;
 const ARK_ENDPOINT = "https://ark.ap-southeast.bytepluses.com/api/v3/chat/completions";
 const MODEL_ID = "deepseek-v3-2-251201";
@@ -183,6 +185,20 @@ export class ChatbotService {
             throw new Error("Konfigurasi AI belum lengkap.");
         }
 
+        // Fetch dynamic units from DB
+        let unitListString = '"kg", "gr", "ikat", "pack", "pcs", "ekor", "porsi", "bungkus", "box", "tray", "liter", "butir", "sisir", "ruas", "batang"';
+        try {
+            const units = await prisma.unit.findMany({
+                where: { isActive: true },
+                select: { symbol: true }
+            });
+            if (units.length > 0) {
+                unitListString = units.map((u: { symbol: string }) => `"${u.symbol}"`).join(", ");
+            }
+        } catch (error) {
+            console.error("Failed to fetch units for AI prompt, using default.", error);
+        }
+
         const prompt = `Tugas Anda adalah mengekstrak daftar produk dari teks yang diberikan ke dalam format JSON.
         Format Input:
         - Baris teks dengan nama produk, jumlah/unit, dan harga.
@@ -191,7 +207,7 @@ export class ChatbotService {
         Aturan Ekstraksi:
         1. Name: Nama produk (contoh: "Cabe keriting merah").
         2. Qty: Angka jumlah atau berat (contoh: 500, 1, 0.25). Jika ada "1/4", jadikan "0.25". Jika "1/2", jadikan "0.5". Jika tidak ada info, default "1".
-        3. Unit: HANYA BOLEH menggunakan salah satu dari daftar ini: "kg", "gr", "ikat", "pack", "pcs", "ekor", "porsi", "bungkus", "box", "tray", "liter", "butir", "sisir", "ruas", "batang".
+        3. Unit: HANYA BOLEH menggunakan salah satu dari daftar ini: ${unitListString}.
            - Jika menemukan "buah" -> ubah jadi "pcs".
            - Jika menemukan "kilo" -> ubah jadi "kg".
            - Jika menemukan "ons" -> ubah jadi "gr" (kalikan Qty dengan 100, contoh: 5 ons -> qty: 500, unit: "gr").
