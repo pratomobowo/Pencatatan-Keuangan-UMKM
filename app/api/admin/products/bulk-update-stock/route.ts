@@ -18,7 +18,8 @@ export async function POST() {
                 }
             },
             data: {
-                stockStatus: StockStatus.ALWAYS_READY
+                stockStatus: StockStatus.ALWAYS_READY,
+                stock: 999999
             }
         });
 

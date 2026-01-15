@@ -621,13 +621,22 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
                             <div className="text-xs text-slate-500">per {p.unit}</div>
                           </td>
                           <td className="px-4 py-3 text-center">
-                            <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${(p.stock || 0) <= 0
-                              ? 'bg-rose-100 text-rose-700'
-                              : isLowStock
-                                ? 'bg-yellow-100 text-yellow-700'
-                                : 'bg-slate-100 text-slate-700'
-                              }`}>
-                              {p.stock || 0}
+                            <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
+                              p.stockStatus === StockStatus.ALWAYS_READY
+                                ? 'bg-green-100 text-green-700'
+                                : p.stockStatus === StockStatus.EMPTY
+                                  ? 'bg-rose-100 text-rose-700'
+                                  : (p.stock || 0) <= 5
+                                    ? 'bg-yellow-100 text-yellow-700'
+                                    : 'bg-slate-100 text-slate-700'
+                            }`}>
+                              {p.stockStatus === StockStatus.ALWAYS_READY
+                                ? 'Selalu Ready'
+                                : p.stockStatus === StockStatus.EMPTY
+                                  ? 'Habis'
+                                  : p.stock || 0
+                              }
+                            </span>
                             </span>
                           </td>
                           <td className="px-4 py-3 text-right text-slate-500">
@@ -673,535 +682,539 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
                             </div>
                           </td>
                         </tr>
-                      );
+                );
                     })
                   )}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Pagination Controls */}
-            {totalPages > 1 && (
-              <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-200">
-                <button
-                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                  disabled={currentPage === 1}
-                  className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <ChevronLeft size={16} />
-                  Sebelumnya
-                </button>
-
-                <div className="flex items-center gap-2">
-                  {Array.from({ length: totalPages }, (_, i) => i + 1)
-                    .filter(page => {
-                      // Show first, last, current, and adjacent pages
-                      return page === 1 || page === totalPages ||
-                        Math.abs(page - currentPage) <= 1;
-                    })
-                    .map((page, idx, arr) => (
-                      <React.Fragment key={page}>
-                        {idx > 0 && arr[idx - 1] !== page - 1 && (
-                          <span className="text-slate-400">...</span>
-                        )}
-                        <button
-                          onClick={() => setCurrentPage(page)}
-                          className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors ${currentPage === page
-                            ? 'bg-blue-600 text-white'
-                            : 'text-slate-600 hover:bg-slate-100'
-                            }`}
-                        >
-                          {page}
-                        </button>
-                      </React.Fragment>
-                    ))}
-                </div>
-
-                <button
-                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                  disabled={currentPage === totalPages}
-                  className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Berikutnya
-                  <ChevronRight size={16} />
-                </button>
-              </div>
-            )}
-          </Card>
+              </tbody>
+            </table>
         </div>
 
-        {/* Product Form Modal */}
-        {showFormModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-            <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-              <div className="sticky top-0 z-10 flex items-center justify-between p-4 border-b bg-white">
-                <h2 className="text-lg font-semibold text-slate-800">
-                  {isEditing ? "Edit Produk" : "Tambah Produk Baru"}
-                </h2>
-                <button
-                  onClick={handleCancel}
-                  className="p-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100 transition-colors"
-                >
-                  <X size={24} />
-                </button>
-              </div>
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-200">
+            <button
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <ChevronLeft size={16} />
+              Sebelumnya
+            </button>
 
-              <div className="p-6">
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div>
-                    <label className="block text-sm text-slate-700 mb-1">Nama Produk</label>
-                    <input
-                      required
-                      type="text"
-                      placeholder="Contoh: Ikan Gurame Hidup"
-                      value={formData.name}
-                      onChange={e => setFormData({ ...formData, name: e.target.value })}
-                      className="w-full p-2.5 bg-white border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
-                    />
-                  </div>
-
-                  {/* Deskripsi Singkat */}
-                  <div>
-                    <div className="flex justify-between items-center mb-1">
-                      <label className="block text-sm text-slate-700">Deskripsi Singkat</label>
-                      <button
-                        type="button"
-                        onClick={handleGenerateDescription}
-                        disabled={isGeneratingDescription || !formData.name}
-                        className="flex items-center gap-1.5 px-2 py-1 text-[10px] font-medium bg-orange-50 text-orange-600 rounded-md hover:bg-orange-100 transition-all border border-orange-200 disabled:opacity-50"
-                      >
-                        {isGeneratingDescription ? (
-                          <Loader2 size={12} className="animate-spin" />
-                        ) : (
-                          <Sparkles size={12} />
-                        )}
-                        {isGeneratingDescription ? 'Mikir...' : 'Generate AI'}
-                      </button>
-                    </div>
-                    <textarea
-                      placeholder="Deskripsi produk untuk ditampilkan di toko..."
-                      value={formData.description || ''}
-                      onChange={e => setFormData({ ...formData, description: e.target.value })}
-                      rows={3}
-                      className="w-full p-2.5 bg-white border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm resize-none"
-                    />
-                  </div>
-
-                  {/* Gambar Produk */}
-                  <div>
-                    <label className="block text-sm text-slate-700 mb-1">Gambar Produk</label>
-                    <input
-                      type="file"
-                      ref={imageInputRef}
-                      accept="image/png,image/jpeg,image/jpg,image/webp"
-                      onChange={handleImageUpload}
-                      className="hidden"
-                    />
-                    <div
-                      onClick={() => imageInputRef.current?.click()}
-                      className={`relative border-2 border-dashed rounded-lg cursor-pointer transition-colors ${formData.image
-                        ? 'border-green-300 bg-green-50'
-                        : 'border-slate-300 hover:border-blue-400 bg-slate-50'
-                        } ${isUploading ? 'opacity-50 pointer-events-none' : ''}`}
-                    >
-                      {formData.image ? (
-                        <div className="p-2">
-                          <img
-                            src={formData.image}
-                            alt="Preview"
-                            className="w-full h-32 object-cover rounded-lg"
-                          />
-                          <p className="text-xs text-green-600 mt-1 text-center">Klik untuk ganti gambar</p>
-                        </div>
-                      ) : (
-                        <div className="p-4 text-center">
-                          {isUploading ? (
-                            <Loader2 className="w-8 h-8 mx-auto text-blue-500 animate-spin" />
-                          ) : (
-                            <ImageIcon className="w-8 h-8 mx-auto text-slate-400" />
-                          )}
-                          <p className="text-sm text-slate-500 mt-2">
-                            {isUploading ? 'Mengupload...' : 'Klik untuk upload gambar'}
-                          </p>
-                          <p className="text-xs text-slate-400 mt-1">PNG, JPG, WebP (maks. 5MB)</p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Kategori */}
-                  <div>
-                    <label className="block text-sm text-slate-700 mb-1">Kategori</label>
-                    <select
-                      value={formData.categoryId || formData.categoryName || ''}
-                      onChange={e => {
-                        const selectedId = e.target.value;
-                        const cat = dbCategories.find(c => c.id === selectedId);
-                        setFormData({
-                          ...formData,
-                          categoryId: selectedId,
-                          categoryName: cat ? cat.name : selectedId
-                        });
-                      }}
-                      className="w-full p-2.5 bg-white border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
-                    >
-                      <option value="">Pilih Kategori</option>
-                      {dbCategories.map(c => (
-                        <option key={c.id} value={c.id}>{c.name}</option>
-                      ))}
-                      {/* Legacy support */}
-                      {formData.categoryName && !dbCategories.find(c => c.name === formData.categoryName || c.id === formData.categoryId) && (
-                        <option value={String(formData.categoryName)}>{String(formData.categoryName)}</option>
-                      )}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm text-slate-700 mb-1">Satuan</label>
-                    <select
-                      value={formData.unit}
-                      onChange={e => setFormData({ ...formData, unit: e.target.value })}
-                      className="w-full p-2.5 bg-white border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
-                    >
-                      {dbUnits.length === 0 ? (
-                        <option value="kg">kg (Default)</option>
-                      ) : (
-                        dbUnits.map(u => (
-                          <option key={u.symbol} value={u.symbol}>{u.name} ({u.symbol})</option>
-                        ))
-                      )}
-                      {/* Allow custom unit if not in list (legacy support) */}
-                      {formData.unit && dbUnits.length > 0 && !dbUnits.find(u => u.symbol === formData.unit) && (
-                        <option value={formData.unit}>{formData.unit}</option>
-                      )}
-                    </select>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm text-slate-700 mb-1">Status Stok</label>
-                      <select
-                        value={formData.stockStatus || StockStatus.FINITE}
-                        onChange={e => {
-                          const status = e.target.value as StockStatus;
-                          setFormData({
-                            ...formData,
-                            stockStatus: status,
-                            stock: status === StockStatus.ALWAYS_READY ? 999999 : (status === StockStatus.EMPTY ? 0 : formData.stock)
-                          });
-                        }}
-                        className="w-full p-2.5 bg-white border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
-                      >
-                        <option value={StockStatus.FINITE}>Stok Terbatas (Input Manual)</option>
-                        <option value={StockStatus.ALWAYS_READY}>Selalu Ready (Unlimited)</option>
-                        <option value={StockStatus.EMPTY}>Kosong (Habis)</option>
-                      </select>
-                    </div>
-
-                    {(!formData.stockStatus || formData.stockStatus === StockStatus.FINITE) && (
-                      <div>
-                        <label className="block text-sm text-slate-700 mb-1">Stok Saat Ini</label>
-                        <div className="flex items-center gap-2">
-                          <input
-                            type="number"
-                            min="0"
-                            step="0.1"
-                            placeholder="0"
-                            value={formData.stock || ''}
-                            onChange={e => setFormData({ ...formData, stock: parseFloat(e.target.value) })}
-                            className="flex-1 p-2.5 bg-white border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
-                          />
-                          <span className="text-sm text-slate-500">{formData.unit}</span>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm text-slate-700 mb-1">Harga Modal</label>
-                      <input
-                        type="number"
-                        min="0"
-                        placeholder="0"
-                        value={formData.costPrice || ''}
-                        onChange={e => setFormData({ ...formData, costPrice: parseFloat(e.target.value) })}
-                        className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
-                      />
-                      <p className="text-[10px] text-slate-400 mt-1">HPP per unit</p>
-                    </div>
-                    <div>
-                      <label className="block text-sm text-slate-700 mb-1">Harga Jual</label>
-                      <input
-                        required
-                        type="number"
-                        min="0"
-                        value={formData.price || ''}
-                        onChange={e => setFormData({ ...formData, price: parseFloat(e.target.value) })}
-                        className="w-full p-2.5 bg-white border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
-                      />
-                      <p className="text-[10px] text-slate-400 mt-1">Harga customer</p>
-                    </div>
-                  </div>
-
-                  {/* Promo Settings */}
-                  <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
-                    <label className="flex items-center gap-2 cursor-pointer mb-3">
-                      <input
-                        type="checkbox"
-                        checked={formData.isPromo || false}
-                        onChange={e => setFormData({ ...formData, isPromo: e.target.checked })}
-                        className="w-4 h-4 text-blue-600 bg-white border-slate-300 rounded focus:ring-blue-500"
-                      />
-                      <span className="text-sm font-medium text-slate-700">Aktifkan Promo</span>
-                    </label>
-
-                    {formData.isPromo && (
-                      <div className="grid grid-cols-2 gap-3 mt-2">
-                        <div>
-                          <label className="block text-xs text-slate-600 mb-1">Harga Promo</label>
-                          <input
-                            type="number"
-                            min="0"
-                            placeholder="0"
-                            value={formData.promoPrice || ''}
-                            onChange={e => setFormData({ ...formData, promoPrice: parseFloat(e.target.value) })}
-                            className="w-full p-2 bg-white border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs text-slate-600 mb-1">Diskon (%)</label>
-                          <input
-                            type="number"
-                            min="0"
-                            max="100"
-                            placeholder="0"
-                            value={formData.promoDiscount || ''}
-                            onChange={e => setFormData({ ...formData, promoDiscount: parseInt(e.target.value) })}
-                            className="w-full p-2 bg-white border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
-                          />
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Variant Editor */}
-                  <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
-                    <div className="flex items-center justify-between mb-3">
-                      <span className="text-sm font-medium text-slate-700">Opsi Satuan</span>
-                      <div className="flex items-center gap-2">
-                        {formData.unit.toLowerCase() === 'kg' && formData.price > 0 && (
-                          <button
-                            type="button"
-                            onClick={handleAutoCalculateVariants}
-                            className="text-xs px-2.5 py-1.5 bg-blue-50 text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-100 flex items-center gap-1 transition-colors"
-                          >
-                            <Sparkles size={12} /> Hitung Otomatis (1kg, 500g, 250g)
-                          </button>
-                        )}
-                        <button
-                          type="button"
-                          onClick={addVariant}
-                          className="text-xs px-2.5 py-1.5 bg-slate-600 text-white rounded-lg hover:bg-slate-700 flex items-center gap-1 transition-colors"
-                        >
-                          <Plus size={12} /> Tambah Varian
-                        </button>
-                      </div>
-                    </div>
-
-                    {(formData.variants?.length || 0) === 0 ? (
-                      <p className="text-xs text-slate-400 text-center py-3">
-                        Belum ada varian. Tambahkan opsi satuan seperti 1kg, 500gr, ekor.
-                      </p>
-                    ) : (
-                      <div className="space-y-2">
-                        {formData.variants?.map((variant, index) => (
-                          <div key={variant.id || index} className="bg-white p-3 rounded-lg border border-slate-200">
-                            <div className="flex items-center justify-between mb-2">
-                              <div className="flex items-center gap-2">
-                                <span className="text-xs font-medium text-slate-500">Varian {index + 1}</span>
-                                {index === 0 && (
-                                  <span className="text-[10px] px-1.5 py-0.5 bg-blue-100 text-blue-600 rounded font-medium">
-                                    Default
-                                  </span>
-                                )}
-                              </div>
-                              <button
-                                type="button"
-                                onClick={() => removeVariant(index)}
-                                className="p-1 text-slate-400 hover:text-rose-500 transition-colors"
-                              >
-                                <X size={14} />
-                              </button>
-                            </div>
-                            <div className="grid grid-cols-4 gap-2">
-                              <div>
-                                <label className="block text-[10px] text-slate-500 mb-1">Satuan</label>
-                                <input
-                                  type="text"
-                                  placeholder="1kg"
-                                  value={variant.unit}
-                                  onChange={e => updateVariant(index, 'unit', e.target.value)}
-                                  className="w-full px-2 py-1.5 text-xs border border-slate-200 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                                />
-                              </div>
-                              <div>
-                                <label className="block text-[10px] text-slate-500 mb-1">Qty Base</label>
-                                <input
-                                  type="number"
-                                  step="0.1"
-                                  placeholder="1"
-                                  value={variant.unitQty || ''}
-                                  onChange={e => updateVariant(index, 'unitQty', parseFloat(e.target.value))}
-                                  className="w-full px-2 py-1.5 text-xs border border-slate-200 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                                />
-                              </div>
-                              <div>
-                                <label className="block text-[10px] text-slate-500 mb-1">Harga Modal</label>
-                                <input
-                                  type="number"
-                                  placeholder="0"
-                                  value={variant.costPrice || ''}
-                                  onChange={e => updateVariant(index, 'costPrice', parseFloat(e.target.value))}
-                                  className="w-full px-2 py-1.5 text-xs border border-slate-200 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                                />
-                              </div>
-                              <div>
-                                <label className="block text-[10px] text-slate-500 mb-1">Harga Jual</label>
-                                <input
-                                  type="number"
-                                  placeholder="0"
-                                  value={variant.price || ''}
-                                  onChange={e => updateVariant(index, 'price', parseFloat(e.target.value))}
-                                  className="w-full px-2 py-1.5 text-xs border border-slate-200 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                                />
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Profit Preview */}
-                  <div className="p-3 bg-blue-50 rounded-lg border border-blue-100 flex items-center justify-between">
-                    <span className="text-xs text-blue-700 font-medium flex items-center gap-1">
-                      <TrendingUp size={14} /> Margin Laba
-                    </span>
-                    <span className="text-sm font-semibold text-blue-700">
-                      {formatCurrency((formData.price || 0) - (formData.costPrice || 0))}
-                    </span>
-                  </div>
-
-                  <div className="pt-4 flex gap-3">
-                    {isEditing && (
-                      <button
-                        type="button"
-                        onClick={handleCancel}
-                        className="flex-1 py-2.5 px-5 text-sm font-medium text-slate-700 bg-white rounded-lg border border-slate-300 hover:bg-slate-50"
-                      >
-                        Batal
-                      </button>
+            <div className="flex items-center gap-2">
+              {Array.from({ length: totalPages }, (_, i) => i + 1)
+                .filter(page => {
+                  // Show first, last, current, and adjacent pages
+                  return page === 1 || page === totalPages ||
+                    Math.abs(page - currentPage) <= 1;
+                })
+                .map((page, idx, arr) => (
+                  <React.Fragment key={page}>
+                    {idx > 0 && arr[idx - 1] !== page - 1 && (
+                      <span className="text-slate-400">...</span>
                     )}
                     <button
-                      type="submit"
-                      className="flex-1 py-2.5 px-5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2"
+                      onClick={() => setCurrentPage(page)}
+                      className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors ${currentPage === page
+                        ? 'bg-blue-600 text-white'
+                        : 'text-slate-600 hover:bg-slate-100'
+                        }`}
                     >
-                      <Package size={18} />
-                      {isEditing ? 'Update Produk' : 'Simpan Produk'}
+                      {page}
                     </button>
-                  </div>
-                </form>
-              </div>
+                  </React.Fragment>
+                ))}
             </div>
+
+            <button
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Berikutnya
+              <ChevronRight size={16} />
+            </button>
           </div>
         )}
-      </div>
+      </Card>
+    </div >
 
-      {/* Smart Restock Modal */}
-      {restockProduct && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 z-10 flex items-center justify-between p-4 border-b bg-white">
-              <h2 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
-                <ShoppingBasket size={20} className="text-blue-600" /> Belanja Stok Baru
-              </h2>
-              <button
-                onClick={closeRestockModal}
-                className="p-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100 transition-colors"
-              >
-                <X size={20} />
-              </button>
-            </div>
+      {/* Product Form Modal */ }
+  {
+    showFormModal && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+        <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+          <div className="sticky top-0 z-10 flex items-center justify-between p-4 border-b bg-white">
+            <h2 className="text-lg font-semibold text-slate-800">
+              {isEditing ? "Edit Produk" : "Tambah Produk Baru"}
+            </h2>
+            <button
+              onClick={handleCancel}
+              className="p-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100 transition-colors"
+            >
+              <X size={24} />
+            </button>
+          </div>
 
-            <form onSubmit={handleRestockSubmit} className="p-6 space-y-5">
-              <div className="bg-blue-50 p-3 rounded-lg border border-blue-100 text-sm text-blue-800">
-                Anda sedang menambahkan stok untuk <strong>{restockProduct.name}</strong>.
-                <br />
-                <span className="text-xs text-blue-600 mt-1 block">Sistem akan otomatis mengupdate stok dan mencatat pengeluaran.</span>
+          <div className="p-6">
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm text-slate-700 mb-1">Nama Produk</label>
+                <input
+                  required
+                  type="text"
+                  placeholder="Contoh: Ikan Gurame Hidup"
+                  value={formData.name}
+                  onChange={e => setFormData({ ...formData, name: e.target.value })}
+                  className="w-full p-2.5 bg-white border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
+                />
+              </div>
+
+              {/* Deskripsi Singkat */}
+              <div>
+                <div className="flex justify-between items-center mb-1">
+                  <label className="block text-sm text-slate-700">Deskripsi Singkat</label>
+                  <button
+                    type="button"
+                    onClick={handleGenerateDescription}
+                    disabled={isGeneratingDescription || !formData.name}
+                    className="flex items-center gap-1.5 px-2 py-1 text-[10px] font-medium bg-orange-50 text-orange-600 rounded-md hover:bg-orange-100 transition-all border border-orange-200 disabled:opacity-50"
+                  >
+                    {isGeneratingDescription ? (
+                      <Loader2 size={12} className="animate-spin" />
+                    ) : (
+                      <Sparkles size={12} />
+                    )}
+                    {isGeneratingDescription ? 'Mikir...' : 'Generate AI'}
+                  </button>
+                </div>
+                <textarea
+                  placeholder="Deskripsi produk untuk ditampilkan di toko..."
+                  value={formData.description || ''}
+                  onChange={e => setFormData({ ...formData, description: e.target.value })}
+                  rows={3}
+                  className="w-full p-2.5 bg-white border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm resize-none"
+                />
+              </div>
+
+              {/* Gambar Produk */}
+              <div>
+                <label className="block text-sm text-slate-700 mb-1">Gambar Produk</label>
+                <input
+                  type="file"
+                  ref={imageInputRef}
+                  accept="image/png,image/jpeg,image/jpg,image/webp"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                />
+                <div
+                  onClick={() => imageInputRef.current?.click()}
+                  className={`relative border-2 border-dashed rounded-lg cursor-pointer transition-colors ${formData.image
+                    ? 'border-green-300 bg-green-50'
+                    : 'border-slate-300 hover:border-blue-400 bg-slate-50'
+                    } ${isUploading ? 'opacity-50 pointer-events-none' : ''}`}
+                >
+                  {formData.image ? (
+                    <div className="p-2">
+                      <img
+                        src={formData.image}
+                        alt="Preview"
+                        className="w-full h-32 object-cover rounded-lg"
+                      />
+                      <p className="text-xs text-green-600 mt-1 text-center">Klik untuk ganti gambar</p>
+                    </div>
+                  ) : (
+                    <div className="p-4 text-center">
+                      {isUploading ? (
+                        <Loader2 className="w-8 h-8 mx-auto text-blue-500 animate-spin" />
+                      ) : (
+                        <ImageIcon className="w-8 h-8 mx-auto text-slate-400" />
+                      )}
+                      <p className="text-sm text-slate-500 mt-2">
+                        {isUploading ? 'Mengupload...' : 'Klik untuk upload gambar'}
+                      </p>
+                      <p className="text-xs text-slate-400 mt-1">PNG, JPG, WebP (maks. 5MB)</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Kategori */}
+              <div>
+                <label className="block text-sm text-slate-700 mb-1">Kategori</label>
+                <select
+                  value={formData.categoryId || formData.categoryName || ''}
+                  onChange={e => {
+                    const selectedId = e.target.value;
+                    const cat = dbCategories.find(c => c.id === selectedId);
+                    setFormData({
+                      ...formData,
+                      categoryId: selectedId,
+                      categoryName: cat ? cat.name : selectedId
+                    });
+                  }}
+                  className="w-full p-2.5 bg-white border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
+                >
+                  <option value="">Pilih Kategori</option>
+                  {dbCategories.map(c => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
+                  {/* Legacy support */}
+                  {formData.categoryName && !dbCategories.find(c => c.name === formData.categoryName || c.id === formData.categoryId) && (
+                    <option value={String(formData.categoryName)}>{String(formData.categoryName)}</option>
+                  )}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm text-slate-700 mb-1">Satuan</label>
+                <select
+                  value={formData.unit}
+                  onChange={e => setFormData({ ...formData, unit: e.target.value })}
+                  className="w-full p-2.5 bg-white border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
+                >
+                  {dbUnits.length === 0 ? (
+                    <option value="kg">kg (Default)</option>
+                  ) : (
+                    dbUnits.map(u => (
+                      <option key={u.symbol} value={u.symbol}>{u.name} ({u.symbol})</option>
+                    ))
+                  )}
+                  {/* Allow custom unit if not in list (legacy support) */}
+                  {formData.unit && dbUnits.length > 0 && !dbUnits.find(u => u.symbol === formData.unit) && (
+                    <option value={formData.unit}>{formData.unit}</option>
+                  )}
+                </select>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm text-slate-700 mb-1">
-                    Jumlah Beli ({restockProduct.unit})
-                  </label>
-                  <input
-                    type="number"
-                    min="1"
-                    step="0.1"
-                    required
-                    autoFocus
-                    value={restockData.qtyToAdd || ''}
-                    onChange={(e) => setRestockData({ ...restockData, qtyToAdd: parseFloat(e.target.value) })}
-                    className="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                  />
+                  <label className="block text-sm text-slate-700 mb-1">Status Stok</label>
+                  <select
+                    value={formData.stockStatus || StockStatus.FINITE}
+                    onChange={e => {
+                      const status = e.target.value as StockStatus;
+                      setFormData({
+                        ...formData,
+                        stockStatus: status,
+                        stock: status === StockStatus.ALWAYS_READY ? 999999 : (status === StockStatus.EMPTY ? 0 : formData.stock)
+                      });
+                    }}
+                    className="w-full p-2.5 bg-white border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
+                  >
+                    <option value={StockStatus.FINITE}>Stok Terbatas (Input Manual)</option>
+                    <option value={StockStatus.ALWAYS_READY}>Selalu Ready (Unlimited)</option>
+                    <option value={StockStatus.EMPTY}>Kosong (Habis)</option>
+                  </select>
                 </div>
+
+                {(!formData.stockStatus || formData.stockStatus === StockStatus.FINITE) && (
+                  <div>
+                    <label className="block text-sm text-slate-700 mb-1">Stok Saat Ini</label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.1"
+                        placeholder="0"
+                        value={formData.stock || ''}
+                        onChange={e => setFormData({ ...formData, stock: parseFloat(e.target.value) })}
+                        className="flex-1 p-2.5 bg-white border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
+                      />
+                      <span className="text-sm text-slate-500">{formData.unit}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm text-slate-700 mb-1">
-                    Total Uang Keluar (Rp)
-                  </label>
+                  <label className="block text-sm text-slate-700 mb-1">Harga Modal</label>
                   <input
                     type="number"
                     min="0"
-                    required
-                    placeholder="Total belanja"
-                    value={restockData.totalCost || ''}
-                    onChange={(e) => setRestockData({ ...restockData, totalCost: parseFloat(e.target.value) })}
-                    className="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="0"
+                    value={formData.costPrice || ''}
+                    onChange={e => setFormData({ ...formData, costPrice: parseFloat(e.target.value) })}
+                    className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
                   />
+                  <p className="text-[10px] text-slate-400 mt-1">HPP per unit</p>
+                </div>
+                <div>
+                  <label className="block text-sm text-slate-700 mb-1">Harga Jual</label>
+                  <input
+                    required
+                    type="number"
+                    min="0"
+                    value={formData.price || ''}
+                    onChange={e => setFormData({ ...formData, price: parseFloat(e.target.value) })}
+                    className="w-full p-2.5 bg-white border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
+                  />
+                  <p className="text-[10px] text-slate-400 mt-1">Harga customer</p>
                 </div>
               </div>
 
-              <div className="flex gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={closeRestockModal}
-                  className="flex-1 py-2.5 text-slate-600 font-medium hover:bg-slate-100 rounded-lg"
-                >
-                  Batal
-                </button>
+              {/* Promo Settings */}
+              <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                <label className="flex items-center gap-2 cursor-pointer mb-3">
+                  <input
+                    type="checkbox"
+                    checked={formData.isPromo || false}
+                    onChange={e => setFormData({ ...formData, isPromo: e.target.checked })}
+                    className="w-4 h-4 text-blue-600 bg-white border-slate-300 rounded focus:ring-blue-500"
+                  />
+                  <span className="text-sm font-medium text-slate-700">Aktifkan Promo</span>
+                </label>
+
+                {formData.isPromo && (
+                  <div className="grid grid-cols-2 gap-3 mt-2">
+                    <div>
+                      <label className="block text-xs text-slate-600 mb-1">Harga Promo</label>
+                      <input
+                        type="number"
+                        min="0"
+                        placeholder="0"
+                        value={formData.promoPrice || ''}
+                        onChange={e => setFormData({ ...formData, promoPrice: parseFloat(e.target.value) })}
+                        className="w-full p-2 bg-white border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-slate-600 mb-1">Diskon (%)</label>
+                      <input
+                        type="number"
+                        min="0"
+                        max="100"
+                        placeholder="0"
+                        value={formData.promoDiscount || ''}
+                        onChange={e => setFormData({ ...formData, promoDiscount: parseInt(e.target.value) })}
+                        className="w-full p-2 bg-white border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Variant Editor */}
+              <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-sm font-medium text-slate-700">Opsi Satuan</span>
+                  <div className="flex items-center gap-2">
+                    {formData.unit.toLowerCase() === 'kg' && formData.price > 0 && (
+                      <button
+                        type="button"
+                        onClick={handleAutoCalculateVariants}
+                        className="text-xs px-2.5 py-1.5 bg-blue-50 text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-100 flex items-center gap-1 transition-colors"
+                      >
+                        <Sparkles size={12} /> Hitung Otomatis (1kg, 500g, 250g)
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={addVariant}
+                      className="text-xs px-2.5 py-1.5 bg-slate-600 text-white rounded-lg hover:bg-slate-700 flex items-center gap-1 transition-colors"
+                    >
+                      <Plus size={12} /> Tambah Varian
+                    </button>
+                  </div>
+                </div>
+
+                {(formData.variants?.length || 0) === 0 ? (
+                  <p className="text-xs text-slate-400 text-center py-3">
+                    Belum ada varian. Tambahkan opsi satuan seperti 1kg, 500gr, ekor.
+                  </p>
+                ) : (
+                  <div className="space-y-2">
+                    {formData.variants?.map((variant, index) => (
+                      <div key={variant.id || index} className="bg-white p-3 rounded-lg border border-slate-200">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-medium text-slate-500">Varian {index + 1}</span>
+                            {index === 0 && (
+                              <span className="text-[10px] px-1.5 py-0.5 bg-blue-100 text-blue-600 rounded font-medium">
+                                Default
+                              </span>
+                            )}
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => removeVariant(index)}
+                            className="p-1 text-slate-400 hover:text-rose-500 transition-colors"
+                          >
+                            <X size={14} />
+                          </button>
+                        </div>
+                        <div className="grid grid-cols-4 gap-2">
+                          <div>
+                            <label className="block text-[10px] text-slate-500 mb-1">Satuan</label>
+                            <input
+                              type="text"
+                              placeholder="1kg"
+                              value={variant.unit}
+                              onChange={e => updateVariant(index, 'unit', e.target.value)}
+                              className="w-full px-2 py-1.5 text-xs border border-slate-200 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] text-slate-500 mb-1">Qty Base</label>
+                            <input
+                              type="number"
+                              step="0.1"
+                              placeholder="1"
+                              value={variant.unitQty || ''}
+                              onChange={e => updateVariant(index, 'unitQty', parseFloat(e.target.value))}
+                              className="w-full px-2 py-1.5 text-xs border border-slate-200 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] text-slate-500 mb-1">Harga Modal</label>
+                            <input
+                              type="number"
+                              placeholder="0"
+                              value={variant.costPrice || ''}
+                              onChange={e => updateVariant(index, 'costPrice', parseFloat(e.target.value))}
+                              className="w-full px-2 py-1.5 text-xs border border-slate-200 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] text-slate-500 mb-1">Harga Jual</label>
+                            <input
+                              type="number"
+                              placeholder="0"
+                              value={variant.price || ''}
+                              onChange={e => updateVariant(index, 'price', parseFloat(e.target.value))}
+                              className="w-full px-2 py-1.5 text-xs border border-slate-200 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Profit Preview */}
+              <div className="p-3 bg-blue-50 rounded-lg border border-blue-100 flex items-center justify-between">
+                <span className="text-xs text-blue-700 font-medium flex items-center gap-1">
+                  <TrendingUp size={14} /> Margin Laba
+                </span>
+                <span className="text-sm font-semibold text-blue-700">
+                  {formatCurrency((formData.price || 0) - (formData.costPrice || 0))}
+                </span>
+              </div>
+
+              <div className="pt-4 flex gap-3">
+                {isEditing && (
+                  <button
+                    type="button"
+                    onClick={handleCancel}
+                    className="flex-1 py-2.5 px-5 text-sm font-medium text-slate-700 bg-white rounded-lg border border-slate-300 hover:bg-slate-50"
+                  >
+                    Batal
+                  </button>
+                )}
                 <button
                   type="submit"
-                  className="flex-1 py-2.5 bg-blue-600 text-white font-medium hover:bg-blue-700 rounded-lg shadow-lg shadow-blue-200"
+                  className="flex-1 py-2.5 px-5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2"
                 >
-                  Konfirmasi
+                  <Package size={18} />
+                  {isEditing ? 'Update Produk' : 'Simpan Produk'}
                 </button>
               </div>
             </form>
           </div>
         </div>
-      )}
+      </div>
+    )
+  }
+      </div >
 
-      {/* AI Product Importer Modal */}
-      <AIImporterWrapper
-        show={showAIImporter}
-        onClose={() => setShowAIImporter(false)}
-        onSuccess={() => {
-          alert('Produk berhasil ditambahkan! Silakan refresh halaman.');
-          window.location.reload();
-        }}
-      />
+  {/* Smart Restock Modal */ }
+{
+  restockProduct && (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+      <div className="bg-white rounded-xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+        <div className="sticky top-0 z-10 flex items-center justify-between p-4 border-b bg-white">
+          <h2 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
+            <ShoppingBasket size={20} className="text-blue-600" /> Belanja Stok Baru
+          </h2>
+          <button
+            onClick={closeRestockModal}
+            className="p-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100 transition-colors"
+          >
+            <X size={20} />
+          </button>
+        </div>
+
+        <form onSubmit={handleRestockSubmit} className="p-6 space-y-5">
+          <div className="bg-blue-50 p-3 rounded-lg border border-blue-100 text-sm text-blue-800">
+            Anda sedang menambahkan stok untuk <strong>{restockProduct.name}</strong>.
+            <br />
+            <span className="text-xs text-blue-600 mt-1 block">Sistem akan otomatis mengupdate stok dan mencatat pengeluaran.</span>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm text-slate-700 mb-1">
+                Jumlah Beli ({restockProduct.unit})
+              </label>
+              <input
+                type="number"
+                min="1"
+                step="0.1"
+                required
+                autoFocus
+                value={restockData.qtyToAdd || ''}
+                onChange={(e) => setRestockData({ ...restockData, qtyToAdd: parseFloat(e.target.value) })}
+                className="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-slate-700 mb-1">
+                Total Uang Keluar (Rp)
+              </label>
+              <input
+                type="number"
+                min="0"
+                required
+                placeholder="Total belanja"
+                value={restockData.totalCost || ''}
+                onChange={(e) => setRestockData({ ...restockData, totalCost: parseFloat(e.target.value) })}
+                className="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+          </div>
+
+          <div className="flex gap-3 pt-2">
+            <button
+              type="button"
+              onClick={closeRestockModal}
+              className="flex-1 py-2.5 text-slate-600 font-medium hover:bg-slate-100 rounded-lg"
+            >
+              Batal
+            </button>
+            <button
+              type="submit"
+              className="flex-1 py-2.5 bg-blue-600 text-white font-medium hover:bg-blue-700 rounded-lg shadow-lg shadow-blue-200"
+            >
+              Konfirmasi
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
+
+{/* AI Product Importer Modal */ }
+<AIImporterWrapper
+  show={showAIImporter}
+  onClose={() => setShowAIImporter(false)}
+  onSuccess={() => {
+    alert('Produk berhasil ditambahkan! Silakan refresh halaman.');
+    window.location.reload();
+  }}
+/>
     </>
   );
 };
