@@ -6,6 +6,7 @@ import { Plus, Check } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useState, useMemo } from 'react';
 import { ProductVariant } from '@/lib/types';
+import { ProductVariantModal } from './ProductVariantModal';
 
 interface ProductCardProps {
     id: string;
@@ -44,6 +45,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 }) => {
     const { addItem } = useCart();
     const [added, setAdded] = useState(false);
+    const [isVariantModalOpen, setIsVariantModalOpen] = useState(false);
 
     // Final layout decision: if explicit layout is provided use it, otherwise use isGrid
     const currentLayout = layout === 'horizontal' ? 'horizontal' : 'grid';
@@ -62,6 +64,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     const currentUnit = selectedVariant ? selectedVariant.unit : defaultUnit;
 
     const handleAddToCart = () => {
+        // If product has variants, open selection modal instead of auto-adding
+        if (variants && variants.length > 0) {
+            setIsVariantModalOpen(true);
+            return;
+        }
+
         addItem({
             id,
             name,
@@ -143,6 +151,19 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                         </button>
                     </div>
                 </div>
+
+                {/* Variant Selection Modal */}
+                <ProductVariantModal
+                    isOpen={isVariantModalOpen}
+                    onClose={() => setIsVariantModalOpen(false)}
+                    product={{
+                        id,
+                        name,
+                        image,
+                        price: defaultPrice
+                    }}
+                    variants={variants}
+                />
             </div>
         );
     }
@@ -231,6 +252,19 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                     )}
                 </button>
             </div>
+
+            {/* Variant Selection Modal */}
+            <ProductVariantModal
+                isOpen={isVariantModalOpen}
+                onClose={() => setIsVariantModalOpen(false)}
+                product={{
+                    id,
+                    name,
+                    image,
+                    price: defaultPrice
+                }}
+                variants={variants}
+            />
         </div>
     );
 };
