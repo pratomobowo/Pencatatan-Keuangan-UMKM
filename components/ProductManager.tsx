@@ -581,7 +581,8 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
               <table className="w-full text-sm text-left text-slate-600">
                 <thead className="bg-slate-50">
                   <tr className="border-b border-slate-200">
-                    <th className="text-left px-4 py-3 text-sm font-semibold text-slate-700">Nama Produk</th>
+                    <th className="text-left px-4 py-3 text-sm font-semibold text-slate-700">Produk</th>
+                    <th className="text-left px-4 py-3 text-sm font-semibold text-slate-700">Kategori</th>
                     <th className="text-center px-4 py-3 text-sm font-semibold text-slate-700">Stok</th>
                     <th className="text-right px-4 py-3 text-sm font-semibold text-slate-700">Harga Modal</th>
                     <th className="text-right px-4 py-3 text-sm font-semibold text-slate-700">Harga Jual</th>
@@ -612,15 +613,43 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
                       return (
                         <tr key={p.id} className="border-b border-slate-100 hover:bg-slate-50/50 transition-colors">
                           <td className="px-4 py-3">
-                            <div className="flex items-center gap-2">
-                              <div className="font-medium text-slate-900">{p.name}</div>
-                              {p.isPromo && (
-                                <span className="px-1.5 py-0.5 text-[10px] font-medium bg-orange-100 text-orange-700 rounded">
-                                  PROMO
-                                </span>
-                              )}
+                            <div className="flex items-center gap-3">
+                              {/* Thumbnail Image */}
+                              <div className="relative w-10 h-10 rounded-lg overflow-hidden bg-slate-100 flex-shrink-0 border border-slate-200">
+                                {p.image ? (
+                                  <img
+                                    src={p.image}
+                                    alt={p.name}
+                                    className="w-full h-full object-cover"
+                                  />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center text-slate-300">
+                                    <ImageIcon size={20} />
+                                  </div>
+                                )}
+                              </div>
+
+                              <div className="flex flex-col min-w-0">
+                                <div className="flex items-center gap-2">
+                                  <div className="font-medium text-slate-900 truncate">{p.name}</div>
+                                  {p.isPromo && (
+                                    <span className="px-1.5 py-0.5 text-[10px] font-medium bg-orange-100 text-orange-700 rounded flex-shrink-0">
+                                      PROMO
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="text-[10px] text-slate-500">per {p.unit}</div>
+                              </div>
                             </div>
-                            <div className="text-xs text-slate-500">per {p.unit}</div>
+                          </td>
+                          <td className="px-4 py-3">
+                            {p.categoryName ? (
+                              <span className="text-xs font-medium text-slate-600 bg-slate-100 px-2 py-1 rounded-md">
+                                {p.categoryName}
+                              </span>
+                            ) : (
+                              <span className="text-xs text-slate-400 italic">Tanpa Kategori</span>
+                            )}
                           </td>
                           <td className="px-4 py-3 text-center">
                             <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${p.stockStatus === StockStatus.ALWAYS_READY
