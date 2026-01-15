@@ -118,11 +118,40 @@ export default async function RecipeDetailPage({ params }: RecipePageProps) {
         })),
     };
 
+    // Breadcrumb JSON-LD
+    const breadcrumbJsonLd = {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+            {
+                '@type': 'ListItem',
+                position: 1,
+                name: 'Beranda',
+                item: 'https://pasarantar.id',
+            },
+            {
+                '@type': 'ListItem',
+                position: 2,
+                name: 'Buku Resep',
+                item: 'https://pasarantar.id/recipes',
+            },
+            {
+                '@type': 'ListItem',
+                position: 3,
+                name: recipe.title,
+            },
+        ],
+    };
+
     return (
         <>
             <script
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(recipeJsonLd) }}
+            />
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
             />
             <RecipeDetailClient recipe={recipeData} />
         </>

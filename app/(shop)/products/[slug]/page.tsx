@@ -126,11 +126,46 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
         }
     };
 
+    // Breadcrumb JSON-LD
+    const breadcrumbJsonLd = {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+            {
+                '@type': 'ListItem',
+                position: 1,
+                name: 'Beranda',
+                item: 'https://pasarantar.id',
+            },
+            {
+                '@type': 'ListItem',
+                position: 2,
+                name: 'Produk',
+                item: 'https://pasarantar.id/products',
+            },
+            {
+                '@type': 'ListItem',
+                position: 3,
+                name: product.categoryName || 'Kategori',
+                item: product.categoryId ? `https://pasarantar.id/products?category=${product.categoryName}` : 'https://pasarantar.id/products',
+            },
+            {
+                '@type': 'ListItem',
+                position: 4,
+                name: product.name,
+            },
+        ],
+    };
+
     return (
         <>
             <script
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+            />
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
             />
             <ProductDetailClient product={product} />
         </>
