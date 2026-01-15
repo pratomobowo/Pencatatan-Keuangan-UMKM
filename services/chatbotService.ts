@@ -191,7 +191,11 @@ export class ChatbotService {
         Aturan Ekstraksi:
         1. Name: Nama produk (contoh: "Cabe keriting merah").
         2. Qty: Angka jumlah atau berat (contoh: 500, 1, 0.25). Jika ada "1/4", jadikan "0.25". Jika "1/2", jadikan "0.5". Jika tidak ada info, default "1".
-        3. Unit: Satuan label (contoh: "gr", "kg", "ikat", "pack", "ekor"). Jika tidak ada info, default "kg".
+        3. Unit: HANYA BOLEH menggunakan salah satu dari daftar ini: "kg", "gr", "ikat", "pack", "pcs", "ekor", "porsi", "bungkus", "box", "tray", "liter", "butir", "sisir", "ruas", "batang".
+           - Jika menemukan "buah" -> ubah jadi "pcs".
+           - Jika menemukan "kilo" -> ubah jadi "kg".
+           - Jika menemukan "ons" -> ubah jadi "gr" (kalikan Qty dengan 100, contoh: 5 ons -> qty: 500, unit: "gr").
+           - Jika unit tidak dikenal -> gunakan "pcs".
         4. Price: Angka harga saja tanpa titik/koma (contoh: 20000).
         5. Category: Pilih kategori yang paling cocok dari daftar ini: "ikan-laut", "seafood", "ayam", "daging-sapi", "sayur", "bumbu", "sembako".
 

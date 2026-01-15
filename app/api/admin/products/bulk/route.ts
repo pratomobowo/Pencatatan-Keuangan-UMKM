@@ -46,6 +46,26 @@ export async function POST(request: NextRequest) {
                 // Formatted Unit for display (e.g., "500 gr" or "1 kg")
                 const displayUnit = (p.qty && p.qty !== 1) ? `${p.qty} ${p.unit}` : p.unit;
 
+                // Prepare category data
+                let categoryName = p.category || null;
+                let categoryConnection = {};
+
+                if (p.categoryId) {
+                    // Start by checking if the category exists to get the real name
+                    // NOTE: This query is inside a loop, ideally should be batched outside if performance is critical.
+                    // For now, assuming relatively small batch sizes (e.g. < 50 items).
+                    const realCategory = await tx.category.findUnique({
+                        where: { id: p.categoryId }
+                    });
+
+                    if (realCategory) {
+                        categoryName = realCategory.name;
+                        categoryConnection = {
+                            connect: { id: p.categoryId }
+                        };
+                    }
+                }
+
                 const product = await tx.product.create({
                     data: {
                         sku: productSku,
@@ -56,7 +76,8 @@ export async function POST(request: NextRequest) {
                         costPrice: p.costPrice || p.price * 0.7,
                         stock: p.stock || 0,
                         unit: displayUnit,
-                        categoryName: p.category || null,
+                        categoryName: categoryName,
+                        category: categoryConnection,
                         isActive: true,
                         // Create a default variant with weight info
                         variants: {
