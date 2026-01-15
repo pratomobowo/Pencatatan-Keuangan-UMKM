@@ -1,6 +1,24 @@
 import React, { useState } from 'react';
-import { X, Sparkles, Loader2, Check, AlertCircle, Edit2, Trash2 } from 'lucide-react';
+import { X, Sparkles, Loader2, Check, AlertCircle, Edit2, Trash2, ArrowRight } from 'lucide-react';
 import { Card } from '../ui/Card';
+
+const PRODUCT_UNITS = [
+    'kg',
+    'gr',
+    'ikat',
+    'pack',
+    'pcs', // pieces
+    'ekor',
+    'porsi',
+    'bungkus',
+    'box', // box/kardus
+    'tray', // tray/piring
+    'liter',
+    'butir',
+    'sisir', // pisang
+    'ruas', // jahe/lengkuas
+    'batang', // sereh
+];
 
 interface AIProduct {
     name: string;
@@ -59,6 +77,22 @@ export const AIProductImporter: React.FC<AIProductImporterProps> = ({ onClose, o
 
     const handleRemoveProduct = (index: number) => {
         setParsedProducts(parsedProducts.filter((_, i) => i !== index));
+    };
+
+    const handleNormalize = (index: number) => {
+        const product = parsedProducts[index];
+        if (product.qty <= 0) return;
+
+        // Calculate price per 1 unit
+        const pricePerUnit = Math.round(product.price / product.qty);
+
+        const newProducts = [...parsedProducts];
+        newProducts[index] = {
+            ...newProducts[index],
+            qty: 1,
+            price: pricePerUnit
+        };
+        setParsedProducts(newProducts);
     };
 
     const handleSaveAll = async () => {
@@ -154,8 +188,7 @@ export const AIProductImporter: React.FC<AIProductImporterProps> = ({ onClose, o
                                     <thead className="bg-slate-50 border-b">
                                         <tr>
                                             <th className="px-4 py-3 font-semibold text-slate-700">Nama Produk</th>
-                                            <th className="px-4 py-3 font-semibold text-slate-700">Qty/Berat</th>
-                                            <th className="px-4 py-3 font-semibold text-slate-700">Unit</th>
+                                            <th className="px-4 py-3 font-semibold text-slate-700 w-32">Qty & Unit</th>
                                             <th className="px-4 py-3 font-semibold text-slate-700">Harga</th>
                                             <th className="px-4 py-3 font-semibold text-slate-700">Kategori</th>
                                             <th className="px-4 py-3 font-semibold text-slate-700 text-center">Aksi</th>
@@ -179,23 +212,43 @@ export const AIProductImporter: React.FC<AIProductImporterProps> = ({ onClose, o
                                                         />
                                                     </td>
                                                     <td className="px-4 py-2">
-                                                        <input
-                                                            type="number"
-                                                            step="0.001"
-                                                            value={p.qty}
-                                                            placeholder="Qty"
-                                                            onChange={(e) => handleUpdateProduct(idx, 'qty', Number(e.target.value))}
-                                                            className={`w-20 bg-transparent border-none p-1 focus:ring-1 rounded ${isQtyInvalid ? 'ring-1 ring-rose-500 bg-rose-50' : 'focus:ring-orange-500'}`}
-                                                        />
-                                                    </td>
-                                                    <td className="px-4 py-2">
-                                                        <input
-                                                            type="text"
-                                                            value={p.unit}
-                                                            placeholder="Unit"
-                                                            onChange={(e) => handleUpdateProduct(idx, 'unit', e.target.value)}
-                                                            className="w-20 bg-transparent border-none p-1 focus:ring-1 focus:ring-orange-500 rounded"
-                                                        />
+                                                        <div className="flex flex-col gap-1">
+                                                            <div className="flex gap-1">
+                                                                <input
+                                                                    type="number"
+                                                                    step="0.001"
+                                                                    value={p.qty}
+                                                                    placeholder="Qty"
+                                                                    onChange={(e) => handleUpdateProduct(idx, 'qty', Number(e.target.value))}
+                                                                    className={`w-16 bg-transparent border-none p-1 focus:ring-1 rounded text-right ${isQtyInvalid ? 'ring-1 ring-rose-500 bg-rose-50' : 'focus:ring-orange-500'}`}
+                                                                />
+                                                                <select
+                                                                    value={p.unit}
+                                                                    onChange={(e) => handleUpdateProduct(idx, 'unit', e.target.value)}
+                                                                    className="w-20 bg-transparent border-none p-1 focus:ring-1 focus:ring-orange-500 rounded text-xs"
+                                                                >
+                                                                    {PRODUCT_UNITS.map(u => (
+                                                                        <option key={u} value={u}>{u}</option>
+                                                                    ))}
+                                                                    {/* Add custom unit option if existing unit is not in list (e.g. initial AI weird output) */}
+                                                                    {!PRODUCT_UNITS.includes(p.unit) && (
+                                                                        <option value={p.unit}>{p.unit}</option>
+                                                                    )}
+                                                                </select>
+                                                            </div>
+
+                                                            {/* Convert Button (Show if qty != 1) */}
+                                                            {p.qty !== 1 && p.qty > 0 && (
+                                                                <button
+                                                                    onClick={() => handleNormalize(idx)}
+                                                                    className="flex items-center gap-1 text-[10px] text-blue-600 font-medium hover:underline bg-blue-50 px-1.5 py-0.5 rounded self-start"
+                                                                    title={`Ubah jadi 1 ${p.unit} (Harga: Rp ${(p.price / p.qty).toLocaleString('id-ID')})`}
+                                                                >
+                                                                    <ArrowRight size={10} />
+                                                                    Jadi 1 {p.unit}
+                                                                </button>
+                                                            )}
+                                                        </div>
                                                     </td>
                                                     <td className="px-4 py-2">
                                                         <input
