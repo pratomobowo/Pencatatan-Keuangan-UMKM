@@ -58,7 +58,7 @@ export async function PUT(
             'sku', 'name', 'slug', 'description', 'price', 'costPrice',
             'stock', 'unit', 'image', 'categoryName', 'categoryId',
             'isActive', 'isPromo', 'promoPrice', 'promoDiscount',
-            'promoStartDate', 'promoEndDate'
+            'promoStartDate', 'promoEndDate', 'stockStatus'
         ];
 
         const productData: any = {};

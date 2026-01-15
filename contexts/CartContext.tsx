@@ -25,6 +25,12 @@ interface CartContextType {
     itemCount: number;
     subtotal: number;
     totalSavings: number;
+    // Coupon Logic
+    couponCode: string | null;
+    couponDiscount: number;
+    couponType: string | null;
+    applyCoupon: (code: string) => Promise<{ success: boolean; message: string }>;
+    removeCoupon: () => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -34,6 +40,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
     const { isAuthenticated, isLoading: authLoading } = useShopAuth();
     const [items, setItems] = useState<CartItem[]>([]);
     const [isInitialized, setIsInitialized] = useState(false);
+
+    // Coupon State
+    const [couponCode, setCouponCode] = useState<string | null>(null);
+    const [couponDiscount, setCouponDiscount] = useState(0);
+    const [couponType, setCouponType] = useState<string | null>(null);
+
     const syncTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     // Initial load from localStorage
@@ -116,6 +128,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
         localStorage.setItem('pasarantar-cart', JSON.stringify(items));
 
+        // Recalculate coupon if items change (e.g. subtotal drops below min purchase)
+        if (couponCode) {
+            verifyCoupon(couponCode); // Re-verify silently
+        }
+
         // Debounce DB sync to avoid excessive requests
         if (isAuthenticated) {
             if (syncTimeoutRef.current) clearTimeout(syncTimeoutRef.current);
@@ -169,14 +186,57 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
     const clearCart = () => {
         setItems([]);
+        setCouponCode(null);
+        setCouponDiscount(0);
+        setCouponType(null);
         if (typeof window !== 'undefined') {
             localStorage.removeItem('pasarantar-cart');
         }
         // DB clear is handled by the orders API automatically on success
     };
 
-    const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
+    // --- Coupon Logic ---
+    const applyCoupon = async (code: string) => {
+        const result = await verifyCoupon(code);
+        if (result.success) {
+            setCouponCode(code);
+        }
+        return result;
+    };
+
+    const removeCoupon = () => {
+        setCouponCode(null);
+        setCouponDiscount(0);
+        setCouponType(null);
+    };
+
     const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+    const verifyCoupon = async (code: string) => {
+        try {
+            const res = await fetch('/api/shop/coupons/verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code, subtotal }),
+            });
+
+            const data = await res.json();
+
+            if (res.ok && data.valid) {
+                setCouponDiscount(data.discount);
+                setCouponType(data.type);
+                return { success: true, message: data.message };
+            } else {
+                // Convert error to silent failure if re-verifying, but return error for explicit calls
+                setCouponDiscount(0); // Reset discount if invalid
+                return { success: false, message: data.error || 'Kupon tidak valid' };
+            }
+        } catch (error) {
+            return { success: false, message: 'Gagal memverifikasi kupon' };
+        }
+    };
+
+    const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
     const totalSavings = items.reduce((sum, item) => {
         if (item.originalPrice && item.originalPrice > item.price) {
             return sum + (item.originalPrice - item.price) * item.quantity;
@@ -195,11 +255,17 @@ export function CartProvider({ children }: { children: ReactNode }) {
             itemCount,
             subtotal,
             totalSavings,
+            couponCode,
+            couponDiscount,
+            couponType,
+            applyCoupon,
+            removeCoupon
         }}>
             {children}
         </CartContext.Provider>
     );
 }
+
 
 export function useCart() {
     const context = useContext(CartContext);

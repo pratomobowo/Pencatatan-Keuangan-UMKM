@@ -7,9 +7,31 @@ import { ArrowLeft, Trash2, Minus, Plus, ArrowRight, MessageSquare, X } from 'lu
 import { useCart } from '@/contexts/CartContext';
 
 export default function CartPage() {
-    const { items: cartItems, removeItem, updateQuantity, updateNote, itemCount, subtotal, totalSavings } = useCart();
+    const { items: cartItems, removeItem, updateQuantity, updateNote, itemCount, subtotal, totalSavings, applyCoupon, removeCoupon, couponCode, couponDiscount } = useCart();
     const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
     const [tempNote, setTempNote] = useState('');
+
+    // Coupon UI State
+    const [promoCodeInput, setPromoCodeInput] = useState('');
+    const [couponMessage, setCouponMessage] = useState('');
+    const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
+
+    const handleApplyCoupon = async () => {
+        if (!promoCodeInput) return;
+        setIsApplyingCoupon(true);
+        setCouponMessage('');
+
+        const result = await applyCoupon(promoCodeInput);
+        setCouponMessage(result.message);
+
+        setIsApplyingCoupon(false);
+    };
+
+    const handleRemoveCoupon = () => {
+        removeCoupon();
+        setPromoCodeInput('');
+        setCouponMessage('');
+    };
 
     const handleQuantityChange = (id: string, variant: string, delta: number) => {
         const item = cartItems.find(i => i.id === id && i.variant === variant);
@@ -131,9 +153,45 @@ export default function CartPage() {
             {/* Divider */}
             {cartItems.length > 0 && <div className="mx-4 my-6 h-px bg-gray-200"></div>}
 
-            {/* Payment Summary */}
+            {/* Coupon & Payment Summary */}
             {cartItems.length > 0 && (
                 <div className="px-4 pb-48">
+                    {/* Coupon Section */}
+                    <div className="mb-6">
+                        <label className="text-sm font-bold text-stone-900 mb-2 block">Punya kode promo?</label>
+                        <div className="flex gap-2">
+                            <input
+                                type="text"
+                                placeholder="Masukkan kode diskon"
+                                className="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-bold uppercase outline-none focus:border-orange-500 transition-colors"
+                                value={promoCodeInput}
+                                onChange={(e) => setPromoCodeInput(e.target.value.toUpperCase())}
+                                disabled={!!couponCode}
+                            />
+                            {couponCode ? (
+                                <button
+                                    onClick={handleRemoveCoupon}
+                                    className="bg-rose-100 text-rose-600 px-4 py-3 rounded-xl font-bold text-sm hover:bg-rose-200 transition-colors"
+                                >
+                                    Hapus
+                                </button>
+                            ) : (
+                                <button
+                                    onClick={handleApplyCoupon}
+                                    disabled={!promoCodeInput || isApplyingCoupon}
+                                    className="bg-stone-900 text-white px-6 py-3 rounded-xl font-bold text-sm hover:bg-stone-800 disabled:opacity-50 transition-colors"
+                                >
+                                    {isApplyingCoupon ? '...' : 'Pakai'}
+                                </button>
+                            )}
+                        </div>
+                        {couponMessage && (
+                            <p className={`text-xs mt-2 font-medium ${couponCode ? 'text-emerald-600' : 'text-rose-500'}`}>
+                                {couponMessage}
+                            </p>
+                        )}
+                    </div>
+
                     <h3 className="text-stone-900 text-lg font-bold mb-4">Rincian Pembayaran</h3>
                     <div className="flex flex-col gap-3">
                         <div className="flex justify-between items-center text-sm">
@@ -142,8 +200,14 @@ export default function CartPage() {
                         </div>
                         {totalSavings > 0 && (
                             <div className="flex justify-between items-center text-sm">
-                                <span className="text-emerald-600 font-medium italic">Hemat Promo</span>
+                                <span className="text-emerald-600 font-medium italic">Hemat Promo Produk</span>
                                 <span className="font-medium text-emerald-600">- Rp {totalSavings.toLocaleString('id-ID')}</span>
+                            </div>
+                        )}
+                        {couponDiscount > 0 && (
+                            <div className="flex justify-between items-center text-sm">
+                                <span className="text-orange-600 font-bold italic">Diskon Kupon ({couponCode})</span>
+                                <span className="font-bold text-orange-600">- Rp {couponDiscount.toLocaleString('id-ID')}</span>
                             </div>
                         )}
                         <div className="flex justify-between items-center text-sm">
@@ -153,7 +217,7 @@ export default function CartPage() {
                         <div className="my-2 border-t border-dashed border-gray-300"></div>
                         <div className="flex justify-between items-center text-base font-semibold">
                             <span className="text-stone-900">Subtotal</span>
-                            <span className="text-stone-900">Rp {subtotal.toLocaleString('id-ID')}</span>
+                            <span className="text-stone-900">Rp {(Math.max(0, subtotal - couponDiscount)).toLocaleString('id-ID')}</span>
                         </div>
                     </div>
                 </div>
@@ -165,7 +229,7 @@ export default function CartPage() {
                     <div className="flex items-center justify-between gap-4 max-w-md mx-auto">
                         <div className="flex flex-col">
                             <span className="text-xs text-gray-500 font-medium">Subtotal</span>
-                            <span className="text-xl font-semibold text-stone-900">Rp {subtotal.toLocaleString('id-ID')}</span>
+                            <span className="text-xl font-semibold text-stone-900">Rp {(Math.max(0, subtotal - couponDiscount)).toLocaleString('id-ID')}</span>
                         </div>
                         <Link
                             href="/checkout"

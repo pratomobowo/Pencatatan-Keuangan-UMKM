@@ -21,6 +21,7 @@ import { ChatLogManager } from '@/components/admin/ChatLogManager';
 import { GowaSettingsManager } from '@/components/GowaSettingsManager';
 import { RecipeManager } from '@/components/admin/RecipeManager';
 import { UnitManager } from '@/components/admin/UnitManager';
+import { CouponManager } from '@/components/admin/CouponManager';
 import { Loader2 } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { ToastProvider, useToast } from '@/components/ui/Toast';
@@ -135,6 +136,7 @@ const App: React.FC = () => {
         GOWA_SETTINGS: { title: 'WhatsApp Gateway (GOWA v8)', description: 'Konfigurasi integrasi WhatsApp untuk pengiriman OTP dan notifikasi.' },
         RECIPE_MANAGEMENT: { title: 'Manajemen Buku Resep', description: 'Moderasi resep yang dikirim pelanggan, review format AI, dan setujui untuk memberi poin.' },
         UNIT_MANAGEMENT: { title: 'Manajemen Unit Produk', description: 'Atur satuan produk (kg, pcs, pack) untuk standarisasi sistem.' },
+        COUPON_MANAGEMENT: { title: 'Kupon Promo', description: 'Kelola kode diskon dan voucher untuk pelanggan.' },
         NOTIFICATIONS: { title: 'Pengaturan Notifikasi', description: 'Atur pesan otomatis untuk pelanggan dan admin via WhatsApp.' },
     };
 
@@ -236,6 +238,7 @@ const App: React.FC = () => {
                     {view === 'BANNER_MANAGEMENT' && <BannerManager />}
                     {view === 'CATEGORY_MANAGEMENT' && <CategoryManager />}
                     {view === 'UNIT_MANAGEMENT' && <UnitManager />}
+                    {view === 'COUPON_MANAGEMENT' && <CouponManager />}
                     {view === 'LOYALTY_MANAGEMENT' && <LoyaltyManager />}
 
                     {view === 'USER_MANAGEMENT' && isAdmin && (

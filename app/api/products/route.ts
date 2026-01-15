@@ -31,7 +31,8 @@ export async function POST(request: NextRequest) {
             sku, name, description, price, costPrice, stock, unit, image,
             categoryName, categoryId, isActive,
             isPromo, promoPrice, promoDiscount, promoStartDate, promoEndDate,
-            variants // Optional array of variants
+            variants, // Optional array of variants
+            stockStatus
         } = body;
 
         // Auto-generate SKU if not provided
@@ -61,6 +62,7 @@ export async function POST(request: NextRequest) {
                 price,
                 costPrice,
                 stock: stock || 0,
+                stockStatus: stockStatus || 'FINITE',
                 unit,
                 image: image || null,
                 categoryName: categoryName || null,

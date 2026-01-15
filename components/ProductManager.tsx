@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Product, TransactionType, ProductVariant, Category } from '@/lib/types'; // Import Category
+import { Product, TransactionType, ProductVariant, Category, StockStatus } from '@/lib/types'; // Import Category
 import { categoriesAPI } from '@/lib/api'; // Import categoriesAPI
 import { Card } from './ui/Card';
 import * as XLSX from 'xlsx';
@@ -62,6 +62,7 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
     promoPrice: 0,
     promoDiscount: 0,
     variants: [],
+    stockStatus: StockStatus.FINITE
   });
 
   useEffect(() => {
@@ -159,6 +160,7 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
       promoPrice: product.promoPrice || 0,
       promoDiscount: product.promoDiscount || 0,
       variants: product.variants || [],
+      stockStatus: product.stockStatus || StockStatus.FINITE
     });
     setIsEditing(true);
     setShowFormModal(true);
@@ -853,20 +855,44 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
                     </select>
                   </div>
 
-                  <div>
-                    <label className="block text-sm text-slate-700 mb-1">Stok Saat Ini</label>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="number"
-                        min="0"
-                        step="0.1"
-                        placeholder="0"
-                        value={formData.stock || ''}
-                        onChange={e => setFormData({ ...formData, stock: parseFloat(e.target.value) })}
-                        className="flex-1 p-2.5 bg-white border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
-                      />
-                      <span className="text-sm text-slate-500">{formData.unit}</span>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm text-slate-700 mb-1">Status Stok</label>
+                      <select
+                        value={formData.stockStatus || StockStatus.FINITE}
+                        onChange={e => {
+                          const status = e.target.value as StockStatus;
+                          setFormData({
+                            ...formData,
+                            stockStatus: status,
+                            stock: status === StockStatus.ALWAYS_READY ? 999999 : (status === StockStatus.EMPTY ? 0 : formData.stock)
+                          });
+                        }}
+                        className="w-full p-2.5 bg-white border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
+                      >
+                        <option value={StockStatus.FINITE}>Stok Terbatas (Input Manual)</option>
+                        <option value={StockStatus.ALWAYS_READY}>Selalu Ready (Unlimited)</option>
+                        <option value={StockStatus.EMPTY}>Kosong (Habis)</option>
+                      </select>
                     </div>
+
+                    {(!formData.stockStatus || formData.stockStatus === StockStatus.FINITE) && (
+                      <div>
+                        <label className="block text-sm text-slate-700 mb-1">Stok Saat Ini</label>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="number"
+                            min="0"
+                            step="0.1"
+                            placeholder="0"
+                            value={formData.stock || ''}
+                            onChange={e => setFormData({ ...formData, stock: parseFloat(e.target.value) })}
+                            className="flex-1 p-2.5 bg-white border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
+                          />
+                          <span className="text-sm text-slate-500">{formData.unit}</span>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">

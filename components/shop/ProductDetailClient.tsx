@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, ShoppingBag, Heart, Truck, Shield, Thermometer, Check } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
-import { Product, ProductVariant } from '@/lib/types';
+import { Product, ProductVariant, StockStatus } from '@/lib/types';
 
 const DEFAULT_IMAGE = '/images/coming-soon.jpg';
 
@@ -57,7 +57,8 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
     };
 
     const productImage = product.image || DEFAULT_IMAGE;
-    const isInStock = product.stock > 0;
+    const stockStatus = product.stockStatus || StockStatus.FINITE;
+    const isInStock = stockStatus === StockStatus.ALWAYS_READY || (stockStatus === StockStatus.FINITE && product.stock > 0);
 
     // Determine display values based on selection
     const currentPrice = selectedVariant ? Number(selectedVariant.price) : product.price;
@@ -99,7 +100,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                         <div className="flex items-center gap-2 mb-2">
                             <span className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${isInStock ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                                 }`}>
-                                {isInStock ? `Stok: ${product.stock}` : 'Stok Habis'}
+                                {isInStock ? (stockStatus === StockStatus.ALWAYS_READY ? 'Selalu Ready' : `Stok: ${product.stock}`) : 'Stok Habis'}
                             </span>
                             {product.categoryName && (
                                 <span className="px-2 py-1 rounded-md text-[10px] font-medium bg-gray-100 text-gray-600">
@@ -169,7 +170,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                         <span className="text-base font-bold text-stone-900">{quantity}</span>
                         <button
                             onClick={() => handleQuantityChange(1)}
-                            disabled={quantity >= product.stock}
+                            disabled={stockStatus !== StockStatus.ALWAYS_READY && quantity >= product.stock}
                             className="size-7 flex items-center justify-center text-orange-500 active:scale-90 transition-transform disabled:opacity-50"
                         >
                             <span className="text-lg">+</span>

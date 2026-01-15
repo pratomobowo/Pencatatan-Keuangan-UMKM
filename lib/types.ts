@@ -4,6 +4,12 @@ export enum TransactionType {
   CAPITAL = 'CAPITAL'
 }
 
+export enum StockStatus {
+  ALWAYS_READY = 'ALWAYS_READY',
+  FINITE = 'FINITE',
+  EMPTY = 'EMPTY'
+}
+
 export interface Transaction {
   id: string;
   date: string; // ISO string
@@ -24,7 +30,8 @@ export interface FinancialSummary {
 
 export type ViewState = 'DASHBOARD' | 'TRANSACTIONS' | 'ORDERS' | 'SHOP_ORDERS' | 'PRODUCTS' | 'ANALYSIS' | 'CUSTOMERS' | 'LOYALTY_MANAGEMENT' | 'REPORTS' | 'HPP_CALCULATOR' | 'USER_MANAGEMENT' | 'PROFILE' | 'SHOP_SETTINGS' | 'BANNER_MANAGEMENT' | 'CATEGORY_MANAGEMENT' | 'CHAT_LOGS' | 'GOWA_SETTINGS' | 'RECIPE_MANAGEMENT'
   | 'NOTIFICATIONS'
-  | 'UNIT_MANAGEMENT'; // Added Unit Management
+  | 'UNIT_MANAGEMENT' // Added Unit Management
+  | 'COUPON_MANAGEMENT'; // Added Coupon Management
 
 export interface User {
   id: string;
@@ -85,6 +92,7 @@ export interface Product {
   originalPrice?: number; // Added
   costPrice: number; // Base cost price (HPP)
   stock: number; // Current inventory quantity
+  stockStatus?: StockStatus; // Flexible Stock Status
   image?: string; // Product image URL
   categoryName?: string; // Original category name
   categoryId?: string; // ID of the linked category

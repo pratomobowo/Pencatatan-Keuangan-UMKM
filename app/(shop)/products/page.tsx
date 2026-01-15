@@ -249,6 +249,8 @@ function ProductsContent() {
                                             variants={product.variants}
                                             showPromoFirst={searchParams.get('promo') === 'true'}
                                             hideDescription={searchParams.get('promo') === 'true'}
+                                            stockStatus={product.stockStatus}
+                                            stock={product.stock}
                                         />
                                     </div>
                                 );

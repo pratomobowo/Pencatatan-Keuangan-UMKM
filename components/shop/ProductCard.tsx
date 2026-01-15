@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Plus, Check } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useState, useMemo } from 'react';
-import { ProductVariant } from '@/lib/types';
+import { ProductVariant, StockStatus } from '@/lib/types';
 import { ProductVariantModal } from './ProductVariantModal';
 
 interface ProductCardProps {
@@ -24,6 +24,8 @@ interface ProductCardProps {
     variants?: ProductVariant[];
     showPromoFirst?: boolean; // If true, show promo price even if there's a cheaper variant
     hideDescription?: boolean; // If true, hide the short description
+    stockStatus?: StockStatus;
+    stock?: number;
 }
 
 export const ProductCard: React.FC<ProductCardProps> = ({
@@ -41,7 +43,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     layout = 'grid',
     variants = [],
     showPromoFirst = false,
-    hideDescription = false
+    hideDescription = false,
+    stockStatus = StockStatus.FINITE,
+    stock = 0
 }) => {
     const { addItem } = useCart();
     const [added, setAdded] = useState(false);
@@ -234,12 +238,20 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                     onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
+                        if (stockStatus === StockStatus.EMPTY || (stockStatus === StockStatus.FINITE && stock <= 0)) return;
                         handleAddToCart();
                     }}
-                    className={`mt-2 w-full h-8 rounded-lg text-white text-sm font-semibold active:scale-95 transition-all shadow-sm flex items-center justify-center gap-1 ${added ? 'bg-orange-600' : 'bg-orange-500 hover:bg-orange-600'
+                    disabled={stockStatus === StockStatus.EMPTY || (stockStatus === StockStatus.FINITE && stock <= 0)}
+                    className={`mt-2 w-full h-8 rounded-lg text-white text-sm font-semibold active:scale-95 transition-all shadow-sm flex items-center justify-center gap-1 ${stockStatus === StockStatus.EMPTY || (stockStatus === StockStatus.FINITE && stock <= 0)
+                        ? 'bg-slate-300 cursor-not-allowed'
+                        : added
+                            ? 'bg-orange-600'
+                            : 'bg-orange-500 hover:bg-orange-600'
                         }`}
                 >
-                    {added ? (
+                    {stockStatus === StockStatus.EMPTY || (stockStatus === StockStatus.FINITE && stock <= 0) ? (
+                        <span className="text-slate-500 font-bold">Stok Habis</span>
+                    ) : added ? (
                         <>
                             <Check size={16} />
                             Ditambahkan

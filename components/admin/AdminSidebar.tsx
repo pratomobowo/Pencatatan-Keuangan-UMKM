@@ -8,7 +8,7 @@ import {
     Users as UsersIcon, Image as ImageIcon, Download, PieChart,
     Calculator, LogOut, UserCog, User as UserIcon, Settings, Tags, Gift,
     MessageSquare, Smartphone, BookOpen, Bell, Scale,
-    ChevronDown, ChevronRight, Store, FileText
+    ChevronDown, ChevronRight, Store, FileText, Tag // Use Tag instead of Ticket
 } from 'lucide-react';
 import { AdminNotificationBell } from './AdminNotificationBell';
 
@@ -117,6 +117,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
             icon: Store,
             submenu: [
                 { label: 'Banner Promo', icon: ImageIcon, view: 'BANNER_MANAGEMENT', adminOnly: true },
+                { label: 'Kupon Promo', icon: Tag, view: 'COUPON_MANAGEMENT', adminOnly: true },
                 { label: 'WA Notifikasi', icon: Bell, view: 'NOTIFICATIONS' },
             ]
         },
