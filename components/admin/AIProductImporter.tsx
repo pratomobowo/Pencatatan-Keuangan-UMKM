@@ -85,6 +85,12 @@ export const AIProductImporter: React.FC<AIProductImporterProps> = ({ onClose, o
         }
     };
 
+    const isProductValid = (p: AIProduct) => {
+        return p.name.trim().length > 0 && p.qty > 0 && p.price >= 0;
+    };
+
+    const hasInvalidProducts = parsedProducts.some(p => !isProductValid(p));
+
     return (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
             <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
@@ -156,68 +162,75 @@ export const AIProductImporter: React.FC<AIProductImporterProps> = ({ onClose, o
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y">
-                                        {parsedProducts.map((p, idx) => (
-                                            <tr key={idx} className="hover:bg-slate-50/50">
-                                                <td className="px-4 py-2">
-                                                    <input
-                                                        type="text"
-                                                        value={p.name}
-                                                        onChange={(e) => handleUpdateProduct(idx, 'name', e.target.value)}
-                                                        className="w-full bg-transparent border-none p-1 focus:ring-1 focus:ring-orange-500 rounded"
-                                                    />
-                                                </td>
-                                                <td className="px-4 py-2">
-                                                    <input
-                                                        type="number"
-                                                        step="0.001"
-                                                        value={p.qty}
-                                                        placeholder="500/1/0.25"
-                                                        onChange={(e) => handleUpdateProduct(idx, 'qty', Number(e.target.value))}
-                                                        className="w-20 bg-transparent border-none p-1 focus:ring-1 focus:ring-orange-500 rounded"
-                                                    />
-                                                </td>
-                                                <td className="px-4 py-2">
-                                                    <input
-                                                        type="text"
-                                                        value={p.unit}
-                                                        placeholder="kg/gr/ikat"
-                                                        onChange={(e) => handleUpdateProduct(idx, 'unit', e.target.value)}
-                                                        className="w-20 bg-transparent border-none p-1 focus:ring-1 focus:ring-orange-500 rounded"
-                                                    />
-                                                </td>
-                                                <td className="px-4 py-2">
-                                                    <input
-                                                        type="number"
-                                                        value={p.price}
-                                                        onChange={(e) => handleUpdateProduct(idx, 'price', Number(e.target.value))}
-                                                        className="w-24 bg-transparent border-none p-1 focus:ring-1 focus:ring-orange-500 rounded"
-                                                    />
-                                                </td>
-                                                <td className="px-4 py-2">
-                                                    <select
-                                                        value={p.category}
-                                                        onChange={(e) => handleUpdateProduct(idx, 'category', e.target.value)}
-                                                        className="w-full bg-transparent border-none p-1 focus:ring-1 focus:ring-orange-500 rounded text-xs"
-                                                    >
-                                                        <option value="ikan-laut">Ikan Laut</option>
-                                                        <option value="seafood">Seafood</option>
-                                                        <option value="ayam">Ayam</option>
-                                                        <option value="daging-sapi">Daging Sapi</option>
-                                                        <option value="sayur">Sayuran</option>
-                                                        <option value="bumbu">Bumbu</option>
-                                                        <option value="sembako">Sembako</option>
-                                                    </select>
-                                                </td>
-                                                <td className="px-4 py-2 text-center">
-                                                    <button
-                                                        onClick={() => handleRemoveProduct(idx)}
-                                                        className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50"
-                                                    >
-                                                        <Trash2 size={16} />
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        ))}
+                                        {parsedProducts.map((p, idx) => {
+                                            const isNameInvalid = !p.name.trim();
+                                            const isQtyInvalid = p.qty <= 0;
+                                            const isPriceInvalid = p.price < 0;
+
+                                            return (
+                                                <tr key={idx} className="hover:bg-slate-50/50">
+                                                    <td className="px-4 py-2">
+                                                        <input
+                                                            type="text"
+                                                            value={p.name}
+                                                            placeholder="Nama Produk (Wajib)"
+                                                            onChange={(e) => handleUpdateProduct(idx, 'name', e.target.value)}
+                                                            className={`w-full bg-transparent border-none p-1 focus:ring-1 rounded ${isNameInvalid ? 'ring-1 ring-rose-500 bg-rose-50 placeholder:text-rose-400' : 'focus:ring-orange-500'}`}
+                                                        />
+                                                    </td>
+                                                    <td className="px-4 py-2">
+                                                        <input
+                                                            type="number"
+                                                            step="0.001"
+                                                            value={p.qty}
+                                                            placeholder="Qty"
+                                                            onChange={(e) => handleUpdateProduct(idx, 'qty', Number(e.target.value))}
+                                                            className={`w-20 bg-transparent border-none p-1 focus:ring-1 rounded ${isQtyInvalid ? 'ring-1 ring-rose-500 bg-rose-50' : 'focus:ring-orange-500'}`}
+                                                        />
+                                                    </td>
+                                                    <td className="px-4 py-2">
+                                                        <input
+                                                            type="text"
+                                                            value={p.unit}
+                                                            placeholder="Unit"
+                                                            onChange={(e) => handleUpdateProduct(idx, 'unit', e.target.value)}
+                                                            className="w-20 bg-transparent border-none p-1 focus:ring-1 focus:ring-orange-500 rounded"
+                                                        />
+                                                    </td>
+                                                    <td className="px-4 py-2">
+                                                        <input
+                                                            type="number"
+                                                            value={p.price}
+                                                            onChange={(e) => handleUpdateProduct(idx, 'price', Number(e.target.value))}
+                                                            className={`w-24 bg-transparent border-none p-1 focus:ring-1 rounded ${isPriceInvalid ? 'ring-1 ring-rose-500 bg-rose-50' : 'focus:ring-orange-500'}`}
+                                                        />
+                                                    </td>
+                                                    <td className="px-4 py-2">
+                                                        <select
+                                                            value={p.category}
+                                                            onChange={(e) => handleUpdateProduct(idx, 'category', e.target.value)}
+                                                            className="w-full bg-transparent border-none p-1 focus:ring-1 focus:ring-orange-500 rounded text-xs"
+                                                        >
+                                                            <option value="ikan-laut">Ikan Laut</option>
+                                                            <option value="seafood">Seafood</option>
+                                                            <option value="ayam">Ayam</option>
+                                                            <option value="daging-sapi">Daging Sapi</option>
+                                                            <option value="sayur">Sayuran</option>
+                                                            <option value="bumbu">Bumbu</option>
+                                                            <option value="sembako">Sembako</option>
+                                                        </select>
+                                                    </td>
+                                                    <td className="px-4 py-2 text-center">
+                                                        <button
+                                                            onClick={() => handleRemoveProduct(idx)}
+                                                            className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50"
+                                                        >
+                                                            <Trash2 size={16} />
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
                                     </tbody>
                                 </table>
                             </div>
@@ -246,7 +259,7 @@ export const AIProductImporter: React.FC<AIProductImporterProps> = ({ onClose, o
                     ) : (
                         <button
                             onClick={handleSaveAll}
-                            disabled={isSaving || parsedProducts.length === 0}
+                            disabled={isSaving || parsedProducts.length === 0 || hasInvalidProducts}
                             className="flex items-center gap-2 px-8 py-2.5 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 transition-all shadow-lg shadow-green-200 disabled:opacity-50 disabled:grayscale"
                         >
                             {isSaving ? <Loader2 size={18} className="animate-spin" /> : <Check size={18} />}
