@@ -58,13 +58,36 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
         };
     }
 
+    const price = product.price; // Already handled promo logic in getProduct
+    const currency = 'IDR';
+    const isAvailable = product.stockStatus === 'ALWAYS_READY' || (product.stockStatus === 'FINITE' && product.stock > 0);
+
     return {
-        title: `${product.name} - PasarAntar`,
-        description: product.description || `Beli ${product.name} segar dan berkualitas di PasarAntar.`,
+        title: `${product.name} - Jual ${product.name} Murah`,
+        description: product.description?.slice(0, 160) || `Beli ${product.name} segar berkualitas di PasarAntar. Harga terbaik Rp ${price.toLocaleString('id-ID')}. Pengiriman cepat & aman.`,
         openGraph: {
-            title: product.name,
-            description: product.description || `Beli ${product.name} segar dan berkualitas di PasarAntar.`,
-            images: product.image ? [product.image] : [],
+            title: `${product.name} - PasarAntar`,
+            description: product.description?.slice(0, 160) || `Beli ${product.name} dengan harga Rp ${price.toLocaleString('id-ID')}.`,
+            url: `https://pasarantar.id/products/${product.slug}`,
+            siteName: 'PasarAntar',
+            images: product.image ? [
+                {
+                    url: product.image,
+                    width: 800,
+                    height: 800,
+                    alt: product.name,
+                }
+            ] : [],
+            locale: 'id_ID',
+            type: 'website',
+        },
+        alternates: {
+            canonical: `https://pasarantar.id/products/${product.slug}`,
+        },
+        other: {
+            'product:price:amount': price.toString(),
+            'product:price:currency': currency,
+            'product:availability': isAvailable ? 'in stock' : 'out of stock',
         }
     };
 }
@@ -79,5 +102,37 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
         notFound();
     }
 
-    return <ProductDetailClient product={product} />;
+    // JSON-LD Structured Data
+    const isAvailable = product.stockStatus === 'ALWAYS_READY' || (product.stockStatus === 'FINITE' && product.stock > 0);
+
+    const jsonLd = {
+        '@context': 'https://schema.org',
+        '@type': 'Product',
+        name: product.name,
+        image: product.image ? [product.image] : [],
+        description: product.description,
+        sku: product.id,
+        offers: {
+            '@type': 'Offer',
+            url: `https://pasarantar.id/products/${product.slug}`,
+            priceCurrency: 'IDR',
+            price: product.price,
+            availability: isAvailable ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+            itemCondition: 'https://schema.org/NewCondition',
+        },
+        brand: {
+            '@type': 'Brand',
+            name: 'PasarAntar'
+        }
+    };
+
+    return (
+        <>
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+            />
+            <ProductDetailClient product={product} />
+        </>
+    );
 }
