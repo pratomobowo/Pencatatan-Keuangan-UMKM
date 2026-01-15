@@ -398,15 +398,17 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
             const cleanStock = stock ? parseFloat(String(stock).replace(/[^0-9.-]+/g, "")) : 0;
 
             if (id) {
-              // Update existing
+              // Update existing - PRESERVE existing fields like image, slug, etc.
+              const existingProduct = products.find(p => p.id === id);
               onUpdateProduct({
+                ...existingProduct,
                 id,
                 name,
-                unit: unit || 'kg',
+                unit: unit || existingProduct?.unit || 'kg',
                 price: cleanPrice,
                 costPrice: cleanCost,
                 stock: cleanStock
-              });
+              } as any);
               updatedCount++;
             } else {
               // Add new
@@ -622,12 +624,12 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
                           </td>
                           <td className="px-4 py-3 text-center">
                             <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${p.stockStatus === StockStatus.ALWAYS_READY
-                                ? 'bg-green-100 text-green-700'
-                                : p.stockStatus === StockStatus.EMPTY
-                                  ? 'bg-rose-100 text-rose-700'
-                                  : (p.stock || 0) <= 5
-                                    ? 'bg-yellow-100 text-yellow-700'
-                                    : 'bg-slate-100 text-slate-700'
+                              ? 'bg-green-100 text-green-700'
+                              : p.stockStatus === StockStatus.EMPTY
+                                ? 'bg-rose-100 text-rose-700'
+                                : (p.stock || 0) <= 5
+                                  ? 'bg-yellow-100 text-yellow-700'
+                                  : 'bg-slate-100 text-slate-700'
                               }`}>
                               {p.stockStatus === StockStatus.ALWAYS_READY
                                 ? 'Selalu Ready'

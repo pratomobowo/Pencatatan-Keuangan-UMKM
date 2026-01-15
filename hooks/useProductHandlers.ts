@@ -21,8 +21,8 @@ export function useProductHandlers({ setProducts, toast }: UseProductHandlersPro
 
     const updateProduct = async (product: Product) => {
         try {
-            await productsAPI.update(product.id, product);
-            setProducts(prev => prev.map(p => p.id === product.id ? product : p));
+            const updatedProduct = await productsAPI.update(product.id, product);
+            setProducts(prev => prev.map(p => p.id === product.id ? updatedProduct : p));
             toast.success('Produk berhasil diupdate');
         } catch (error) {
             console.error('Failed to update product:', error);

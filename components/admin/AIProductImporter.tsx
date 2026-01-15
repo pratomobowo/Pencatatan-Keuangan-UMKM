@@ -14,6 +14,7 @@ interface AIProduct {
     category: string;
     categoryId?: string; // Links to real DB category
     description?: string;
+    image?: string;
 }
 
 interface Category {

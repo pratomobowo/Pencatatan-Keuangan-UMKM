@@ -118,7 +118,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
     return (
         <div className="min-h-screen bg-stone-50 pb-24">
             {/* Image Gallery */}
-            <div className="relative w-full aspect-[4/3] bg-stone-100">
+            <div className="relative w-full aspect-square bg-stone-100">
                 <Image
                     src={productImage}
                     alt={product.name}
