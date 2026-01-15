@@ -503,6 +503,28 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
                     <Sparkles size={16} /> <span className="hidden sm:inline">AI Import</span>
                   </button>
                   <button
+                    onClick={async () => {
+                      if (confirm('Yakin ingin mengubah SEMUA produk menjadi "Selalu Ready"?')) {
+                        try {
+                          const res = await fetch('/api/admin/products/bulk-update-stock', { method: 'POST' });
+                          const data = await res.json();
+                          if (res.ok) {
+                            alert(data.message);
+                            window.location.reload();
+                          } else {
+                            alert(data.error);
+                          }
+                        } catch (err) {
+                          alert('Gagal melakukan update');
+                        }
+                      }
+                    }}
+                    className="flex items-center gap-2 px-3 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 text-sm font-medium transition-colors"
+                    title="Set Semua Stok Selalu Ready"
+                  >
+                    <Package size={16} /> <span className="hidden sm:inline">Set Semua Ready</span>
+                  </button>
+                  <button
                     onClick={() => setShowFormModal(true)}
                     className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium transition-colors"
                   >
