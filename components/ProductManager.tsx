@@ -36,6 +36,7 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
   const imageInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [dbCategories, setDbCategories] = useState<Category[]>([]);
+  const [dbUnits, setDbUnits] = useState<{ name: string; symbol: string }[]>([]);
   const [isGeneratingDescription, setIsGeneratingDescription] = useState(false);
   const [showAIImporter, setShowAIImporter] = useState(false);
 
@@ -64,15 +65,24 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
   });
 
   useEffect(() => {
-    const fetchDbCategories = async () => {
+    const fetchReferenceData = async () => {
       try {
-        const data = await categoriesAPI.getAll();
-        setDbCategories(data);
+        const [catRes, unitRes] = await Promise.all([
+          categoriesAPI.getAll(),
+          fetch('/api/admin/units')
+        ]);
+
+        setDbCategories(catRes);
+
+        if (unitRes.ok) {
+          const units = await unitRes.json();
+          setDbUnits(units);
+        }
       } catch (error) {
-        console.error('Failed to fetch categories into ProductManager:', error);
+        console.error('Failed to fetch reference data:', error);
       }
     };
-    fetchDbCategories();
+    fetchReferenceData();
   }, []);
 
 
@@ -829,11 +839,17 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
                       onChange={e => setFormData({ ...formData, unit: e.target.value })}
                       className="w-full p-2.5 bg-white border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
                     >
-                      <option value="kg">kg</option>
-                      <option value="pack">pack</option>
-                      <option value="ekor">ekor</option>
-                      <option value="gr">gram</option>
-                      <option value="ikat">ikat</option>
+                      {dbUnits.length === 0 ? (
+                        <option value="kg">kg (Default)</option>
+                      ) : (
+                        dbUnits.map(u => (
+                          <option key={u.symbol} value={u.symbol}>{u.name} ({u.symbol})</option>
+                        ))
+                      )}
+                      {/* Allow custom unit if not in list (legacy support) */}
+                      {formData.unit && dbUnits.length > 0 && !dbUnits.find(u => u.symbol === formData.unit) && (
+                        <option value={formData.unit}>{formData.unit}</option>
+                      )}
                     </select>
                   </div>
 
