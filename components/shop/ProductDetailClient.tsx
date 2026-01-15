@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -19,6 +19,57 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
     const [quantity, setQuantity] = useState(1);
     const [isFavorite, setIsFavorite] = useState(false);
     const [added, setAdded] = useState(false);
+    const [isLoadingFav, setIsLoadingFav] = useState(false); // To prevent spam clicking
+
+    // Check initial favorite status
+    useEffect(() => {
+        const checkFavorite = async () => {
+            try {
+                const res = await fetch(`/api/shop/favorites?checkId=${product.id}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    setIsFavorite(data.isFavorite);
+                }
+            } catch (err) {
+                console.error('Error checking favorite:', err);
+            }
+        };
+        checkFavorite();
+    }, [product.id]);
+
+    const handleToggleFavorite = async () => {
+        if (isLoadingFav) return;
+        setIsLoadingFav(true);
+
+        // Optimistic update
+        const newState = !isFavorite;
+        setIsFavorite(newState);
+
+        try {
+            const method = newState ? 'POST' : 'DELETE';
+            const res = await fetch('/api/shop/favorites', {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ productId: product.id })
+            });
+
+            if (!res.ok) {
+                if (res.status === 401) {
+                    alert('Silakan login untuk menyimpan favorit');
+                    setIsFavorite(!newState); // Revert
+                    router.push('/login');
+                } else {
+                    throw new Error('Failed to update favorite');
+                }
+            }
+        } catch (err) {
+            console.error('Favorite error:', err);
+            setIsFavorite(!newState); // Revert on error
+            alert('Gagal mengubah status favorit');
+        } finally {
+            setIsLoadingFav(false);
+        }
+    };
     const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(() => {
         if (product.variants && product.variants.length > 0) {
             return product.variants.find((v) => v.isDefault) || product.variants[0];
@@ -78,8 +129,9 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
 
                 {/* Favorite Button */}
                 <button
-                    onClick={() => setIsFavorite(!isFavorite)}
-                    className="absolute top-4 right-4 size-10 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg transition-colors hover:bg-white"
+                    onClick={handleToggleFavorite}
+                    disabled={isLoadingFav}
+                    className="absolute top-4 right-4 size-10 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg transition-colors hover:bg-white disabled:opacity-70"
                 >
                     <Heart size={24} className={isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-400'} />
                 </button>

@@ -60,6 +60,19 @@ export async function GET(request: NextRequest) {
             );
         }
 
+        // Check if we just want to verify specific product status
+        const checkId = new URL(request.url).searchParams.get('checkId');
+
+        if (checkId) {
+            const count = await (prisma as any).favorite.count({
+                where: {
+                    customerId: customer.id,
+                    productId: checkId
+                }
+            });
+            return NextResponse.json({ isFavorite: count > 0 });
+        }
+
         const favorites = await (prisma as any).favorite.findMany({
             where: { customerId: customer.id },
             include: {
