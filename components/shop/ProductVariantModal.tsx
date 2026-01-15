@@ -48,22 +48,14 @@ export const ProductVariantModal: React.FC<ProductVariantModalProps> = ({
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Header */}
-                <div className="relative h-32 bg-gray-100">
-                    <Image
-                        src={product.image}
-                        alt={product.name}
-                        fill
-                        className="object-cover"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-4">
-                        <h3 className="text-white font-bold text-lg leading-tight text-shadow-sm">{product.name}</h3>
-                    </div>
+                <div className="p-4 border-b border-stone-100 flex items-center justify-between">
+                    <h3 className="text-stone-900 font-bold text-lg leading-tight">{product.name}</h3>
                     <button
                         onClick={(e) => {
                             e.stopPropagation();
                             onClose();
                         }}
-                        className="absolute top-3 right-3 p-2 bg-black/20 hover:bg-black/40 text-white rounded-full backdrop-blur-md transition-colors"
+                        className="p-2 text-stone-400 hover:text-stone-600 hover:bg-stone-50 rounded-full transition-colors"
                     >
                         <X size={20} />
                     </button>
@@ -71,7 +63,7 @@ export const ProductVariantModal: React.FC<ProductVariantModalProps> = ({
 
                 {/* Body */}
                 <div className="p-4">
-                    <p className="text-sm text-stone-500 mb-4 font-medium">Pilih ukuran/varian yang diinginkan:</p>
+                    <p className="text-sm text-stone-600 mb-4 font-bold">Pilih ukuran/varian yang diinginkan:</p>
 
                     <div className="flex flex-col gap-2.5">
                         {sortedVariants.map((variant, idx) => (

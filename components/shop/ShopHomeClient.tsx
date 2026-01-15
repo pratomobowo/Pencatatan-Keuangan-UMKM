@@ -184,7 +184,7 @@ export default function ShopHomeClient({
                 <div className="flex items-center justify-between mb-4">
                     <h2 className="text-stone-900 text-lg font-bold">Semua Produk</h2>
                 </div>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="flex flex-col gap-4">
                     {products.map((product, index) => {
                         const isLast = products.length === index + 1;
                         return (
@@ -199,7 +199,7 @@ export default function ShopHomeClient({
                                     discount={product.discount || undefined}
                                     image={product.image || DEFAULT_IMAGE}
                                     description={product.description || undefined}
-                                    isGrid={true}
+                                    layout="horizontal"
                                     variants={product.variants}
                                     stockStatus={product.stockStatus}
                                     stock={product.stock}
