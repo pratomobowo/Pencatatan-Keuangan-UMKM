@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/lib/auth';
 import { StockStatus } from '@/lib/types';
@@ -22,6 +23,10 @@ export async function POST() {
                 stock: 999999
             }
         });
+
+        // Revalidate shop pages to reflect changes immediately
+        revalidatePath('/(shop)', 'layout');
+        revalidatePath('/products');
 
         return NextResponse.json({
             success: true,

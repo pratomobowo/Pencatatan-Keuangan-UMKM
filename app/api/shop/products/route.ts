@@ -18,7 +18,10 @@ export async function GET(request: NextRequest) {
         // Build where clause
         const where: any = {
             isActive: true,
-            stock: { gt: 0 } // Only in-stock products
+            OR: [
+                { stock: { gt: 0 } },
+                { stockStatus: 'ALWAYS_READY' }
+            ]
         };
 
         if (category) {
