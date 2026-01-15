@@ -2,7 +2,7 @@
 
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, Suspense } from 'react';
 import App from '@/components/App';
 import { Loader2 } from 'lucide-react';
 
@@ -28,5 +28,9 @@ export default function AdminPage() {
         return null;
     }
 
-    return <App />;
+    return (
+        <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-slate-50"><Loader2 className="animate-spin text-blue-600" size={48} /></div>}>
+            <App />
+        </Suspense>
+    );
 }

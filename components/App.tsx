@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { Transaction, ViewState, Order, Product, Customer, CostComponent } from '@/lib/types';
 import { Dashboard } from '@/components/Dashboard';
 import { TransactionManager } from '@/components/TransactionManager';
@@ -45,7 +46,27 @@ const App: React.FC = () => {
     const isAdmin = (session?.user as any)?.role === 'admin';
 
     // View State
-    const [view, setView] = useState<ViewState>('DASHBOARD');
+    const searchParams = useSearchParams();
+    const router = useRouter();
+    const pathname = usePathname();
+
+    // Initialize view from URL or default to DASHBOARD
+    const [view, setViewState] = useState<ViewState>((searchParams.get('view') as ViewState) || 'DASHBOARD');
+
+    const setView = (newView: ViewState) => {
+        setViewState(newView);
+        const params = new URLSearchParams(searchParams);
+        params.set('view', newView);
+        router.replace(`${pathname}?${params.toString()}`);
+    };
+
+    // Sync URL changes back to state (e.g. back button)
+    useEffect(() => {
+        const viewParam = searchParams.get('view') as ViewState;
+        if (viewParam && viewParam !== view) {
+            setViewState(viewParam);
+        }
+    }, [searchParams]);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [quickOrderCustomerId, setQuickOrderCustomerId] = useState<string | null>(null);
 
