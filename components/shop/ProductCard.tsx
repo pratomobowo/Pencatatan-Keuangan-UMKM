@@ -68,8 +68,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     const currentUnit = selectedVariant ? selectedVariant.unit : defaultUnit;
 
     const handleAddToCart = () => {
-        // If product has variants, open selection modal instead of auto-adding
-        if (variants && variants.length > 0) {
+        // If product has MULTIPLE variants, open selection modal instead of auto-adding
+        // For single variant products, we'll use the default selected one (cheapest/default)
+        if (variants && variants.length > 1) {
             setIsVariantModalOpen(true);
             return;
         }
