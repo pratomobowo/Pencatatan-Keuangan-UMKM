@@ -87,7 +87,6 @@ export async function POST(request: NextRequest) {
                                 unitQty: p.qty || 1,
                                 price: p.price,
                                 costPrice: p.costPrice || p.price * 0.7,
-                                image: p.image || null, // Add image to variant too if needed
                                 isDefault: true
                             }
                         }
