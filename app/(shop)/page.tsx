@@ -190,6 +190,8 @@ export default function ShopHomepage() {
                                         variants={product.variants}
                                         showPromoFirst={true}
                                         hideDescription={true}
+                                        stockStatus={product.stockStatus}
+                                        stock={product.stock}
                                     />
                                 </div>
                             ))}
