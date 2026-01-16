@@ -164,7 +164,7 @@ export async function POST(request: NextRequest) {
                             productImage: item.image || null,
                             variant: item.variant || item.unit || '-',
                             qty: item.quantity,
-                            unit: item.unit || 'pcs',
+                            unit: item.variant || item.unit || 'pcs', // Use variant as unit for consistency
                             price: item.price,
                             originalPrice: item.originalPrice || item.price,
                             costPrice: item.costPrice || 0,
