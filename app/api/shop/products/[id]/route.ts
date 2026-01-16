@@ -64,12 +64,31 @@ export async function GET(
 
         const promoPriceNum = (isPromoActive && product.promoPrice) ? Number(product.promoPrice) : null;
 
+        // Calculate displayPrice (lowest variant price or base/promo price)
+        let displayPrice = promoPriceNum || Number(product.price);
+        let displayUnit = product.unit;
+
+        if (product.variants && product.variants.length > 0) {
+            const lowestVariant = product.variants.reduce((min: any, v: any) =>
+                Number(v.price) < Number(min.price) ? v : min
+                , product.variants[0]);
+            displayPrice = Number(lowestVariant.price);
+            displayUnit = lowestVariant.unit;
+
+            // If promo is active and this is the default variant, use promo price
+            if (isPromoActive && promoPriceNum && lowestVariant.isDefault) {
+                displayPrice = promoPriceNum;
+            }
+        }
+
         // Transform price from Decimal to number
         const transformedProduct = {
             ...product,
             originalPrice: isPromoActive ? Number(product.price) : null,
             price: promoPriceNum || Number(product.price),
             promoPrice: product.promoPrice ? Number(product.promoPrice) : null,
+            displayPrice,
+            displayUnit,
             variants: product.variants ? product.variants.map((v: any) => ({
                 ...v,
                 price: (isPromoActive && v.isDefault && promoPriceNum) ? promoPriceNum : Number(v.price),

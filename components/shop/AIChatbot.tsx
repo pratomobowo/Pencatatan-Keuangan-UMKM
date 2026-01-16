@@ -20,10 +20,12 @@ const ChatProductCard = ({ productId }: { productId: string }) => {
     useEffect(() => {
         const fetchProduct = async () => {
             try {
-                const res = await fetch(`/api/products`);
-                const data = await res.json();
-                const found = data.find((p: any) => p.id === productId);
-                setProduct(found);
+                // Use shop API which includes displayPrice calculation
+                const res = await fetch(`/api/shop/products/${productId}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    setProduct(data);
+                }
             } catch (err) {
                 console.error("Error fetching product for chat:", err);
             } finally {
@@ -36,16 +38,18 @@ const ChatProductCard = ({ productId }: { productId: string }) => {
     if (loading) return <div className="h-20 w-full animate-pulse bg-gray-100 rounded-xl" />;
     if (!product) return null;
 
-    const currentPrice = product.promoPrice || product.price;
+    // Use displayPrice from shop API (handles variants and promo correctly)
+    const currentPrice = product.displayPrice || product.promoPrice || product.price || 0;
+    const currentUnit = product.displayUnit || product.unit;
 
     const handleAdd = () => {
         addItem({
             id: product.id,
             name: product.name,
-            variant: product.unit,
+            variant: currentUnit,
             price: Number(currentPrice),
             image: product.image || '/images/coming-soon.jpg',
-            originalPrice: product.price ? Number(product.price) : undefined
+            originalPrice: product.originalPrice ? Number(product.originalPrice) : undefined
         });
         setAdded(true);
         setTimeout(() => setAdded(false), 2000);
