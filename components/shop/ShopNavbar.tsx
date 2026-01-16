@@ -50,7 +50,24 @@ export const ShopNavbar = () => {
                     const res = await fetch(`/api/shop/products?search=${encodeURIComponent(searchQuery)}&limit=5`);
                     if (res.ok) {
                         const data = await res.json();
-                        setSearchResults(data.products || []);
+                        const results = data.products || [];
+
+                        // Client-side prioritization: Sort by how closely name matches
+                        const sortedResults = [...results].sort((a, b) => {
+                            const aName = a.name.toLowerCase();
+                            const bName = b.name.toLowerCase();
+                            const query = searchQuery.toLowerCase().trim();
+
+                            const aStarts = aName.startsWith(query);
+                            const bStarts = bName.startsWith(query);
+
+                            if (aStarts && !bStarts) return -1;
+                            if (!aStarts && bStarts) return 1;
+
+                            return aName.length - bName.length; // Shorter names first (usually more specific)
+                        });
+
+                        setSearchResults(sortedResults);
                     }
                 } catch (error) {
                     console.error('Search error:', error);

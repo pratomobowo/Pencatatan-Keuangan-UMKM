@@ -16,38 +16,39 @@ export async function GET(request: NextRequest) {
         const skip = (page - 1) * limit;
 
         // Build where clause
-        const where: any = {
-            isActive: true,
-            OR: [
-                { stock: { gt: 0 } },
-                { stockStatus: 'ALWAYS_READY' }
-            ]
-        };
+        const conditions: any[] = [
+            { isActive: true },
+            {
+                OR: [
+                    { stock: { gt: 0 } },
+                    { stockStatus: 'ALWAYS_READY' }
+                ]
+            }
+        ];
 
         if (category) {
-            where.OR = [
-                { categoryName: category },
-                { category: { slug: category } }
-            ];
+            conditions.push({
+                OR: [
+                    { categoryName: category },
+                    { category: { slug: category } }
+                ]
+            });
         }
 
         if (search) {
-            const searchOR = [
-                { name: { contains: search, mode: 'insensitive' } },
-                { description: { contains: search, mode: 'insensitive' } },
-            ];
-
-            if (where.OR) {
-                // If we already have OR from category, combine them
-                where.AND = [
-                    { OR: where.OR },
-                    { OR: searchOR }
-                ];
-                delete where.OR;
-            } else {
-                where.OR = searchOR;
-            }
+            const trimmedSearch = search.trim();
+            conditions.push({
+                OR: [
+                    { name: { contains: trimmedSearch, mode: 'insensitive' } },
+                    { categoryName: { contains: trimmedSearch, mode: 'insensitive' } },
+                    { description: { contains: trimmedSearch, mode: 'insensitive' } },
+                ]
+            });
         }
+
+        const where: any = {
+            AND: conditions
+        };
 
         // Filter promo products
         if (promo === 'true') {
