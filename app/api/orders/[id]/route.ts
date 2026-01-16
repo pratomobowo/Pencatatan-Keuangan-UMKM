@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { processLoyaltyPoints } from '@/lib/loyalty';
+import { INCOME_CATEGORIES } from '@/lib/finance';
 
 // GET /api/orders/[id]
 export async function GET(
@@ -83,7 +84,7 @@ export async function PATCH(
                 data: {
                     type: 'INCOME',
                     amount: order.subtotal,
-                    category: 'Penjualan Ikan & Seafood',
+                    category: INCOME_CATEGORIES.PRODUCT_SALES,
                     description: `Order #${order.orderNumber} - ${order.customerName}`,
                     orderId: order.id,
                 },

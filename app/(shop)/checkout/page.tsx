@@ -352,6 +352,11 @@ export default function CheckoutPage() {
         if (!result.success) {
             setPublicCouponError(result.message);
         } else {
+            // Remove personal voucher if exists (prevent stacking)
+            if (appliedVoucher) {
+                setAppliedVoucher(null);
+                setVoucherCode('');
+            }
             addNotification('Promo Berhasil!', 'Kode promo telah diterapkan.', 'success');
         }
         setIsApplyingPublicCoupon(false);
@@ -371,6 +376,11 @@ export default function CheckoutPage() {
 
             const data = await res.json();
             if (res.ok) {
+                // Remove public coupon if exists (prevent stacking)
+                if (couponCode) {
+                    removePublicCoupon();
+                    setPublicPromoCodeInput('');
+                }
                 setAppliedVoucher(data.voucher);
                 addNotification('Voucer Berhasil!', 'Potongan diskon telah diterapkan.', 'success');
             } else {

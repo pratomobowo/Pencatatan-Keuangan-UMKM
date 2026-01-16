@@ -4,6 +4,7 @@ import { jwtVerify } from 'jose';
 import { auth } from '@/lib/auth';
 import { generateOrderNumber } from '@/lib/utils';
 import { sendWhatsAppMessage, formatOrderMessage, formatAdminNotification } from '@/lib/whatsapp';
+import { sanitizeString, validateOrderLimits } from '@/lib/sanitize';
 
 const JWT_SECRET = new TextEncoder().encode(
     process.env.JWT_SECRET || 'shop-customer-secret-key-change-in-production'
@@ -68,14 +69,68 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Keranjang kosong' }, { status: 400 });
         }
 
+        // Validate order limits
+        const limitsCheck = validateOrderLimits(items, 0); // Will recalculate with validated prices
+        if (!limitsCheck.valid) {
+            return NextResponse.json({ error: limitsCheck.error }, { status: 400 });
+        }
+
+        // Sanitize text inputs
+        const sanitizedNotes = sanitizeString(notes);
+        const sanitizedAddressLabel = sanitizeString(addressLabel);
+
         const orderNumber = generateOrderNumber();
 
-        // 1. Calculate base subtotal
-        const subtotal = items.reduce((sum: number, item: any) =>
+        // 1. Validate items and get actual prices from database
+        const validatedItems: any[] = [];
+        for (const item of items) {
+            if (!item.productId) {
+                return NextResponse.json({ error: `Product ID missing for ${item.name}` }, { status: 400 });
+            }
+
+            const product = await prisma.product.findUnique({
+                where: { id: item.productId },
+                include: { variants: true }
+            });
+
+            if (!product) {
+                return NextResponse.json({ error: `Produk tidak ditemukan: ${item.name}` }, { status: 400 });
+            }
+
+            // Stock validation (skip for ALWAYS_READY products)
+            if (product.stockStatus !== 'ALWAYS_READY' && product.stock < item.quantity) {
+                return NextResponse.json({
+                    error: `Stok tidak cukup untuk ${product.name}. Tersedia: ${product.stock}`
+                }, { status: 400 });
+            }
+
+            // Get correct price from variant or base product
+            let actualPrice = Number(product.price);
+            let actualCostPrice = Number(product.costPrice);
+
+            if (item.variant && product.variants && product.variants.length > 0) {
+                const selectedVariant = product.variants.find((v: any) => v.unit === item.variant);
+                if (selectedVariant) {
+                    actualPrice = Number(selectedVariant.price);
+                    actualCostPrice = Number(selectedVariant.costPrice);
+                }
+            }
+
+            validatedItems.push({
+                ...item,
+                price: actualPrice,
+                costPrice: actualCostPrice,
+                productName: product.name,
+                productImage: product.image,
+            });
+        }
+
+        // 2. Calculate base subtotal with validated prices
+        const subtotal = validatedItems.reduce((sum: number, item: any) =>
             sum + (item.price * item.quantity), 0
         );
 
-        // 2. Validate voucher if provided
+        // 3. Validate voucher if provided
         let discount = 0;
         let voucherToUpdate = null;
 
@@ -89,11 +144,6 @@ export async function POST(request: NextRequest) {
                 if (voucher.type === 'DISCOUNT' || voucher.type === 'SHIPPING') {
                     discount = Number(voucher.value);
                 } else if (voucher.type === 'PRODUCT' && voucher.productId) {
-                    // For product gift voucher, we'll implement it as matching the product value 
-                    // or just a 100% discount on that specific item in the cart.
-                    // For simplicity, let's say the gift product should be in the cart or we add it?
-                    // Actually, the user story says "Voucher Digital".
-                    // Let's assume it's a fixed discount value for now based on reward config.
                     discount = Number(voucher.value) || 0;
                 }
                 voucherToUpdate = voucher.id;
@@ -107,10 +157,10 @@ export async function POST(request: NextRequest) {
         // Ensure grand total is not negative
         const grandTotal = Math.max(0, subtotal + shippingFee + serviceFee - discount);
 
-        // 3. Perform everything in a transaction
+        // 4. Perform everything in a transaction
         const result = await prisma.$transaction(async (tx) => {
-            // a. Deduct stock
-            for (const item of items) {
+            // a. Deduct stock (already validated above)
+            for (const item of validatedItems) {
                 if (item.productId) {
                     await tx.product.update({
                         where: { id: item.productId },
@@ -156,18 +206,18 @@ export async function POST(request: NextRequest) {
                     paymentMethod: paymentMethod || 'cod',
                     shippingMethod: shippingMethod || 'DELIVERY',
                     shippingMethodId: shippingMethodId || null,
-                    notes: notes ? `${addressLabel ? `[${addressLabel}] ` : ''}${notes}` : (addressLabel ? `[${addressLabel}]` : null),
+                    notes: sanitizedNotes ? `${sanitizedAddressLabel ? `[${sanitizedAddressLabel}] ` : ''}${sanitizedNotes}` : (sanitizedAddressLabel ? `[${sanitizedAddressLabel}]` : null),
                     items: {
-                        create: items.map((item: any) => ({
+                        create: validatedItems.map((item: any) => ({
                             productId: item.productId || null,
-                            productName: item.name,
-                            productImage: item.image || null,
-                            variant: item.variant || item.unit || '-',
+                            productName: item.productName || item.name,
+                            productImage: item.productImage || item.image || null,
+                            variant: item.variant || '-',
                             qty: item.quantity,
-                            unit: item.variant || item.unit || 'pcs', // Use variant as unit for consistency
+                            unit: item.variant || 'pcs',
                             price: item.price,
                             originalPrice: item.originalPrice || item.price,
-                            costPrice: item.costPrice || 0,
+                            costPrice: item.costPrice, // Now properly snapshotted from database
                             total: item.price * item.quantity,
                             note: item.note || null,
                         })),
