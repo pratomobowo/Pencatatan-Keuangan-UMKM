@@ -72,17 +72,19 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
     };
     const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(() => {
         if (product.variants && product.variants.length > 0) {
-            return product.variants.find((v) => v.isDefault) || product.variants[0];
+            // Select the variant with the lowest price by default
+            const lowestPriceVariant = [...product.variants].sort((a, b) => Number(a.price) - Number(b.price))[0];
+            return lowestPriceVariant;
         }
         return null;
     });
 
     const { addItem } = useCart();
 
-    // Sort variants to have default first
+    // Sort variants by price (lowest first)
     const sortedVariants = useMemo(() => {
         if (!product?.variants || product.variants.length === 0) return [];
-        return [...product.variants].sort((a, b) => (b.isDefault ? 1 : 0) - (a.isDefault ? 1 : 0));
+        return [...product.variants].sort((a, b) => Number(a.price) - Number(b.price));
     }, [product?.variants]);
 
     const handleQuantityChange = (delta: number) => {

@@ -116,13 +116,22 @@ export async function GET(request: NextRequest) {
                 (!p.promoEndDate || new Date(p.promoEndDate) >= now);
             const promoPriceNum = (isPromoActive && p.promoPrice) ? Number(p.promoPrice) : null;
 
+            // Find the lowest variant price
+            let lowestVariantPrice = Number(p.price);
+            if (p.variants && p.variants.length > 0) {
+                lowestVariantPrice = Math.min(...p.variants.map((v: any) => Number(v.price)));
+            }
+
+            // Use promo price if active, otherwise lowest variant price
+            const displayPrice = promoPriceNum || lowestVariantPrice;
+
             return {
                 ...p,
-                price: promoPriceNum || Number(p.price),
+                price: displayPrice,
                 categoryName: p.categoryName,
                 category: p.category,
                 originalPrice: isPromoActive ? Number(p.price) : null,
-                displayPrice: promoPriceNum || Number(p.price),
+                displayPrice,
                 promoPrice: p.promoPrice ? Number(p.promoPrice) : null,
                 discount: isPromoActive ? p.promoDiscount : null,
                 isPromoActive,
