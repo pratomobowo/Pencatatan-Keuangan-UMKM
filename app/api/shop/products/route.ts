@@ -36,12 +36,15 @@ export async function GET(request: NextRequest) {
         }
 
         if (search) {
-            const trimmedSearch = search.trim();
+            const searchLower = search.trim().toLowerCase();
+            // Match products where:
+            // 1. Name starts with the search term
+            // 2. Name contains the search term as a separate word (space before it)
             conditions.push({
                 OR: [
-                    { name: { contains: trimmedSearch, mode: 'insensitive' } },
-                    { categoryName: { contains: trimmedSearch, mode: 'insensitive' } },
-                    { description: { contains: trimmedSearch, mode: 'insensitive' } },
+                    { name: { startsWith: searchLower, mode: 'insensitive' } },
+                    { name: { contains: ` ${searchLower}`, mode: 'insensitive' } },
+                    { categoryName: { contains: searchLower, mode: 'insensitive' } },
                 ]
             });
         }
@@ -78,6 +81,11 @@ export async function GET(request: NextRequest) {
         // Get total count for pagination
         const total = await prisma.product.count({ where });
 
+        // Determine order - if searching, prioritize by name match
+        const orderBy = search
+            ? [{ name: 'asc' as const }]
+            : [{ createdAt: 'desc' as const }, { id: 'desc' as const }];
+
         const products = await prisma.product.findMany({
             where,
             include: {
@@ -95,10 +103,7 @@ export async function GET(request: NextRequest) {
                     }
                 }
             },
-            orderBy: [
-                { createdAt: 'desc' },
-                { id: 'desc' }
-            ],
+            orderBy,
             take: limit,
             skip: skip,
         }) as any;
