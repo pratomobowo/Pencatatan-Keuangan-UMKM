@@ -105,7 +105,7 @@ export async function POST(request: NextRequest) {
 
         // 3. Get AI Response
         const recentMessages: ChatMessage[] = messages.slice(-10);
-        const products = await prisma.product.findMany({
+        const rawProducts = await prisma.product.findMany({
             where: { isActive: true },
             select: {
                 id: true,
@@ -114,7 +114,42 @@ export async function POST(request: NextRequest) {
                 unit: true,
                 isPromo: true,
                 promoPrice: true,
+                variants: {
+                    select: {
+                        price: true,
+                        unit: true,
+                    }
+                }
             }
+        });
+
+        // Calculate display price (lowest variant price or base price)
+        const products = rawProducts.map(p => {
+            let displayPrice = Number(p.price) || 0;
+            let displayUnit = p.unit;
+
+            // If product has variants, use the lowest variant price
+            if (p.variants && p.variants.length > 0) {
+                const lowestVariant = p.variants.reduce((min, v) =>
+                    Number(v.price) < Number(min.price) ? v : min
+                    , p.variants[0]);
+                displayPrice = Number(lowestVariant.price);
+                displayUnit = lowestVariant.unit;
+            }
+
+            // If promo is active, use promo price
+            if (p.isPromo && p.promoPrice) {
+                displayPrice = Number(p.promoPrice);
+            }
+
+            return {
+                id: p.id,
+                name: p.name,
+                price: displayPrice,
+                unit: displayUnit,
+                isPromo: p.isPromo,
+                promoPrice: p.promoPrice,
+            };
         });
 
         const response = await ChatbotService.getChatCompletion(recentMessages, products);
