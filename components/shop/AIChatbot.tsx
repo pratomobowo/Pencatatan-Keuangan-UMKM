@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { MessageCircle, X, Send, Loader2, User, Bot, Sparkles, Plus, ShoppingCart, Check, Package } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { useCart } from '@/contexts/CartContext';
@@ -288,7 +288,7 @@ const ChatCartCard = ({ onLoad }: { onLoad?: () => void }) => {
 };
 
 // Cart Add Confirmation Card - Shows product card with add button (NOT auto-add)
-const ChatCartAddCard = ({ productId, qty }: { productId: string; qty: number }) => {
+const ChatCartAddCard = ({ productId, qty, targetUnit }: { productId: string; qty: number; targetUnit?: string }) => {
     const { addItem } = useCart();
     const [product, setProduct] = useState<any>(null);
     const [loading, setLoading] = useState(true);
@@ -312,14 +312,21 @@ const ChatCartAddCard = ({ productId, qty }: { productId: string; qty: number })
         fetchProduct();
     }, [productId]);
 
+    // Find the specific variant if targetUnit is provided
+    const selectedVariant = useMemo(() => {
+        if (!product || !targetUnit) return null;
+        return product.variants?.find((v: any) => v.unit?.toLowerCase() === targetUnit.toLowerCase());
+    }, [product, targetUnit]);
+
     const handleAddToCart = () => {
         if (!product || added) return;
 
+        // Use selected variant if found, otherwise fallback to default/product info
         addItem({
             id: product.id,
             name: product.name,
-            variant: product.displayUnit || product.unit,
-            price: product.displayPrice || Number(product.price),
+            variant: selectedVariant?.unit || product.displayUnit || product.unit,
+            price: selectedVariant ? Number(selectedVariant.price) : (product.displayPrice || Number(product.price)),
             image: product.image || '/images/coming-soon.jpg',
         }, qty);
 
@@ -329,8 +336,9 @@ const ChatCartAddCard = ({ productId, qty }: { productId: string; qty: number })
     if (loading) return <div className="h-20 w-full animate-pulse bg-orange-50 rounded-xl my-4" />;
     if (!product) return null;
 
-    const price = product.displayPrice || Number(product.price);
-    const unit = product.displayUnit || product.unit;
+    // Use selected variant pricing/unit for display if available
+    const price = selectedVariant ? Number(selectedVariant.price) : (product.displayPrice || Number(product.price));
+    const unit = selectedVariant?.unit || product.displayUnit || product.unit;
 
     return (
         <div className="my-4 bg-white border border-orange-100 rounded-xl p-3 shadow-sm animate-in fade-in duration-300">
@@ -632,7 +640,7 @@ export default function AIChatbot() {
                                             [&>p]:mb-2 last:[&>p]:mb-0">
                                             {(() => {
                                                 // Split content by all action tags
-                                                const tagRegex = /(\[PRODUCT:[a-zA-Z0-9-]+\]|\[WHATSAPP\]|\[CHECK_ORDER\]|\[CART_VIEW\]|\[CART_ADD:[a-zA-Z0-9-]+:\d+\]|\[STOCK_CHECK:[a-zA-Z0-9-]+\])/g;
+                                                const tagRegex = /(\[PRODUCT:[a-zA-Z0-9-]+\]|\[WHATSAPP\]|\[CHECK_ORDER\]|\[CART_VIEW\]|\[CART_ADD:[a-zA-Z0-9-]+:\d+:[^\]]+\]|\[STOCK_CHECK:[a-zA-Z0-9-]+\])/g;
                                                 const parts = msg.content.split(tagRegex);
                                                 return parts.map((part, pIdx) => {
                                                     // Product card
@@ -652,10 +660,15 @@ export default function AIChatbot() {
                                                     if (part === '[CART_VIEW]') {
                                                         return <ChatCartCard key={pIdx} />;
                                                     }
-                                                    // Cart add action
-                                                    const cartAddMatch = part.match(/\[CART_ADD:([a-zA-Z0-9-]+):(\d+)\]/);
+                                                    // Cart add action with variant support
+                                                    const cartAddMatch = part.match(/\[CART_ADD:([a-zA-Z0-9-]+):(\d+):([^\]]+)\]/);
                                                     if (cartAddMatch) {
-                                                        return <ChatCartAddCard key={pIdx} productId={cartAddMatch[1]} qty={parseInt(cartAddMatch[2])} />;
+                                                        return <ChatCartAddCard
+                                                            key={pIdx}
+                                                            productId={cartAddMatch[1]}
+                                                            qty={parseInt(cartAddMatch[2])}
+                                                            targetUnit={cartAddMatch[3]}
+                                                        />;
                                                     }
                                                     // Stock check - for now just show as text (can enhance later)
                                                     const stockMatch = part.match(/\[STOCK_CHECK:([a-zA-Z0-9-]+)\]/);
