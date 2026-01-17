@@ -5,17 +5,20 @@ import { MessageCircle, X, Send, Loader2, User, Bot, Sparkles, Plus, ShoppingCar
 import ReactMarkdown from 'react-markdown';
 import { useCart } from '@/contexts/CartContext';
 import Image from 'next/image';
+import { ProductVariantModal } from './ProductVariantModal';
 
 interface Message {
     role: 'user' | 'assistant';
     content: string;
 }
 
+// Product Card for Chat with variant selection support
 const ChatProductCard = ({ productId }: { productId: string }) => {
     const { addItem } = useCart();
     const [product, setProduct] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [added, setAdded] = useState(false);
+    const [showVariantModal, setShowVariantModal] = useState(false);
 
     useEffect(() => {
         const fetchProduct = async () => {
@@ -41,8 +44,16 @@ const ChatProductCard = ({ productId }: { productId: string }) => {
     // Use displayPrice from shop API (handles variants and promo correctly)
     const currentPrice = product.displayPrice || product.promoPrice || product.price || 0;
     const currentUnit = product.displayUnit || product.unit;
+    const hasMultipleVariants = product.variants && product.variants.length > 1;
 
     const handleAdd = () => {
+        // If has multiple variants, show variant selection modal
+        if (hasMultipleVariants) {
+            setShowVariantModal(true);
+            return;
+        }
+
+        // Otherwise add directly with default variant
         addItem({
             id: product.id,
             name: product.name,
@@ -56,41 +67,62 @@ const ChatProductCard = ({ productId }: { productId: string }) => {
     };
 
     return (
-        <div className="my-4 bg-white border border-orange-100 rounded-xl overflow-hidden shadow-sm flex items-center gap-2 p-2 animate-in fade-in zoom-in-95 duration-300">
-            <div className="relative size-14 rounded-lg overflow-hidden shrink-0">
-                <Image
-                    src={product.image || '/images/coming-soon.jpg'}
-                    alt={product.name}
-                    fill
-                    className="object-cover"
-                />
-            </div>
-            <div className="flex-1 min-w-0">
-                <h4 className="text-[11px] font-bold text-stone-900 truncate">{product.name}</h4>
-                <div className="flex items-center gap-1.5 mt-0.5">
-                    <span className="text-xs font-bold text-orange-600">Rp {Number(currentPrice).toLocaleString('id-ID')}</span>
-                    {product.isPromo && (
-                        <span className="text-[9px] text-gray-400 line-through">Rp {Number(product.price).toLocaleString('id-ID')}</span>
+        <>
+            <div className="my-4 bg-white border border-orange-100 rounded-xl overflow-hidden shadow-sm flex items-center gap-2 p-2 animate-in fade-in zoom-in-95 duration-300">
+                <div className="relative size-14 rounded-lg overflow-hidden shrink-0">
+                    <Image
+                        src={product.image || '/images/coming-soon.jpg'}
+                        alt={product.name}
+                        fill
+                        className="object-cover"
+                    />
+                </div>
+                <div className="flex-1 min-w-0">
+                    <h4 className="text-[11px] font-bold text-stone-900 truncate">{product.name}</h4>
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                        <span className="text-xs font-bold text-orange-600">Rp {Number(currentPrice).toLocaleString('id-ID')}</span>
+                        {product.isPromo && (
+                            <span className="text-[9px] text-gray-400 line-through">Rp {Number(product.price).toLocaleString('id-ID')}</span>
+                        )}
+                    </div>
+                    {hasMultipleVariants && (
+                        <div className="flex flex-wrap gap-1 mt-1">
+                            {product.variants.map((v: any, i: number) => (
+                                <span key={i} className="text-[7px] font-bold text-orange-600 bg-orange-50 px-1 py-0.5 rounded border border-orange-100">
+                                    {v.unit}
+                                </span>
+                            ))}
+                        </div>
                     )}
                 </div>
-                {product.variants && product.variants.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-1">
-                        {product.variants.map((v: any, i: number) => (
-                            <span key={i} className="text-[7px] font-bold text-orange-600 bg-orange-50 px-1 py-0.5 rounded border border-orange-100">
-                                {v.unit}
-                            </span>
-                        ))}
-                    </div>
-                )}
+                <button
+                    onClick={handleAdd}
+                    className={`size-9 rounded-lg flex items-center justify-center transition-all shrink-0 ${added ? 'bg-green-500 text-white' : 'bg-orange-500 text-white hover:bg-orange-600'
+                        }`}
+                >
+                    {added ? <ShoppingCart size={16} /> : <Plus size={16} />}
+                </button>
             </div>
-            <button
-                onClick={handleAdd}
-                className={`size-9 rounded-lg flex items-center justify-center transition-all shrink-0 ${added ? 'bg-green-500 text-white' : 'bg-orange-500 text-white hover:bg-orange-600'
-                    }`}
-            >
-                {added ? <ShoppingCart size={16} /> : <Plus size={16} />}
-            </button>
-        </div>
+
+            {/* Variant Selection Modal */}
+            {showVariantModal && hasMultipleVariants && (
+                <ProductVariantModal
+                    isOpen={showVariantModal}
+                    onClose={() => {
+                        setShowVariantModal(false);
+                        setAdded(true);
+                        setTimeout(() => setAdded(false), 2000);
+                    }}
+                    product={{
+                        id: product.id,
+                        name: product.name,
+                        image: product.image || '/images/coming-soon.jpg',
+                        price: Number(product.price)
+                    }}
+                    variants={product.variants}
+                />
+            )}
+        </>
     );
 };
 
@@ -318,8 +350,8 @@ const ChatCartAddCard = ({ productId, qty }: { productId: string; qty: number })
                     onClick={handleAddToCart}
                     disabled={added}
                     className={`px-3 py-2 rounded-lg text-xs font-bold transition-all shrink-0 flex items-center gap-1 ${added
-                            ? 'bg-green-500 text-white'
-                            : 'bg-orange-500 text-white hover:bg-orange-600 active:scale-95'
+                        ? 'bg-green-500 text-white'
+                        : 'bg-orange-500 text-white hover:bg-orange-600 active:scale-95'
                         }`}
                 >
                     {added ? (
