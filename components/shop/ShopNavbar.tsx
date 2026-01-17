@@ -205,7 +205,7 @@ export const ShopNavbar = () => {
             </div>
 
             {/* Search Bar */}
-            <div className="px-4 pb-4 relative" ref={searchRef}>
+            <div className={`px-4 pb-4 relative transition-all duration-300 ${isHeaderCollapsed ? 'pt-4' : ''}`} ref={searchRef}>
                 <div className="flex w-full items-center rounded-xl bg-stone-50 border border-transparent focus-within:border-orange-500 transition-all h-12 overflow-hidden ring-1 ring-transparent focus-within:ring-orange-500/20">
                     <div className="flex items-center justify-center pl-4 pr-2">
                         {isSearching ? (
