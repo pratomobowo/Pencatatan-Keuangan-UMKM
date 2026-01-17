@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { generateOrderNumber } from '@/lib/utils';
+import { processLoyaltyPoints } from '@/lib/loyalty';
+import { INCOME_CATEGORIES } from '@/lib/finance';
 import { jwtVerify } from 'jose';
 import { auth } from '@/lib/auth';
 import { getJwtSecret } from '@/lib/jwt';
@@ -207,6 +209,41 @@ export async function POST(request: NextRequest) {
                 items: true
             }
         });
+
+        // Handle PAID status on creation (POS flow)
+        if (status === 'PAID') {
+            await prisma.transaction.create({
+                data: {
+                    type: 'INCOME',
+                    amount: subtotal,
+                    category: INCOME_CATEGORIES.PRODUCT_SALES,
+                    description: `Order #${order.orderNumber} - ${order.customerName} (POS)`,
+                    orderId: order.id,
+                },
+            });
+
+            if (Number(order.shippingFee) > 0) {
+                await prisma.transaction.create({
+                    data: {
+                        type: 'INCOME',
+                        amount: order.shippingFee,
+                        category: INCOME_CATEGORIES.SHIPPING,
+                        description: `Ongkir Order #${order.orderNumber} (POS)`,
+                        orderId: order.id,
+                    },
+                });
+            }
+
+            // Update loyalty points immediately
+            if (linkedCustomerId) {
+                await processLoyaltyPoints(
+                    linkedCustomerId,
+                    Number(order.grandTotal),
+                    order.id,
+                    order.orderNumber
+                );
+            }
+        }
 
         // Send WhatsApp Notification to customer (Async)
         if (customerPhone) {
