@@ -86,6 +86,7 @@ model Product {
   loyaltyRewards LoyaltyReward[]
   vouchers       Voucher[]
   cartItems      CartItem[]
+  procurementItems ProcurementItem[]
 
   @@index([sku])
   @@index([name])
@@ -662,4 +663,61 @@ enum StockStatus {
   ALWAYS_READY
   FINITE
   EMPTY
+}
+
+// ========== PROCUREMENT (BELANJA) ==========
+
+model ProcurementSession {
+  id          String   @id @default(uuid())
+  date        DateTime @db.Date
+  status      ProcurementStatus @default(OPEN)
+  totalCost   Decimal  @default(0) @db.Decimal(10, 2)
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  items       ProcurementItem[]
+  expenses    ProcurementExpense[]
+  
+  @@unique([date])
+  @@index([status])
+}
+
+model ProcurementItem {
+  id           String   @id @default(uuid())
+  sessionId    String
+  productId    String?
+  productName  String
+  unit         String
+  totalQty     Int      // Agregat dari semua order hari itu
+  costPrice    Decimal? @db.Decimal(10, 2)
+  isPurchased  Boolean  @default(false)
+  notes        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  session      ProcurementSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  product      Product? @relation(fields: [productId], references: [id])
+
+  @@index([sessionId])
+  @@index([productId])
+}
+
+model ProcurementExpense {
+  id          String   @id @default(uuid())
+  sessionId   String
+  category    String   // parkir, kopi, bensin, dll
+  amount      Decimal  @db.Decimal(10, 2)
+  description String?
+  createdAt   DateTime @default(now())
+  
+  session     ProcurementSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+}
+
+enum ProcurementStatus {
+  OPEN
+  IN_PROGRESS
+  COMPLETED
 }

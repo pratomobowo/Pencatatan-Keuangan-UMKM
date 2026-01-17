@@ -31,7 +31,8 @@ export interface FinancialSummary {
 export type ViewState = 'DASHBOARD' | 'TRANSACTIONS' | 'ORDERS' | 'SHOP_ORDERS' | 'PRODUCTS' | 'ANALYSIS' | 'CUSTOMERS' | 'LOYALTY_MANAGEMENT' | 'REPORTS' | 'HPP_CALCULATOR' | 'USER_MANAGEMENT' | 'PROFILE' | 'SHOP_SETTINGS' | 'BANNER_MANAGEMENT' | 'CATEGORY_MANAGEMENT' | 'CHAT_LOGS' | 'GOWA_SETTINGS' | 'RECIPE_MANAGEMENT'
   | 'NOTIFICATIONS'
   | 'UNIT_MANAGEMENT' // Added Unit Management
-  | 'COUPON_MANAGEMENT'; // Added Coupon Management
+  | 'COUPON_MANAGEMENT' // Added Coupon Management
+  | 'PROCUREMENT'; // Added Procurement/Belanja Management
 
 export interface User {
   id: string;

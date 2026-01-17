@@ -22,6 +22,7 @@ import { ChatLogManager } from '@/components/admin/ChatLogManager';
 import { GowaSettingsManager } from '@/components/GowaSettingsManager';
 import { RecipeManager } from '@/components/admin/RecipeManager';
 import { UnitManager } from '@/components/admin/UnitManager';
+import ProcurementManager from '@/components/ProcurementManager';
 import { CouponManager } from '@/components/admin/CouponManager';
 import { Loader2 } from 'lucide-react';
 import { useSession } from 'next-auth/react';
@@ -159,6 +160,7 @@ const App: React.FC = () => {
         UNIT_MANAGEMENT: { title: 'Manajemen Unit Produk', description: 'Atur satuan produk (kg, pcs, pack) untuk standarisasi sistem.' },
         COUPON_MANAGEMENT: { title: 'Kupon Promo', description: 'Kelola kode diskon dan voucher untuk pelanggan.' },
         NOTIFICATIONS: { title: 'Pengaturan Notifikasi', description: 'Atur pesan otomatis untuk pelanggan dan admin via WhatsApp.' },
+        PROCUREMENT: { title: 'Rekap Belanja Harian', description: 'Kelola daftar belanja, input harga modal, dan pengeluaran tim procurement.' },
     };
 
     return (
@@ -311,6 +313,9 @@ const App: React.FC = () => {
                     )}
                     {view === 'NOTIFICATIONS' && (
                         <NotificationSettingsManager />
+                    )}
+                    {view === 'PROCUREMENT' && (
+                        <ProcurementManager />
                     )}
                 </main>
             </div>

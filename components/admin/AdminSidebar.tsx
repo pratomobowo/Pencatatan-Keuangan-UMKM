@@ -90,6 +90,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
             icon: ShoppingCart,
             submenu: [
                 { label: 'Pesanan Masuk', icon: ShoppingCart, view: 'ORDERS' },
+                { label: 'Rekap Belanja', icon: ShoppingCart, view: 'PROCUREMENT' },
                 { label: 'Riwayat Transaksi', icon: List, view: 'TRANSACTIONS' },
             ]
         },
