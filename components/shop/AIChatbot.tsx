@@ -68,40 +68,49 @@ const ChatProductCard = ({ productId }: { productId: string }) => {
 
     return (
         <>
-            <div className="my-4 bg-white border border-orange-100 rounded-xl overflow-hidden shadow-sm flex items-center gap-2 p-2 animate-in fade-in zoom-in-95 duration-300">
-                <div className="relative size-14 rounded-lg overflow-hidden shrink-0">
-                    <Image
-                        src={product.image || '/images/coming-soon.jpg'}
-                        alt={product.name}
-                        fill
-                        className="object-cover"
-                    />
-                </div>
-                <div className="flex-1 min-w-0">
-                    <h4 className="text-[11px] font-bold text-stone-900 truncate">{product.name}</h4>
-                    <div className="flex items-center gap-1.5 mt-0.5">
-                        <span className="text-xs font-bold text-orange-600">Rp {Number(currentPrice).toLocaleString('id-ID')}</span>
-                        {product.isPromo && (
-                            <span className="text-[9px] text-gray-400 line-through">Rp {Number(product.price).toLocaleString('id-ID')}</span>
-                        )}
+            <div className="my-4 bg-white border border-orange-100 rounded-xl overflow-hidden shadow-sm flex flex-col sm:flex-row items-start sm:items-center gap-2 p-2.5 animate-in fade-in zoom-in-95 duration-300">
+                <div className="flex items-center gap-3 w-full sm:w-auto">
+                    <div className="relative size-14 rounded-lg overflow-hidden shrink-0 bg-stone-50">
+                        <Image
+                            src={product.image || '/images/coming-soon.jpg'}
+                            alt={product.name}
+                            fill
+                            className="object-cover"
+                        />
                     </div>
+                    <div className="flex-1 min-w-0">
+                        <h4 className="text-[11px] font-bold text-stone-900 truncate">{product.name}</h4>
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                            <span className="text-xs font-bold text-orange-600">Rp {Number(currentPrice).toLocaleString('id-ID')}</span>
+                            {product.isPromo && (
+                                <span className="text-[9px] text-gray-400 line-through">Rp {Number(product.price).toLocaleString('id-ID')}</span>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                <div className="flex items-center border-t sm:border-t-0 border-stone-100 pt-2 sm:pt-0 w-full sm:w-auto justify-between sm:justify-end gap-2">
                     {hasMultipleVariants && (
-                        <div className="flex flex-wrap gap-1 mt-1">
-                            {product.variants.map((v: any, i: number) => (
+                        <div className="flex flex-wrap gap-1">
+                            {product.variants.slice(0, 2).map((v: any, i: number) => (
                                 <span key={i} className="text-[7px] font-bold text-orange-600 bg-orange-50 px-1 py-0.5 rounded border border-orange-100">
                                     {v.unit}
                                 </span>
                             ))}
+                            {product.variants.length > 2 && (
+                                <span className="text-[7px] text-stone-400">+{product.variants.length - 2}</span>
+                            )}
                         </div>
                     )}
+                    <button
+                        onClick={handleAdd}
+                        className={`h-9 px-3 rounded-lg flex items-center justify-center gap-1.5 transition-all shrink-0 ${added ? 'bg-green-500 text-white' : 'bg-orange-500 text-white hover:bg-orange-600 active:scale-95'
+                            }`}
+                    >
+                        {added ? <Check size={14} /> : <Plus size={14} />}
+                        <span className="text-[10px] font-bold">{added ? 'Beres' : 'Beli'}</span>
+                    </button>
                 </div>
-                <button
-                    onClick={handleAdd}
-                    className={`size-9 rounded-lg flex items-center justify-center transition-all shrink-0 ${added ? 'bg-green-500 text-white' : 'bg-orange-500 text-white hover:bg-orange-600'
-                        }`}
-                >
-                    {added ? <ShoppingCart size={16} /> : <Plus size={16} />}
-                </button>
             </div>
 
             {/* Variant Selection Modal */}
@@ -325,44 +334,47 @@ const ChatCartAddCard = ({ productId, qty }: { productId: string; qty: number })
 
     return (
         <div className="my-4 bg-white border border-orange-100 rounded-xl p-3 shadow-sm animate-in fade-in duration-300">
-            <div className="flex items-center gap-3">
-                <div className="relative size-14 rounded-lg overflow-hidden shrink-0 bg-gray-100">
-                    <Image
-                        src={product.image || '/images/coming-soon.jpg'}
-                        alt={product.name}
-                        fill
-                        className="object-cover"
-                    />
-                </div>
-                <div className="flex-1 min-w-0">
-                    <h4 className="text-[11px] font-bold text-stone-900 truncate">{product.name}</h4>
-                    <div className="flex items-center gap-2 mt-0.5">
-                        <span className="text-xs font-bold text-orange-600">
-                            Rp {price.toLocaleString('id-ID')}/{unit}
-                        </span>
-                        <span className="text-[10px] text-stone-500">× {qty}</span>
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <div className="relative size-14 rounded-lg overflow-hidden shrink-0 bg-stone-50">
+                        <Image
+                            src={product.image || '/images/coming-soon.jpg'}
+                            alt={product.name}
+                            fill
+                            className="object-cover"
+                        />
                     </div>
-                    <p className="text-[10px] text-stone-400 mt-0.5">
-                        Total: Rp {(price * qty).toLocaleString('id-ID')}
-                    </p>
+                    <div className="flex-1 min-w-0">
+                        <h4 className="text-[11px] font-bold text-stone-900 truncate">{product.name}</h4>
+                        <div className="flex items-center gap-2 mt-0.5">
+                            <span className="text-xs font-bold text-orange-600">
+                                Rp {price.toLocaleString('id-ID')}/{unit}
+                            </span>
+                            <span className="text-[10px] text-stone-500 bg-stone-100 px-1.5 rounded-full">× {qty}</span>
+                        </div>
+                        <p className="text-[10px] text-stone-400 mt-0.5">
+                            Total: <span className="text-stone-700 font-medium">Rp {(price * qty).toLocaleString('id-ID')}</span>
+                        </p>
+                    </div>
                 </div>
+
                 <button
                     onClick={handleAddToCart}
                     disabled={added}
-                    className={`px-3 py-2 rounded-lg text-xs font-bold transition-all shrink-0 flex items-center gap-1 ${added
+                    className={`h-9 px-4 rounded-lg text-xs font-bold transition-all shrink-0 flex items-center justify-center gap-1.5 ${added
                         ? 'bg-green-500 text-white'
-                        : 'bg-orange-500 text-white hover:bg-orange-600 active:scale-95'
+                        : 'bg-orange-500 text-white hover:bg-orange-600 active:scale-95 shadow-sm shadow-orange-100'
                         }`}
                 >
                     {added ? (
                         <>
                             <Check size={14} />
-                            <span>Ditambahkan</span>
+                            <span>Beres</span>
                         </>
                     ) : (
                         <>
                             <Plus size={14} />
-                            <span>Tambah</span>
+                            <span>Beli</span>
                         </>
                     )}
                 </button>
