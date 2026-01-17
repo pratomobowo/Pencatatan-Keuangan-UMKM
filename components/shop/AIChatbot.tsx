@@ -252,24 +252,29 @@ const ChatCartAddCard = ({ productId, qty, onSuccess }: { productId: string; qty
     const [product, setProduct] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [added, setAdded] = useState(false);
+    const hasAddedRef = useRef(false); // Prevent duplicate adds
 
     useEffect(() => {
+        // Guard: Only execute once
+        if (hasAddedRef.current) return;
+        hasAddedRef.current = true;
+
         const fetchAndAdd = async () => {
             try {
                 const res = await fetch(`/api/shop/products/${productId}`);
                 if (res.ok) {
                     const data = await res.json();
                     setProduct(data);
-                    // Auto add to cart with quantity
-                    for (let i = 0; i < qty; i++) {
-                        addItem({
-                            id: data.id,
-                            name: data.name,
-                            variant: data.displayUnit || data.unit,
-                            price: data.displayPrice || Number(data.price),
-                            image: data.image || '/images/coming-soon.jpg',
-                        });
-                    }
+
+                    // Add item with quantity (single call, not loop)
+                    addItem({
+                        id: data.id,
+                        name: data.name,
+                        variant: data.displayUnit || data.unit,
+                        price: data.displayPrice || Number(data.price),
+                        image: data.image || '/images/coming-soon.jpg',
+                    }, qty); // Pass quantity as second parameter
+
                     setAdded(true);
                     onSuccess?.();
                 }
@@ -280,7 +285,7 @@ const ChatCartAddCard = ({ productId, qty, onSuccess }: { productId: string; qty
             }
         };
         fetchAndAdd();
-    }, [productId, qty, addItem, onSuccess]);
+    }, [productId, qty, onSuccess]); // Removed addItem from dependencies
 
     if (loading) return <div className="h-16 w-full animate-pulse bg-green-50 rounded-xl mt-3" />;
     if (!product) return null;
