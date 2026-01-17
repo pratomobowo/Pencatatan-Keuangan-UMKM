@@ -11,7 +11,8 @@ export async function GET() {
             include: {
                 variants: {
                     orderBy: { isDefault: 'desc' }
-                }
+                },
+                categories: true
             }
         });
         return NextResponse.json(products);
