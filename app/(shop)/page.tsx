@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 import { prisma } from '@/lib/prisma';
 import ShopHomeClient from '@/components/shop/ShopHomeClient';
-import { ShopProduct, Category, StockStatus } from '@/lib/types';
+import { ShopProduct, Category, StockStatus, PromoBanner } from '@/lib/types';
 
 export const metadata: Metadata = {
     title: 'PasarAntar - Belanja Protein Segar Online',
@@ -32,6 +32,25 @@ async function getCategories(): Promise<Category[]> {
         color: c.color,
         order: c.order,
         isActive: c.isActive,
+    }));
+}
+
+async function getBanners(): Promise<PromoBanner[]> {
+    const banners = await prisma.promoBanner.findMany({
+        where: { isActive: true },
+        orderBy: { order: 'asc' },
+    });
+
+    return banners.map((b) => ({
+        id: b.id,
+        title: b.title,
+        subtitle: b.subtitle,
+        badge: b.badge,
+        image: b.image,
+        buttonText: b.buttonText,
+        link: b.link,
+        order: b.order,
+        isActive: b.isActive,
     }));
 }
 
@@ -112,10 +131,11 @@ async function getProducts(promo: boolean = false, limit: number = ITEMS_PER_PAG
 }
 
 export default async function ShopHomepage() {
-    const [categories, { products, hasMore }, { products: promoProducts }] = await Promise.all([
+    const [categories, { products, hasMore }, { products: promoProducts }, banners] = await Promise.all([
         getCategories(),
         getProducts(false, ITEMS_PER_PAGE),
         getProducts(true, 10),
+        getBanners(),
     ]);
 
     // JSON-LD for Organization
@@ -135,6 +155,16 @@ export default async function ShopHomepage() {
 
     return (
         <>
+            {/* Preload LCP image for better performance */}
+            {banners[0]?.image && (
+                <link
+                    rel="preload"
+                    as="image"
+                    href={banners[0].image}
+                    // @ts-ignore - fetchpriority is valid HTML but not in React types
+                    fetchpriority="high"
+                />
+            )}
             <script
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
@@ -144,6 +174,7 @@ export default async function ShopHomepage() {
                 initialPromoProducts={promoProducts}
                 initialCategories={categories}
                 initialHasMore={hasMore}
+                initialBanners={banners}
             />
         </>
     );

@@ -6,7 +6,7 @@ import { CategoryIcon } from '@/components/shop/CategoryIcon';
 import { PromoSlider } from '@/components/shop/PromoSlider';
 import { Waves, Loader2 } from 'lucide-react';
 import Link from 'next/link';
-import { ShopProduct, Category } from '@/lib/types';
+import { ShopProduct, Category, PromoBanner } from '@/lib/types';
 
 const DEFAULT_IMAGE = '/images/coming-soon.jpg';
 const ITEMS_PER_PAGE = 8;
@@ -16,6 +16,7 @@ interface ShopHomeClientProps {
     initialPromoProducts: ShopProduct[];
     initialCategories: Category[];
     initialHasMore: boolean;
+    initialBanners: PromoBanner[];
 }
 
 export default function ShopHomeClient({
@@ -23,6 +24,7 @@ export default function ShopHomeClient({
     initialPromoProducts,
     initialCategories,
     initialHasMore,
+    initialBanners,
 }: ShopHomeClientProps) {
     const [products, setProducts] = useState<ShopProduct[]>(initialProducts);
     const promoProducts = initialPromoProducts;
@@ -116,7 +118,7 @@ export default function ShopHomeClient({
     return (
         <>
             {/* Promo Slider */}
-            <PromoSlider />
+            <PromoSlider initialBanners={initialBanners} />
 
             {/* Categories */}
             <div className="px-4 py-3">

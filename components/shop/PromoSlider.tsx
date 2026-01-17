@@ -6,13 +6,20 @@ import Link from 'next/link';
 import { PromoBanner } from '@/lib/types';
 import { bannersAPI } from '@/lib/api';
 
-export const PromoSlider = () => {
-    const [banners, setBanners] = useState<PromoBanner[]>([]);
-    const [loading, setLoading] = useState(true);
+interface PromoSliderProps {
+    initialBanners?: PromoBanner[];
+}
+
+export const PromoSlider = ({ initialBanners }: PromoSliderProps) => {
+    const [banners, setBanners] = useState<PromoBanner[]>(initialBanners || []);
+    const [loading, setLoading] = useState(!initialBanners || initialBanners.length === 0);
 
     useEffect(() => {
-        fetchBanners();
-    }, []);
+        // Only fetch if no initial banners provided (fallback)
+        if (!initialBanners || initialBanners.length === 0) {
+            fetchBanners();
+        }
+    }, [initialBanners]);
 
     const fetchBanners = async () => {
         try {
@@ -50,6 +57,8 @@ export const PromoSlider = () => {
                             alt={slide.title}
                             fill
                             className="object-cover"
+                            priority={index === 0} // Priority load for first banner (LCP)
+                            sizes="(max-width: 768px) 100vw, 50vw"
                         />
                         <div className="absolute inset-0 bg-gradient-to-r from-black/70 to-transparent flex flex-col justify-center p-6">
                             {slide.badge && (
