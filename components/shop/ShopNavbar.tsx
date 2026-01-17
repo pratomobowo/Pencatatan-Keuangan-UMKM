@@ -14,10 +14,35 @@ export const ShopNavbar = () => {
     const [isSearching, setIsSearching] = useState(false);
     const [showResults, setShowResults] = useState(false);
     const [showNotifications, setShowNotifications] = useState(false);
+    const [isHeaderCollapsed, setIsHeaderCollapsed] = useState(false);
+    const lastScrollY = useRef(0);
     const searchRef = useRef<HTMLDivElement>(null);
     const notificationsRef = useRef<HTMLDivElement>(null);
 
     const { notifications, unreadCount, markAsRead, clearNotifications } = useNotifications();
+
+    // Scroll detection for collapsible header
+    useEffect(() => {
+        const handleScroll = () => {
+            const currentScrollY = window.scrollY;
+            const scrollDelta = currentScrollY - lastScrollY.current;
+
+            // Only trigger after scrolling at least 10px
+            if (Math.abs(scrollDelta) > 10) {
+                if (scrollDelta > 0 && currentScrollY > 60) {
+                    // Scrolling down - collapse header
+                    setIsHeaderCollapsed(true);
+                } else if (scrollDelta < 0) {
+                    // Scrolling up - expand header
+                    setIsHeaderCollapsed(false);
+                }
+                lastScrollY.current = currentScrollY;
+            }
+        };
+
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
 
     // Handle click outside to close results
     useEffect(() => {
@@ -96,8 +121,11 @@ export const ShopNavbar = () => {
 
     return (
         <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md shadow-sm w-full">
-            {/* Logo & Notification */}
-            <div className="flex items-center justify-between p-4 pb-2">
+            {/* Logo & Notification - Collapsible */}
+            <div
+                className={`flex items-center justify-between px-4 transition-all duration-300 ease-in-out overflow-hidden ${isHeaderCollapsed ? 'max-h-0 opacity-0 py-0' : 'max-h-20 opacity-100 pt-4 pb-2'
+                    }`}
+            >
                 <Link href="/" className="flex items-center group">
                     <div className="relative w-40 h-12 shrink-0 transform group-hover:scale-105 transition-transform duration-300">
                         <Image
