@@ -111,6 +111,7 @@ export async function POST(request: NextRequest) {
                 id: true,
                 name: true,
                 price: true,
+                stock: true,
                 unit: true,
                 isPromo: true,
                 promoPrice: true,
@@ -147,12 +148,33 @@ export async function POST(request: NextRequest) {
                 name: p.name,
                 price: displayPrice,
                 unit: displayUnit,
+                stock: p.stock,
                 isPromo: p.isPromo,
                 promoPrice: p.promoPrice,
             };
         });
 
-        const response = await ChatbotService.getChatCompletion(recentMessages, products);
+        // Get customer context for AI
+        let customerContext: { phone?: string; cartItems?: number } = {};
+        if (session?.user?.email) {
+            const customer = await prisma.customer.findFirst({
+                where: { email: session.user.email },
+                select: { phone: true }
+            });
+            if (customer?.phone) {
+                customerContext.phone = customer.phone;
+            }
+            // Get cart items count
+            const cart = await prisma.cart.findFirst({
+                where: { customer: { email: session.user.email } },
+                include: { items: true }
+            });
+            if (cart?.items) {
+                customerContext.cartItems = cart.items.length;
+            }
+        }
+
+        const response = await ChatbotService.getChatCompletion(recentMessages, products, customerContext);
 
         // 4. Log Assistant Response
         await prisma.aIChatMessage.create({

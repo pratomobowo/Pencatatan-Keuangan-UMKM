@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { MessageCircle, X, Send, Loader2, User, Bot, Sparkles, Plus, ShoppingCart } from 'lucide-react';
+import { MessageCircle, X, Send, Loader2, User, Bot, Sparkles, Plus, ShoppingCart, Check, Package } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { useCart } from '@/contexts/CartContext';
 import Image from 'next/image';
@@ -133,6 +133,168 @@ const WhatsAppChatCard = () => {
                 >
                     Chat Sekarang
                 </a>
+            </div>
+        </div>
+    );
+};
+
+// Order Status Card for Chat
+const ChatOrderCard = ({ onLoad }: { onLoad?: () => void }) => {
+    const [orders, setOrders] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchOrders = async () => {
+            try {
+                const res = await fetch('/api/shop/orders/lookup');
+                if (res.ok) {
+                    const data = await res.json();
+                    setOrders(data.orders || []);
+                }
+            } catch (err) {
+                console.error("Error fetching orders for chat:", err);
+            } finally {
+                setLoading(false);
+                onLoad?.();
+            }
+        };
+        fetchOrders();
+    }, [onLoad]);
+
+    if (loading) return <div className="h-24 w-full animate-pulse bg-blue-50 rounded-xl mt-3" />;
+
+    if (orders.length === 0) {
+        return (
+            <div className="mt-3 bg-blue-50 border border-blue-100 rounded-xl p-3 text-center">
+                <p className="text-xs text-blue-600">Belum ada pesanan yang ditemukan.</p>
+            </div>
+        );
+    }
+
+    const statusColors: Record<string, string> = {
+        yellow: 'bg-yellow-100 text-yellow-700 border-yellow-200',
+        blue: 'bg-blue-100 text-blue-700 border-blue-200',
+        orange: 'bg-orange-100 text-orange-700 border-orange-200',
+        purple: 'bg-purple-100 text-purple-700 border-purple-200',
+        green: 'bg-green-100 text-green-700 border-green-200',
+        red: 'bg-red-100 text-red-700 border-red-200',
+        gray: 'bg-gray-100 text-gray-700 border-gray-200',
+    };
+
+    return (
+        <div className="mt-3 space-y-2 animate-in fade-in duration-300">
+            {orders.slice(0, 3).map((order) => (
+                <div key={order.id} className="bg-white border border-blue-100 rounded-xl p-3 shadow-sm">
+                    <div className="flex items-center justify-between mb-1">
+                        <span className="text-[10px] font-bold text-stone-600">#{order.orderNumber}</span>
+                        <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full border ${statusColors[order.statusColor] || statusColors.gray}`}>
+                            {order.statusLabel}
+                        </span>
+                    </div>
+                    <p className="text-[10px] text-stone-500 truncate">{order.itemPreview}</p>
+                    <div className="flex items-center justify-between mt-1">
+                        <span className="text-[10px] text-stone-400">{new Date(order.date).toLocaleDateString('id-ID')}</span>
+                        <span className="text-xs font-bold text-orange-600">Rp {order.total.toLocaleString('id-ID')}</span>
+                    </div>
+                </div>
+            ))}
+        </div>
+    );
+};
+
+// Cart Summary Card for Chat
+const ChatCartCard = ({ onLoad }: { onLoad?: () => void }) => {
+    const { items, subtotal } = useCart();
+
+    useEffect(() => {
+        onLoad?.();
+    }, [onLoad]);
+
+    if (items.length === 0) {
+        return (
+            <div className="mt-3 bg-orange-50 border border-orange-100 rounded-xl p-3 text-center">
+                <ShoppingCart className="mx-auto mb-1 text-orange-400" size={20} />
+                <p className="text-xs text-orange-600">Keranjang masih kosong.</p>
+            </div>
+        );
+    }
+
+    return (
+        <div className="mt-3 bg-white border border-orange-100 rounded-xl overflow-hidden shadow-sm animate-in fade-in duration-300">
+            <div className="p-3">
+                <div className="flex items-center gap-2 mb-2">
+                    <ShoppingCart size={16} className="text-orange-500" />
+                    <span className="text-[11px] font-bold text-stone-800">Keranjang Kamu ({items.length} item)</span>
+                </div>
+                <div className="space-y-1.5 max-h-32 overflow-y-auto">
+                    {items.slice(0, 5).map((item, i) => (
+                        <div key={i} className="flex items-center justify-between text-[10px]">
+                            <span className="text-stone-600 truncate flex-1">{item.quantity}x {item.name}</span>
+                            <span className="text-stone-800 font-medium">Rp {(item.price * item.quantity).toLocaleString('id-ID')}</span>
+                        </div>
+                    ))}
+                    {items.length > 5 && (
+                        <p className="text-[9px] text-stone-400 italic">+{items.length - 5} item lainnya</p>
+                    )}
+                </div>
+                <div className="border-t border-orange-100 mt-2 pt-2 flex justify-between">
+                    <span className="text-[11px] font-bold text-stone-700">Total</span>
+                    <span className="text-xs font-bold text-orange-600">Rp {subtotal.toLocaleString('id-ID')}</span>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+// Cart Add Confirmation Card
+const ChatCartAddCard = ({ productId, qty, onSuccess }: { productId: string; qty: number; onSuccess?: () => void }) => {
+    const { addItem } = useCart();
+    const [product, setProduct] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+    const [added, setAdded] = useState(false);
+
+    useEffect(() => {
+        const fetchAndAdd = async () => {
+            try {
+                const res = await fetch(`/api/shop/products/${productId}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    setProduct(data);
+                    // Auto add to cart with quantity
+                    for (let i = 0; i < qty; i++) {
+                        addItem({
+                            id: data.id,
+                            name: data.name,
+                            variant: data.displayUnit || data.unit,
+                            price: data.displayPrice || Number(data.price),
+                            image: data.image || '/images/coming-soon.jpg',
+                        });
+                    }
+                    setAdded(true);
+                    onSuccess?.();
+                }
+            } catch (err) {
+                console.error("Error adding product to cart:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchAndAdd();
+    }, [productId, qty, addItem, onSuccess]);
+
+    if (loading) return <div className="h-16 w-full animate-pulse bg-green-50 rounded-xl mt-3" />;
+    if (!product) return null;
+
+    return (
+        <div className="mt-3 bg-green-50 border border-green-200 rounded-xl p-3 animate-in fade-in zoom-in-95 duration-300">
+            <div className="flex items-center gap-2">
+                <div className="size-8 rounded-full bg-green-500 flex items-center justify-center text-white">
+                    <Check size={16} />
+                </div>
+                <div>
+                    <p className="text-[11px] font-bold text-green-700">Ditambahkan ke Keranjang!</p>
+                    <p className="text-[10px] text-green-600">{qty}x {product.name}</p>
+                </div>
             </div>
         </div>
     );
@@ -382,21 +544,46 @@ export default function AIChatbot() {
                                         }`}>
                                         <div className="prose prose-sm max-w-none">
                                             {(() => {
-                                                // Split content by [PRODUCT:id] and [WHATSAPP] tags
-                                                const parts = msg.content.split(/(\[PRODUCT:[a-zA-Z0-9-]+\]|\[WHATSAPP\])/g);
+                                                // Split content by all action tags
+                                                const tagRegex = /(\[PRODUCT:[a-zA-Z0-9-]+\]|\[WHATSAPP\]|\[CHECK_ORDER\]|\[CART_VIEW\]|\[CART_ADD:[a-zA-Z0-9-]+:\d+\]|\[STOCK_CHECK:[a-zA-Z0-9-]+\])/g;
+                                                const parts = msg.content.split(tagRegex);
                                                 return parts.map((part, pIdx) => {
+                                                    // Product card
                                                     const productMatch = part.match(/\[PRODUCT:([a-zA-Z0-9-]+)\]/);
                                                     if (productMatch) {
                                                         return <ChatProductCard key={pIdx} productId={productMatch[1]} />;
                                                     }
+                                                    // WhatsApp card
                                                     if (part === '[WHATSAPP]') {
                                                         return <WhatsAppChatCard key={pIdx} />;
                                                     }
-                                                    return (
-                                                        <ReactMarkdown key={pIdx}>
-                                                            {part}
-                                                        </ReactMarkdown>
-                                                    );
+                                                    // Order lookup card
+                                                    if (part === '[CHECK_ORDER]') {
+                                                        return <ChatOrderCard key={pIdx} />;
+                                                    }
+                                                    // Cart view card
+                                                    if (part === '[CART_VIEW]') {
+                                                        return <ChatCartCard key={pIdx} />;
+                                                    }
+                                                    // Cart add action
+                                                    const cartAddMatch = part.match(/\[CART_ADD:([a-zA-Z0-9-]+):(\d+)\]/);
+                                                    if (cartAddMatch) {
+                                                        return <ChatCartAddCard key={pIdx} productId={cartAddMatch[1]} qty={parseInt(cartAddMatch[2])} />;
+                                                    }
+                                                    // Stock check - for now just show as text (can enhance later)
+                                                    const stockMatch = part.match(/\[STOCK_CHECK:([a-zA-Z0-9-]+)\]/);
+                                                    if (stockMatch) {
+                                                        return <ChatProductCard key={pIdx} productId={stockMatch[1]} />;
+                                                    }
+                                                    // Regular markdown text
+                                                    if (part.trim()) {
+                                                        return (
+                                                            <ReactMarkdown key={pIdx}>
+                                                                {part}
+                                                            </ReactMarkdown>
+                                                        );
+                                                    }
+                                                    return null;
                                                 });
                                             })()}
                                         </div>
