@@ -174,10 +174,26 @@ export function formatAdminNotification(order: any, customTemplate?: string) {
     // Get base URL from environment
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://pasarantar.com';
 
-    // Format items list
-    const items = order.items?.map((item: any, idx: number) =>
-        `  ${idx + 1}. ${item.productName || item.name} (${item.qty || item.quantity} ${item.unit || 'pcs'}) - ${formatCurrency(item.total || (item.price * item.quantity))}`
-    ).join('\n') || 'Tidak ada item';
+    // Format items list with promo info
+    const items = order.items?.map((item: any, idx: number) => {
+        const qty = item.qty || item.quantity || 1;
+        const price = item.price || 0;
+        const originalPrice = item.originalPrice || price;
+        const total = item.total || (price * qty);
+        const isPromo = item.isPromo || (originalPrice > price);
+
+        let line = `  ${idx + 1}. ${item.productName || item.name} (${qty} ${item.unit || 'pcs'})`;
+
+        if (isPromo && originalPrice > price) {
+            const savings = (originalPrice - price) * qty;
+            line += ` 🏷️ PROMO`;
+            line += `\n     ${formatCurrency(total)} (hemat ${formatCurrency(savings)})`;
+        } else {
+            line += ` - ${formatCurrency(total)}`;
+        }
+
+        return line;
+    }).join('\n') || 'Tidak ada item';
 
     // Get address info
     const address = order.address || order.shippingAddress;
