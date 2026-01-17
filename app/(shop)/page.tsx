@@ -155,16 +155,6 @@ export default async function ShopHomepage() {
 
     return (
         <>
-            {/* Preload LCP image for better performance */}
-            {banners[0]?.image && (
-                <link
-                    rel="preload"
-                    as="image"
-                    href={banners[0].image}
-                    // @ts-ignore - fetchpriority is valid HTML but not in React types
-                    fetchpriority="high"
-                />
-            )}
             <script
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}

@@ -27,11 +27,11 @@ const nextConfig: NextConfig = {
                         key: 'Content-Security-Policy',
                         value: [
                             "default-src 'self'",
-                            "script-src 'self' 'unsafe-eval' 'unsafe-inline'",
+                            "script-src 'self' 'unsafe-eval' 'unsafe-inline' static.cloudflareinsights.com",
                             "style-src 'self' 'unsafe-inline' fonts.googleapis.com",
                             "img-src 'self' blob: data: lh3.googleusercontent.com images.unsplash.com images.pexels.com",
                             "font-src 'self' fonts.gstatic.com",
-                            "connect-src 'self' ark.ap-southeast.bytepluses.com",
+                            "connect-src 'self' ark.ap-southeast.bytepluses.com cloudflareinsights.com *.cloudflareinsights.com",
                             "frame-src 'self'",
                             "object-src 'none'",
                             "base-uri 'self'",
@@ -56,7 +56,7 @@ const nextConfig: NextConfig = {
                     },
                     {
                         key: 'Permissions-Policy',
-                        value: 'camera=(), microphone=(), geolocation=(), browsing-topics=()',
+                        value: 'camera=(), microphone=(), geolocation=()',
                     },
                 ],
             },
