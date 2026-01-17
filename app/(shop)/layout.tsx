@@ -14,7 +14,7 @@ export default function ShopLayout({
 }) {
     return (
         <div className="min-h-screen bg-gray-100 flex justify-center">
-            <div className="relative w-full max-w-md h-screen overflow-y-auto bg-stone-50 shadow-2xl">
+            <div id="shop-scroll-container" className="relative w-full max-w-md h-screen overflow-y-auto bg-stone-50 shadow-2xl">
                 <ShopNavbar />
                 <main className="flex flex-col gap-6 w-full pb-24">
                     {children}

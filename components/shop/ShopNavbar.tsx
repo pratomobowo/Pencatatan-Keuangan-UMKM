@@ -23,8 +23,11 @@ export const ShopNavbar = () => {
 
     // Scroll detection for collapsible header
     useEffect(() => {
+        const scrollContainer = document.getElementById('shop-scroll-container');
+        if (!scrollContainer) return;
+
         const handleScroll = () => {
-            const currentScrollY = window.scrollY;
+            const currentScrollY = scrollContainer.scrollTop;
             const scrollDelta = currentScrollY - lastScrollY.current;
 
             // Only trigger after scrolling at least 10px
@@ -40,8 +43,8 @@ export const ShopNavbar = () => {
             }
         };
 
-        window.addEventListener('scroll', handleScroll, { passive: true });
-        return () => window.removeEventListener('scroll', handleScroll);
+        scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
+        return () => scrollContainer.removeEventListener('scroll', handleScroll);
     }, []);
 
     // Handle click outside to close results
