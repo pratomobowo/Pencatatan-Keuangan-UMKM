@@ -154,27 +154,128 @@ export async function POST(request: NextRequest) {
             };
         });
 
-        // Get customer context for AI
-        let customerContext: { phone?: string; cartItems?: number } = {};
+        // Get customer context for AI (expanded with full profile & history)
+        interface CustomerContext {
+            isLoggedIn: boolean;
+            name?: string;
+            phone?: string;
+            address?: string;
+            cartItems?: number;
+            loyaltyPoints?: number;
+            loyaltyTier?: string;
+            purchaseHistory?: string[];
+            topProducts?: string[];
+            favorites?: string[];
+            lastOrderDate?: string;
+            totalOrders?: number;
+        }
+
+        let customerContext: CustomerContext = { isLoggedIn: false };
+
         if (session?.user?.email) {
             const customer = await prisma.customer.findFirst({
                 where: { email: session.user.email },
-                select: { phone: true }
+                select: {
+                    id: true,
+                    name: true,
+                    phone: true,
+                    points: true,
+                    tier: true,
+                    addresses: {
+                        where: { isDefault: true },
+                        take: 1,
+                        select: { address: true, label: true }
+                    }
+                }
             });
-            if (customer?.phone) {
-                customerContext.phone = customer.phone;
-            }
-            // Get cart items count
-            const cart = await prisma.cart.findFirst({
-                where: { customer: { email: session.user.email } },
-                include: { items: true }
-            });
-            if (cart?.items) {
-                customerContext.cartItems = cart.items.length;
+
+            if (customer) {
+                customerContext.isLoggedIn = true;
+                customerContext.name = customer.name || undefined;
+                customerContext.phone = customer.phone || undefined;
+                customerContext.loyaltyPoints = customer.points || 0;
+                customerContext.loyaltyTier = customer.tier || 'bronze';
+
+                if (customer.addresses?.[0]) {
+                    customerContext.address = customer.addresses[0].label + ': ' + customer.addresses[0].address;
+                }
+
+                // Get cart items count
+                const cart = await prisma.cart.findFirst({
+                    where: { customerId: customer.id },
+                    include: { items: true }
+                });
+                if (cart?.items) {
+                    customerContext.cartItems = cart.items.length;
+                }
+
+                // Get purchase history (last 5 orders)
+                const recentOrders = await prisma.order.findMany({
+                    where: { customerId: customer.id },
+                    orderBy: { createdAt: 'desc' },
+                    take: 5,
+                    select: {
+                        createdAt: true,
+                        items: {
+                            select: { productName: true, qty: true }
+                        }
+                    }
+                });
+
+                if (recentOrders.length > 0) {
+                    customerContext.totalOrders = recentOrders.length;
+                    customerContext.lastOrderDate = recentOrders[0].createdAt.toLocaleDateString('id-ID');
+
+                    // Count product frequencies to find top products
+                    const productCounts: Record<string, number> = {};
+                    recentOrders.forEach(order => {
+                        order.items.forEach(item => {
+                            productCounts[item.productName] = (productCounts[item.productName] || 0) + item.qty;
+                        });
+                    });
+
+                    // Get top 5 most ordered products
+                    customerContext.topProducts = Object.entries(productCounts)
+                        .sort((a, b) => b[1] - a[1])
+                        .slice(0, 5)
+                        .map(([name]) => name);
+
+                    // Recent purchases for context
+                    customerContext.purchaseHistory = recentOrders[0].items.slice(0, 5).map(i => i.productName);
+                }
+
+                // Get favorites
+                const favorites = await prisma.favorite.findMany({
+                    where: { customerId: customer.id },
+                    take: 5,
+                    include: { product: { select: { name: true } } }
+                });
+                if (favorites.length > 0) {
+                    customerContext.favorites = favorites.map(f => f.product.name);
+                }
             }
         }
 
-        const response = await ChatbotService.getChatCompletion(recentMessages, products, customerContext);
+        // Get recipes for recommendation context
+        const recipes = await prisma.recipe.findMany({
+            where: { status: 'APPROVED' },
+            take: 10,
+            select: {
+                id: true,
+                title: true,
+                ingredients: true,
+            }
+        });
+
+        const recipeContext = recipes.map(r => ({
+            id: r.id,
+            title: r.title,
+            ingredients: Array.isArray(r.ingredients)
+                ? (r.ingredients as string[]).join(', ')
+                : String(r.ingredients || '')
+        }));
+
+        const response = await ChatbotService.getChatCompletion(recentMessages, products, customerContext, recipeContext);
 
         // 4. Log Assistant Response
         await prisma.aIChatMessage.create({
