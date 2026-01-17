@@ -171,13 +171,69 @@ export function formatAdminNotification(order: any, customTemplate?: string) {
         return renderTemplate(customTemplate, order);
     }
 
-    // Default Template
-    let message = `*📢 NOTIFIKASI ORDER BARU*\n\n`;
-    message += `Ada pesanan baru masuk dari Website!\n`;
-    message += `No. Order: *${order.orderNumber}*\n`;
-    message += `Pelanggan: ${order.customerName || order.recipientName}\n`;
-    message += `Total: *${formatCurrency(order.grandTotal)}*\n\n`;
-    message += `Silakan cek detailnya di Dashboard Admin.`;
+    // Get base URL from environment
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://pasarantar.com';
+
+    // Format items list
+    const items = order.items?.map((item: any, idx: number) =>
+        `  ${idx + 1}. ${item.productName || item.name} (${item.qty || item.quantity} ${item.unit || 'pcs'}) - ${formatCurrency(item.total || (item.price * item.quantity))}`
+    ).join('\n') || 'Tidak ada item';
+
+    // Get address info
+    const address = order.address || order.shippingAddress;
+    const addressText = address?.fullAddress || address?.address || order.address || '-';
+    const recipientName = address?.recipientName || order.customerName || order.recipientName || 'Pelanggan';
+    const recipientPhone = address?.phone || order.phone || '-';
+
+    // Build detailed message
+    let message = `*🛒 PESANAN BARU MASUK!*\n\n`;
+    message += `━━━━━━━━━━━━━━━━━━\n`;
+    message += `📋 *No. Order:* ${order.orderNumber}\n`;
+    message += `🕐 *Waktu:* ${new Date(order.createdAt || Date.now()).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })}\n`;
+    message += `━━━━━━━━━━━━━━━━━━\n\n`;
+
+    message += `👤 *PELANGGAN:*\n`;
+    message += `  Nama: ${recipientName}\n`;
+    message += `  HP: ${recipientPhone}\n\n`;
+
+    message += `📦 *DETAIL PESANAN:*\n${items}\n\n`;
+
+    message += `💰 *RINGKASAN:*\n`;
+    message += `  Subtotal: ${formatCurrency(order.subtotal)}\n`;
+
+    if (order.discount > 0) {
+        message += `  Diskon: -${formatCurrency(order.discount)}\n`;
+    }
+
+    if (order.shippingFee > 0) {
+        message += `  Ongkir: ${formatCurrency(order.shippingFee)}\n`;
+    }
+
+    if (order.serviceFee > 0) {
+        message += `  Biaya Layanan: ${formatCurrency(order.serviceFee)}\n`;
+    }
+
+    message += `  *TOTAL: ${formatCurrency(order.grandTotal)}*\n\n`;
+
+    message += `💳 *PEMBAYARAN:*\n`;
+    message += `  Metode: ${order.paymentMethod?.toUpperCase() || 'COD'}\n`;
+    message += `  Status: ${order.paymentStatus === 'PAID' ? '✅ Lunas' : '⏳ Belum Bayar'}\n\n`;
+
+    message += `🚚 *PENGIRIMAN:*\n`;
+    const shippingType = order.method?.type || order.shippingMethod;
+    if (shippingType === 'PICKUP') {
+        message += `  Metode: Pickup Mandiri\n`;
+        message += `  Alamat: Diambil di Toko\n`;
+    } else {
+        message += `  Metode: ${order.shippingMethod || 'Antar Kurir'}\n`;
+        message += `  Alamat: ${addressText}\n`;
+    }
+    message += `\n`;
+
+    message += `━━━━━━━━━━━━━━━━━━\n`;
+    message += `🔗 *Lihat Detail Order:*\n`;
+    message += `${baseUrl}/admin?order=${order.id}\n\n`;
+    message += `_Klik link di atas untuk langsung ke detail pesanan_`;
 
     return message;
 }
