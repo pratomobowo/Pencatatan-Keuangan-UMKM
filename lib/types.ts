@@ -94,8 +94,11 @@ export interface Product {
   stock: number; // Current inventory quantity
   stockStatus?: StockStatus; // Flexible Stock Status
   image?: string; // Product image URL
+  // Categories
   categoryName?: string; // Original category name
   categoryId?: string; // ID of the linked category
+  categoryIds?: string[]; // Array of category IDs for multi-selection
+  categories?: Category[]; // Many-to-many categories
   isActive?: boolean; // Show in shop
   // Promo fields
   isPromo?: boolean;

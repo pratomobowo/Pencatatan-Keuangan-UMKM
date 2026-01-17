@@ -80,7 +80,8 @@ model Product {
   categoryName   String?
   favorites      Favorite[]
   orderItems     OrderItem[]
-  category       Category?        @relation(fields: [categoryId], references: [id])
+  category       Category?        @relation("LegacyCategory", fields: [categoryId], references: [id])
+  categories     Category[]       @relation("ProductCategories")
   variants       ProductVariant[]
   loyaltyRewards LoyaltyReward[]
   vouchers       Voucher[]
@@ -104,7 +105,8 @@ model Category {
   isActive  Boolean   @default(true)
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
-  products  Product[]
+  products  Product[] @relation("ProductCategories")
+  legacyProducts Product[] @relation("LegacyCategory")
 
   @@index([order])
   @@index([isActive])

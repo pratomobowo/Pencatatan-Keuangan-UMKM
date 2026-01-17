@@ -52,7 +52,8 @@ export async function GET(request: NextRequest) {
             conditions.push({
                 OR: [
                     { categoryName: category },
-                    { category: { slug: category } }
+                    { categories: { some: { slug: category } } },
+                    { categories: { some: { id: category } } }
                 ]
             });
         }
@@ -130,7 +131,7 @@ export async function GET(request: NextRequest) {
                     isActive: true,
                 },
                 include: {
-                    category: true,
+                    categories: true,
                     variants: {
                         orderBy: { isDefault: 'desc' },
                         select: {
@@ -156,7 +157,7 @@ export async function GET(request: NextRequest) {
             products = await prisma.product.findMany({
                 where,
                 include: {
-                    category: true,
+                    categories: true,
                     variants: {
                         orderBy: { isDefault: 'desc' },
                         select: {
@@ -197,7 +198,7 @@ export async function GET(request: NextRequest) {
                 ...p,
                 price: displayPrice,
                 categoryName: p.categoryName,
-                category: p.category,
+                categories: p.categories,
                 originalPrice: isPromoActive ? Number(p.price) : null,
                 displayPrice,
                 promoPrice: p.promoPrice ? Number(p.promoPrice) : null,

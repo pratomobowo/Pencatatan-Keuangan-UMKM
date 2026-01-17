@@ -22,7 +22,8 @@ export async function GET(
             include: {
                 variants: {
                     orderBy: { isDefault: 'desc' }
-                }
+                },
+                categories: true
             }
         });
 
@@ -52,7 +53,7 @@ export async function PUT(
         const { id } = await params;
         const body = await request.json();
         console.log('PUT /api/products/[id] - Body:', body);
-        const { variants, category, ...rawData } = body;
+        const { variants, category, categoryIds, ...rawData } = body;
 
         // Whitelist allowed fields for product update
         const allowedFields = [
@@ -106,9 +107,15 @@ export async function PUT(
         // Update product data
         const product = await prisma.product.update({
             where: { id },
-            data: productData,
+            data: {
+                ...productData,
+                categories: categoryIds && Array.isArray(categoryIds) ? {
+                    set: categoryIds.map((id: string) => ({ id }))
+                } : undefined
+            },
             include: {
-                variants: true
+                variants: true,
+                categories: true
             }
         });
 

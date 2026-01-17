@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
         const body = await request.json();
         const {
             sku, name, description, price, costPrice, stock, unit, image,
-            categoryName, categoryId, isActive,
+            categoryName, categoryId, categoryIds, isActive,
             isPromo, promoPrice, promoDiscount, promoStartDate, promoEndDate,
             variants, // Optional array of variants
             stockStatus
@@ -68,6 +68,11 @@ export async function POST(request: NextRequest) {
                 image: image || null,
                 categoryName: categoryName || null,
                 categoryId: categoryId || null,
+                categories: categoryIds && Array.isArray(categoryIds) ? {
+                    connect: categoryIds.map((id: string) => ({ id }))
+                } : (categoryId ? {
+                    connect: { id: categoryId }
+                } : undefined),
                 isActive: isActive !== undefined ? isActive : true,
                 isPromo: isPromo || false,
                 promoPrice: promoPrice || null,

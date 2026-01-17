@@ -18,7 +18,8 @@ async function getProduct(slug: string): Promise<Product | null> {
         include: {
             variants: {
                 orderBy: { isDefault: 'desc' }
-            }
+            },
+            categories: true
         }
     } as any) as any;
 

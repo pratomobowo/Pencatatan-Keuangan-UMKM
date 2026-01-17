@@ -58,6 +58,7 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
     image: '',
     categoryName: '',
     categoryId: '',
+    categoryIds: [],
     isPromo: false,
     promoPrice: 0,
     promoDiscount: 0,
@@ -142,7 +143,7 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
       });
     }
     // Reset form and close modal
-    setFormData({ id: '', name: '', description: '', unit: 'kg', price: 0, costPrice: 0, stock: 0, image: '', categoryName: '', isPromo: false, promoPrice: 0, promoDiscount: 0, variants: [] });
+    setFormData({ id: '', name: '', description: '', unit: 'kg', price: 0, costPrice: 0, stock: 0, image: '', categoryName: '', categoryIds: [], isPromo: false, promoPrice: 0, promoDiscount: 0, variants: [] });
     setShowFormModal(false);
     setIsEditing(false);
   };
@@ -156,6 +157,7 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
       image: product.image || '',
       categoryName: product.categoryName || '',
       categoryId: product.categoryId || '',
+      categoryIds: product.categories?.map(c => c.id) || (product.categoryId ? [product.categoryId] : []),
       isPromo: product.isPromo || false,
       promoPrice: product.promoPrice || 0,
       promoDiscount: product.promoDiscount || 0,
@@ -169,7 +171,7 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
   const handleCancel = () => {
     setIsEditing(false);
     setShowFormModal(false);
-    setFormData({ id: '', name: '', description: '', unit: 'kg', price: 0, costPrice: 0, stock: 0, image: '', categoryName: '', isPromo: false, promoPrice: 0, promoDiscount: 0, variants: [] });
+    setFormData({ id: '', name: '', description: '', unit: 'kg', price: 0, costPrice: 0, stock: 0, image: '', categoryName: '', categoryIds: [], isPromo: false, promoPrice: 0, promoDiscount: 0, variants: [] });
   };
 
   // Variant management handlers
@@ -643,13 +645,21 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
                             </div>
                           </td>
                           <td className="px-4 py-3">
-                            {p.categoryName ? (
-                              <span className="text-xs font-medium text-slate-600 bg-slate-100 px-2 py-1 rounded-md">
-                                {p.categoryName}
-                              </span>
-                            ) : (
-                              <span className="text-xs text-slate-400 italic">Tanpa Kategori</span>
-                            )}
+                            <div className="flex flex-wrap gap-1">
+                              {p.categories && p.categories.length > 0 ? (
+                                p.categories.map(c => (
+                                  <span key={c.id} className="text-[10px] font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-100">
+                                    {c.name}
+                                  </span>
+                                ))
+                              ) : p.categoryName ? (
+                                <span className="text-[10px] font-medium text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200">
+                                  {p.categoryName}
+                                </span>
+                              ) : (
+                                <span className="text-xs text-slate-400 italic">Tanpa Kategori</span>
+                              )}
+                            </div>
                           </td>
                           <td className="px-4 py-3 text-center">
                             <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${p.stockStatus === StockStatus.ALWAYS_READY
@@ -870,29 +880,31 @@ export const ProductManager: React.FC<ProductManagerProps> = ({
 
                     {/* Kategori */}
                     <div>
-                      <label className="block text-sm text-slate-700 mb-1">Kategori</label>
-                      <select
-                        value={formData.categoryId || formData.categoryName || ''}
-                        onChange={e => {
-                          const selectedId = e.target.value;
-                          const cat = dbCategories.find(c => c.id === selectedId);
-                          setFormData({
-                            ...formData,
-                            categoryId: selectedId,
-                            categoryName: cat ? cat.name : selectedId
-                          });
-                        }}
-                        className="w-full p-2.5 bg-white border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
-                      >
-                        <option value="">Pilih Kategori</option>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">Kategori Produk</label>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 p-3 bg-slate-50 rounded-lg border border-slate-200">
                         {dbCategories.map(c => (
-                          <option key={c.id} value={c.id}>{c.name}</option>
+                          <label key={c.id} className="flex items-center gap-2 cursor-pointer hover:bg-white p-1 rounded transition-colors">
+                            <input
+                              type="checkbox"
+                              checked={formData.categoryIds?.includes(c.id)}
+                              onChange={e => {
+                                const checked = e.target.checked;
+                                setFormData(prev => ({
+                                  ...prev,
+                                  categoryIds: checked
+                                    ? [...(prev.categoryIds || []), c.id]
+                                    : (prev.categoryIds || []).filter(id => id !== c.id)
+                                }));
+                              }}
+                              className="w-4 h-4 text-blue-600 bg-white border-slate-300 rounded focus:ring-blue-500"
+                            />
+                            <span className="text-xs text-slate-700">{c.name}</span>
+                          </label>
                         ))}
-                        {/* Legacy support */}
-                        {formData.categoryName && !dbCategories.find(c => c.name === formData.categoryName || c.id === formData.categoryId) && (
-                          <option value={String(formData.categoryName)}>{String(formData.categoryName)}</option>
-                        )}
-                      </select>
+                      </div>
+                      {dbCategories.length === 0 && (
+                        <p className="text-xs text-slate-400 mt-1 italic">Belum ada kategori. Tambahkan di Manajemen Kategori.</p>
+                      )}
                     </div>
 
                     <div>
