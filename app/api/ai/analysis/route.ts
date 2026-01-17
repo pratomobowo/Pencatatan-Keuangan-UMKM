@@ -53,14 +53,22 @@ export async function POST() {
         const totalIncome = transactions.filter(t => t.type === 'INCOME').reduce((sum, t) => sum + Number(t.amount), 0);
         const totalExpense = transactions.filter(t => t.type === 'EXPENSE').reduce((sum, t) => sum + Number(t.amount), 0);
 
-        const bestSellers = products
+        // Filter out ALWAYS_READY products for stock analysis (they have 999999 which is not realistic)
+        const finiteStockProducts = products.filter(p => p.stockStatus !== 'ALWAYS_READY');
+        const alwaysReadyCount = products.filter(p => p.stockStatus === 'ALWAYS_READY').length;
+
+        const bestSellers = finiteStockProducts
             .map(p => ({ name: p.name, stock: p.stock, unit: p.unit }))
             .sort((a, b) => b.stock - a.stock)
             .slice(0, 5);
 
-        const lowStock = products
-            .filter(p => p.stock <= 5)
+        const lowStock = finiteStockProducts
+            .filter(p => p.stock <= 5 && p.stock > 0)
             .map(p => ({ name: p.name, stock: p.stock }));
+
+        const outOfStock = finiteStockProducts
+            .filter(p => p.stock === 0)
+            .map(p => ({ name: p.name }));
 
         const totalCustomers = await prisma.customer.count();
         const repeatCustomers = await prisma.customer.count({
@@ -108,9 +116,11 @@ export async function POST() {
             
             DATA OPERASIONAL:
             - Ringkasan Keuangan: ${JSON.stringify(summary)}
-            - Produk Terlaris: ${JSON.stringify(bestSellers)}
-            - Stok Menipis: ${JSON.stringify(lowStock)}
-            - Statistik Pelanggan: Total ${totalCustomers}, Repeat ${repeatCustomers} (${((repeatCustomers / totalCustomers) * 100).toFixed(1)}%)
+            - Produk Stok Tertinggi: ${JSON.stringify(bestSellers)}
+            - Produk Stok Menipis (perlu restock): ${JSON.stringify(lowStock)}
+            - Produk Stok Habis: ${JSON.stringify(outOfStock)}
+            - Produk Unlimited/Selalu Ready: ${alwaysReadyCount} produk (tidak perlu dimonitor stoknya)
+            - Statistik Pelanggan: Total ${totalCustomers}, Repeat ${repeatCustomers} (${totalCustomers > 0 ? ((repeatCustomers / totalCustomers) * 100).toFixed(1) : 0}%)
             
             Berikan JSON yang valid. Jangan ada teks lain di luar block JSON.
         `;
