@@ -1,0 +1,21 @@
+{
+    "name": "PasarAntar - Belanja Protein Segar Online",
+    "short_name": "PasarAntar",
+    "description": "Belanja ikan, ayam, daging, dan seafood segar berkualitas. Pengiriman cepat untuk kebutuhan dapur Anda.",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#f97316",
+    "icons": [
+        {
+            "src": "/favicon.ico",
+            "sizes": "any",
+            "type": "image/x-icon"
+        },
+        {
+            "src": "/logo.webp",
+            "sizes": "512x512",
+            "type": "image/webp"
+        }
+    ]
+}

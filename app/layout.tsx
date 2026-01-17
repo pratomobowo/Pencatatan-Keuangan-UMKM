@@ -63,6 +63,11 @@ export const metadata: Metadata = {
         // Add your Google Search Console verification code here
         // google: 'your-verification-code',
     },
+    icons: {
+        icon: '/favicon.ico',
+        apple: '/favicon.ico',
+    },
+    manifest: '/manifest.json',
 };
 
 export default function RootLayout({
@@ -87,7 +92,6 @@ export default function RootLayout({
                     `}
                 </Script>
                 <meta name="theme-color" content="#f97316" />
-                <link rel="icon" href="/favicon.ico" sizes="any" />
             </head>
             <body suppressHydrationWarning>
                 <Providers>{children}</Providers>
