@@ -68,9 +68,9 @@ const ChatProductCard = ({ productId }: { productId: string }) => {
 
     return (
         <>
-            <div className="my-4 bg-white border border-orange-100 rounded-xl overflow-hidden shadow-sm flex flex-col sm:flex-row items-start sm:items-center gap-2 p-2.5 animate-in fade-in zoom-in-95 duration-300">
-                <div className="flex items-center gap-3 w-full sm:w-auto">
-                    <div className="relative size-14 rounded-lg overflow-hidden shrink-0 bg-stone-50">
+            <div className="my-3 bg-white border border-orange-100 rounded-xl overflow-hidden shadow-sm p-2 animate-in fade-in zoom-in-95 duration-300">
+                <div className="flex items-center gap-2.5">
+                    <div className="relative size-12 rounded-lg overflow-hidden shrink-0 bg-stone-50 border border-stone-100">
                         <Image
                             src={product.image || '/images/coming-soon.jpg'}
                             alt={product.name}
@@ -79,38 +79,38 @@ const ChatProductCard = ({ productId }: { productId: string }) => {
                         />
                     </div>
                     <div className="flex-1 min-w-0">
-                        <h4 className="text-[11px] font-bold text-stone-900 truncate">{product.name}</h4>
+                        <h4 className="text-[11px] font-bold text-stone-900 truncate leading-tight">{product.name}</h4>
                         <div className="flex items-center gap-1.5 mt-0.5">
-                            <span className="text-xs font-bold text-orange-600">Rp {Number(currentPrice).toLocaleString('id-ID')}</span>
+                            <span className="text-[11px] font-bold text-orange-600">Rp {Number(currentPrice).toLocaleString('id-ID')}</span>
                             {product.isPromo && (
-                                <span className="text-[9px] text-gray-400 line-through">Rp {Number(product.price).toLocaleString('id-ID')}</span>
+                                <span className="text-[8px] text-gray-400 line-through">Rp {Number(product.price).toLocaleString('id-ID')}</span>
                             )}
                         </div>
                     </div>
-                </div>
-
-                <div className="flex items-center border-t sm:border-t-0 border-stone-100 pt-2 sm:pt-0 w-full sm:w-auto justify-between sm:justify-end gap-2">
-                    {hasMultipleVariants && (
-                        <div className="flex flex-wrap gap-1">
-                            {product.variants.slice(0, 2).map((v: any, i: number) => (
-                                <span key={i} className="text-[7px] font-bold text-orange-600 bg-orange-50 px-1 py-0.5 rounded border border-orange-100">
-                                    {v.unit}
-                                </span>
-                            ))}
-                            {product.variants.length > 2 && (
-                                <span className="text-[7px] text-stone-400">+{product.variants.length - 2}</span>
-                            )}
-                        </div>
-                    )}
                     <button
                         onClick={handleAdd}
-                        className={`h-9 px-3 rounded-lg flex items-center justify-center gap-1.5 transition-all shrink-0 ${added ? 'bg-green-500 text-white' : 'bg-orange-500 text-white hover:bg-orange-600 active:scale-95'
+                        disabled={added}
+                        className={`size-8 rounded-lg flex items-center justify-center transition-all shrink-0 shadow-sm ${added
+                            ? 'bg-green-500 text-white'
+                            : 'bg-orange-500 text-white hover:bg-orange-600 active:scale-90 shadow-orange-100'
                             }`}
                     >
-                        {added ? <Check size={14} /> : <Plus size={14} />}
-                        <span className="text-[10px] font-bold">{added ? 'Beres' : 'Beli'}</span>
+                        {added ? <Check size={14} /> : <Plus size={16} />}
                     </button>
                 </div>
+
+                {hasMultipleVariants && (
+                    <div className="flex flex-wrap gap-1 mt-2 pt-2 border-t border-stone-50">
+                        {product.variants.slice(0, 3).map((v: any, i: number) => (
+                            <span key={i} className="text-[7px] font-bold text-orange-600 bg-orange-50 px-1 py-0.5 rounded border border-orange-100">
+                                {v.unit}
+                            </span>
+                        ))}
+                        {product.variants.length > 3 && (
+                            <span className="text-[7px] text-stone-400">+{product.variants.length - 3}</span>
+                        )}
+                    </div>
+                )}
             </div>
 
             {/* Variant Selection Modal */}
