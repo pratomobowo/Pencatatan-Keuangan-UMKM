@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Customer } from '@/lib/types';
 import { Card } from './ui/Card';
-import { Plus, Edit2, Trash2, Users, Search, X, ShoppingCart, Phone, MapPin, Mail } from 'lucide-react';
+import { Plus, Edit2, Trash2, Users, Search, X, ShoppingCart, Phone, MapPin, Mail, Eye, Loader2, Clock, Star, CreditCard } from 'lucide-react';
 
 interface CustomerManagerProps {
   customers: Customer[]; // All customers (POS + Online)
@@ -36,6 +36,11 @@ export const CustomerManager: React.FC<CustomerManagerProps> = ({
     totalSpent: 0,
     orderCount: 0,
   });
+
+  // Detail modal state
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [detailCustomer, setDetailCustomer] = useState<any>(null);
+  const [loadingDetail, setLoadingDetail] = useState(false);
 
   const handleOpenModal = (customer?: Customer) => {
     if (customer) {
@@ -80,6 +85,22 @@ export const CustomerManager: React.FC<CustomerManagerProps> = ({
   const handleDelete = (id: string) => {
     if (confirm('Hapus pelanggan ini?')) {
       if (onDeleteCustomer) onDeleteCustomer(id);
+    }
+  };
+
+  const handleViewDetail = async (customerId: string) => {
+    setShowDetailModal(true);
+    setLoadingDetail(true);
+    try {
+      const res = await fetch(`/api/admin/shop-customers/${customerId}`);
+      if (res.ok) {
+        const data = await res.json();
+        setDetailCustomer(data);
+      }
+    } catch (error) {
+      console.error('Error fetching customer detail:', error);
+    } finally {
+      setLoadingDetail(false);
     }
   };
 
@@ -196,6 +217,13 @@ export const CustomerManager: React.FC<CustomerManagerProps> = ({
                             <ShoppingCart size={16} />
                           </button>
                         )}
+                        <button
+                          onClick={() => handleViewDetail(customer.id)}
+                          className="p-1.5 text-slate-400 hover:text-indigo-600 transition-colors"
+                          title="Lihat Detail"
+                        >
+                          <Eye size={16} />
+                        </button>
                         <button
                           onClick={() => handleOpenModal(customer)}
                           className="p-1.5 text-slate-400 hover:text-blue-600 transition-colors"
@@ -319,6 +347,52 @@ export const CustomerManager: React.FC<CustomerManagerProps> = ({
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Detail Modal */}
+      {showDetailModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 z-10 flex items-center justify-between p-4 border-b bg-white">
+              <h2 className="text-lg font-semibold text-slate-800">Detail Pelanggan</h2>
+              <button onClick={() => { setShowDetailModal(false); setDetailCustomer(null); }} className="p-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100 transition-colors"><X size={24} /></button>
+            </div>
+            {loadingDetail ? (
+              <div className="flex items-center justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-blue-600" /></div>
+            ) : detailCustomer ? (
+              <div className="p-6 space-y-6">
+                <div className="flex items-start gap-4">
+                  <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-2xl">{detailCustomer.name?.charAt(0).toUpperCase()}</div>
+                  <div className="flex-1">
+                    <h3 className="text-xl font-bold text-slate-900">{detailCustomer.name}</h3>
+                    <div className="mt-2 space-y-1">
+                      {detailCustomer.email && <p className="text-sm text-slate-600 flex items-center gap-2"><Mail size={14} /> {detailCustomer.email}</p>}
+                      {detailCustomer.phone && <p className="text-sm text-slate-600 flex items-center gap-2"><Phone size={14} /> {detailCustomer.phone}</p>}
+                    </div>
+                  </div>
+                  <div className="text-right"><p className="text-xs text-slate-500">Terdaftar</p><p className="text-sm font-medium text-slate-700">{new Date(detailCustomer.createdAt).toLocaleDateString('id-ID')}</p></div>
+                </div>
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="bg-slate-50 rounded-lg p-4 text-center"><CreditCard className="w-6 h-6 text-slate-400 mx-auto mb-2" /><p className="text-lg font-bold text-slate-900">{formatCurrency(Number(detailCustomer.totalSpent) || 0)}</p><p className="text-xs text-slate-500">Total Belanja</p></div>
+                  <div className="bg-slate-50 rounded-lg p-4 text-center"><ShoppingCart className="w-6 h-6 text-slate-400 mx-auto mb-2" /><p className="text-lg font-bold text-slate-900">{detailCustomer._count?.orders || 0}</p><p className="text-xs text-slate-500">Total Order</p></div>
+                  <div className="bg-slate-50 rounded-lg p-4 text-center"><Star className="w-6 h-6 text-amber-400 mx-auto mb-2" /><p className="text-lg font-bold text-slate-900">{detailCustomer.points || 0}</p><p className="text-xs text-slate-500">Loyalty Points</p></div>
+                </div>
+                <div>
+                  <h4 className="text-sm font-semibold text-slate-800 mb-3 flex items-center gap-2"><MapPin size={16} /> Alamat Tersimpan ({detailCustomer.addresses?.length || 0})</h4>
+                  {detailCustomer.addresses?.length > 0 ? (
+                    <div className="space-y-3">{detailCustomer.addresses.map((addr: any) => (<div key={addr.id} className="bg-slate-50 rounded-lg p-3 border border-slate-100"><p className="font-semibold text-slate-800 text-sm flex items-center gap-2">{addr.label || 'Alamat'}{addr.isDefault && <span className="text-[10px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-medium">Default</span>}</p><p className="text-sm text-slate-600 mt-1">{addr.recipientName} • {addr.phone}</p><p className="text-sm text-slate-500 mt-1">{addr.fullAddress}</p></div>))}</div>
+                  ) : <p className="text-sm text-slate-500 italic">Belum ada alamat tersimpan</p>}
+                </div>
+                <div>
+                  <h4 className="text-sm font-semibold text-slate-800 mb-3 flex items-center gap-2"><Clock size={16} /> Order Terakhir</h4>
+                  {detailCustomer.orders?.length > 0 ? (
+                    <div className="space-y-2">{detailCustomer.orders.map((order: any) => (<div key={order.id} className="flex items-center justify-between py-2 border-b border-slate-100 last:border-0"><div><p className="text-sm font-medium text-slate-800">#{order.orderNumber}</p><p className="text-xs text-slate-500">{new Date(order.createdAt).toLocaleDateString('id-ID')}</p></div><div className="text-right"><p className="text-sm font-semibold text-slate-900">{formatCurrency(Number(order.grandTotal))}</p><span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${order.status === 'DELIVERED' ? 'bg-green-100 text-green-700' : order.status === 'CANCELLED' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}>{order.status}</span></div></div>))}</div>
+                  ) : <p className="text-sm text-slate-500 italic">Belum ada order</p>}
+                </div>
+              </div>
+            ) : <div className="py-12 text-center text-slate-500">Gagal memuat data</div>}
           </div>
         </div>
       )}
