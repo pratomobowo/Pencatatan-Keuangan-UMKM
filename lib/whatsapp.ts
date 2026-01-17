@@ -214,11 +214,26 @@ export function formatAdminNotification(order: any, customTemplate?: string) {
 
     message += `📦 *DETAIL PESANAN:*\n${items}\n\n`;
 
+    // Calculate total promo savings
+    const totalPromoSavings = order.items?.reduce((acc: number, item: any) => {
+        const qty = item.qty || item.quantity || 1;
+        const price = item.price || 0;
+        const originalPrice = item.originalPrice || price;
+        if (originalPrice > price) {
+            return acc + ((originalPrice - price) * qty);
+        }
+        return acc;
+    }, 0) || 0;
+
     message += `💰 *RINGKASAN:*\n`;
     message += `  Subtotal: ${formatCurrency(order.subtotal)}\n`;
 
+    if (totalPromoSavings > 0) {
+        message += `  🏷️ Hemat Promo: -${formatCurrency(totalPromoSavings)}\n`;
+    }
+
     if (order.discount > 0) {
-        message += `  Diskon: -${formatCurrency(order.discount)}\n`;
+        message += `  Voucher/Kupon: -${formatCurrency(order.discount)}\n`;
     }
 
     if (order.shippingFee > 0) {
