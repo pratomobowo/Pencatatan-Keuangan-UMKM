@@ -71,35 +71,46 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 token.id = user.id;
                 token.role = (user as any).role;
             }
-            // For Google OAuth, auto-register user to database
+            // For Google OAuth, check if user exists
             if (account?.provider === 'google' && user) {
                 try {
+                    // First check if this email is registered as a Customer (shop user)
+                    const existingCustomer = await prisma.customer.findFirst({
+                        where: { email: user.email! }
+                    });
+
+                    if (existingCustomer) {
+                        // This is a shop customer, mark as customer role
+                        token.id = existingCustomer.id;
+                        token.role = 'customer'; // Special role to block admin access
+                        token.isCustomer = true;
+                        return token;
+                    }
+
+                    // Check if user exists as admin/staff User
                     const existingUser = await prisma.user.findUnique({
                         where: { email: user.email! }
                     });
 
-                    if (!existingUser) {
-                        // Create new user for Google OAuth
-                        const newUser = await prisma.user.create({
+                    if (existingUser) {
+                        // Existing admin/staff user
+                        token.id = existingUser.id;
+                        token.role = existingUser.role;
+                    } else {
+                        // New Google login that's not a customer - DON'T auto-create admin user
+                        // Instead, create as Customer for shop access only
+                        const newCustomer = await prisma.customer.create({
                             data: {
                                 email: user.email!,
                                 name: user.name || '',
-                                role: 'user',
-                            } as any, // Type assertion needed until Prisma types refresh
+                            }
                         });
-                        token.id = newUser.id;
-                        token.role = newUser.role;
-                    } else {
-                        // Update existing user
-                        await prisma.user.update({
-                            where: { email: user.email! },
-                            data: { name: user.name || '' },
-                        });
-                        token.id = existingUser.id;
-                        token.role = existingUser.role;
+                        token.id = newCustomer.id;
+                        token.role = 'customer';
+                        token.isCustomer = true;
                     }
                 } catch (error) {
-                    console.error('Error saving Google user:', error);
+                    console.error('Error handling Google user:', error);
                 }
             }
             return token;
