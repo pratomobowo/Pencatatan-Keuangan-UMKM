@@ -99,8 +99,11 @@ export async function POST(request: NextRequest) {
                 }, { status: 400 });
             }
 
+            // Determine actual price - for promo products, trust frontend price
+            // For variants, look up the variant price
             let actualPrice = Number(product.price);
             let actualCostPrice = Number(product.costPrice);
+            const isPromoProduct = !!product.originalPrice && (!item.variant || item.variant === product.unit);
 
             if (item.variant && product.variants && product.variants.length > 0) {
                 const selectedVariant = product.variants.find((v: any) => v.unit === item.variant);
@@ -108,6 +111,10 @@ export async function POST(request: NextRequest) {
                     actualPrice = Number(selectedVariant.price);
                     actualCostPrice = Number(selectedVariant.costPrice);
                 }
+            } else if (isPromoProduct) {
+                // Promo product without variant - use the promo price from frontend
+                // but validate it's not higher than original
+                actualPrice = Math.min(Number(item.price), Number(product.originalPrice || product.price));
             }
 
             validatedItems.push({
@@ -116,7 +123,7 @@ export async function POST(request: NextRequest) {
                 costPrice: actualCostPrice,
                 productName: product.name,
                 productImage: product.image,
-                isPromo: !!product.originalPrice && (!item.variant || item.variant === product.unit),
+                isPromo: isPromoProduct,
             });
         }
 
