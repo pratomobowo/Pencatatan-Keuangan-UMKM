@@ -113,6 +113,7 @@ export const ShopNavbar = () => {
                     <button
                         onClick={handleToggleNotifications}
                         className="flex size-10 items-center justify-center rounded-full bg-orange-50 hover:bg-orange-100 transition-all relative"
+                        aria-label="Notifikasi"
                     >
                         <Bell className="text-orange-600" size={20} />
                         {unreadCount > 0 && (
@@ -131,6 +132,7 @@ export const ShopNavbar = () => {
                                     <button
                                         onClick={clearNotifications}
                                         className="text-stone-400 hover:text-red-500 transition-colors"
+                                        aria-label="Hapus semua notifikasi"
                                     >
                                         <Trash2 size={16} />
                                     </button>

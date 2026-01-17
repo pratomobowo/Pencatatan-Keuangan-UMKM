@@ -148,6 +148,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                                 e.stopPropagation();
                                 handleAddToCart();
                             }}
+                            aria-label={added ? 'Ditambahkan ke keranjang' : `Tambah ${name} ke keranjang`}
                             className={`h-9 px-4 rounded-xl text-white text-xs font-bold active:scale-95 transition-all shadow-sm flex items-center justify-center gap-1.5 ${added ? 'bg-green-500' : 'bg-orange-500 hover:bg-orange-600'
                                 }`}
                         >
