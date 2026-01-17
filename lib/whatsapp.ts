@@ -229,7 +229,7 @@ export function formatAdminNotification(order: any, customTemplate?: string) {
     message += `  Subtotal: ${formatCurrency(order.subtotal)}\n`;
 
     if (totalPromoSavings > 0) {
-        message += `  🏷️ Hemat Promo: -${formatCurrency(totalPromoSavings)}\n`;
+        message += `  Hemat Promo: -${formatCurrency(totalPromoSavings)}\n`;
     }
 
     if (order.discount > 0) {
