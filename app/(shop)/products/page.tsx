@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense, useRef, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Search, Loader2, X } from 'lucide-react';
+import { ArrowLeft, Search, Loader2, X, ChevronDown, Flame, Star, TrendingDown, TrendingUp, Clock } from 'lucide-react';
 import { ProductCard } from '@/components/shop/ProductCard';
 import { ShopProduct, Category } from '@/lib/types';
 
@@ -27,6 +27,16 @@ function ProductsContent() {
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
     const [total, setTotal] = useState(0);
+    const [sortBy, setSortBy] = useState('newest');
+    const [showSortMenu, setShowSortMenu] = useState(false);
+
+    const sortOptions = [
+        { value: 'newest', label: 'Terbaru', icon: Clock },
+        { value: 'best_selling', label: 'Terlaris', icon: Flame },
+        { value: 'popular', label: 'Populer', icon: Star },
+        { value: 'price_low', label: 'Harga Terendah', icon: TrendingDown },
+        { value: 'price_high', label: 'Harga Tertinggi', icon: TrendingUp },
+    ];
 
     const fetchingRef = useRef(false);
     const hasMoreRef = useRef(true);
@@ -69,7 +79,7 @@ function ProductsContent() {
             if (isInitial) setLoading(true);
             else setLoadingMore(true);
 
-            let url = `/api/shop/products?page=${pageNum}&limit=${ITEMS_PER_PAGE}&`;
+            let url = `/api/shop/products?page=${pageNum}&limit=${ITEMS_PER_PAGE}&sort=${sortBy}&`;
 
             if (selectedCategory && selectedCategory !== 'all') {
                 url += `category=${selectedCategory}&`;
@@ -101,7 +111,7 @@ function ProductsContent() {
             setLoadingMore(false);
             fetchingRef.current = false;
         }
-    }, [selectedCategory, searchQuery]);
+    }, [selectedCategory, searchQuery, sortBy]);
 
     useEffect(() => {
         fetchProducts(page, page === 1);
@@ -228,7 +238,37 @@ function ProductsContent() {
                 ) : (
                     <>
                         <div className="flex items-center justify-between mb-4 px-1">
-                            <p className="text-[10px] font-bold text-stone-400 uppercase tracking-[0.1em]">{total} Produk Tersedia</p>
+                            <p className="text-[10px] font-bold text-stone-400 uppercase tracking-[0.1em]">{total} Produk</p>
+                            <div className="relative">
+                                <button
+                                    onClick={() => setShowSortMenu(!showSortMenu)}
+                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-white rounded-lg border border-stone-200 text-xs font-medium text-stone-600 hover:bg-stone-50 transition-colors"
+                                >
+                                    {sortOptions.find(s => s.value === sortBy)?.label || 'Urutkan'}
+                                    <ChevronDown size={14} className={`transition-transform ${showSortMenu ? 'rotate-180' : ''}`} />
+                                </button>
+                                {showSortMenu && (
+                                    <div className="absolute right-0 top-full mt-1 bg-white rounded-lg border border-stone-200 shadow-lg z-20 min-w-[160px] py-1">
+                                        {sortOptions.map((option) => {
+                                            const Icon = option.icon;
+                                            return (
+                                                <button
+                                                    key={option.value}
+                                                    onClick={() => {
+                                                        setSortBy(option.value);
+                                                        setShowSortMenu(false);
+                                                        setPage(1);
+                                                    }}
+                                                    className={`w-full flex items-center gap-2 px-3 py-2 text-xs text-left hover:bg-stone-50 transition-colors ${sortBy === option.value ? 'text-orange-600 font-bold bg-orange-50' : 'text-stone-600'}`}
+                                                >
+                                                    <Icon size={14} />
+                                                    {option.label}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+                            </div>
                         </div>
                         <div className="flex flex-col gap-4">
                             {products.map((product, index) => {

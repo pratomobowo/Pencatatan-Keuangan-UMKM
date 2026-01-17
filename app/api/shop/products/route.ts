@@ -21,6 +21,7 @@ export async function GET(request: NextRequest) {
         const limit = limitParam ? parseInt(limitParam) : 10;
         const page = pageParam ? parseInt(pageParam) : 1;
         const skip = (page - 1) * limit;
+        const sort = searchParams.get('sort') || 'newest'; // newest, best_selling, popular, price_low, price_high
 
         // Get customer ID for personalization (if logged in)
         let customerId: string | undefined;
@@ -113,10 +114,21 @@ export async function GET(request: NextRequest) {
             });
         }
 
-        // Determine order - if searching, prioritize by name match
-        const orderBy = search
-            ? [{ name: 'asc' as const }]
-            : [{ createdAt: 'desc' as const }, { id: 'desc' as const }];
+        // Determine order based on sort parameter
+        let orderBy: any = [{ createdAt: 'desc' as const }, { id: 'desc' as const }];
+
+        if (search) {
+            orderBy = [{ name: 'asc' as const }];
+        } else if (sort === 'price_low') {
+            orderBy = [{ price: 'asc' as const }];
+        } else if (sort === 'price_high') {
+            orderBy = [{ price: 'desc' as const }];
+        } else if (sort === 'popular') {
+            // Will handle after fetch by counting favorites
+        } else if (sort === 'best_selling') {
+            // Will handle after fetch by counting order items
+        }
+        // For 'newest', use default createdAt desc
 
         // If using recommendations, modify query to fetch by recommended IDs
         let products: any[];
@@ -153,7 +165,7 @@ export async function GET(request: NextRequest) {
                 (idOrder.get(a.id) ?? 999) - (idOrder.get(b.id) ?? 999)
             );
         } else {
-            // Default query
+            // Default query - include favorites count for sorting
             products = await prisma.product.findMany({
                 where,
                 include: {
@@ -169,12 +181,26 @@ export async function GET(request: NextRequest) {
                             costPrice: true,
                             isDefault: true
                         }
+                    },
+                    _count: {
+                        select: {
+                            favorites: true,
+                            orderItems: true
+                        }
                     }
                 },
-                orderBy,
-                take: limit,
-                skip: skip,
+                orderBy: (sort !== 'popular' && sort !== 'best_selling') ? orderBy : undefined,
             });
+
+            // Sort by popularity or best selling if needed
+            if (sort === 'popular') {
+                products.sort((a: any, b: any) => (b._count?.favorites || 0) - (a._count?.favorites || 0));
+            } else if (sort === 'best_selling') {
+                products.sort((a: any, b: any) => (b._count?.orderItems || 0) - (a._count?.orderItems || 0));
+            }
+
+            // Apply pagination after sorting
+            products = products.slice(skip, skip + limit);
         }
 
         // Transform prices from Decimal to number and calculate display price
