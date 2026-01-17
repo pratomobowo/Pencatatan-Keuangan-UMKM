@@ -1,5 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { ProductRecommendationService } from '@/services/productRecommendation';
+import { cookies } from 'next/headers';
+import { jwtVerify } from 'jose';
+import { getJwtSecret } from '@/lib/jwt';
+
+const JWT_SECRET = getJwtSecret();
 
 // GET /api/shop/products - Public endpoint for shop
 export async function GET(request: NextRequest) {
@@ -10,10 +16,26 @@ export async function GET(request: NextRequest) {
         const limitParam = searchParams.get('limit');
         const pageParam = searchParams.get('page');
         const promo = searchParams.get('promo'); // Filter for promo products
+        const recommended = searchParams.get('recommended'); // Use smart recommendation
 
         const limit = limitParam ? parseInt(limitParam) : 10;
         const page = pageParam ? parseInt(pageParam) : 1;
         const skip = (page - 1) * limit;
+
+        // Get customer ID for personalization (if logged in)
+        let customerId: string | undefined;
+        if (recommended === 'true') {
+            try {
+                const cookieStore = await cookies();
+                const token = cookieStore.get('shop-token')?.value;
+                if (token) {
+                    const { payload } = await jwtVerify(token, JWT_SECRET);
+                    customerId = (payload as any).customerId || (payload as any).userId;
+                }
+            } catch (e) {
+                // Not logged in, will use guest scoring
+            }
+        }
 
         // Build where clause
         const conditions: any[] = [
@@ -81,32 +103,78 @@ export async function GET(request: NextRequest) {
         // Get total count for pagination
         const total = await prisma.product.count({ where });
 
+        // Determine order - if recommended, use scoring algorithm
+        let recommendedIds: string[] = [];
+        if (recommended === 'true' && !search && !category) {
+            recommendedIds = await ProductRecommendationService.getRecommendedProducts({
+                customerId,
+                limit: limit + skip // Get enough for pagination
+            });
+        }
+
         // Determine order - if searching, prioritize by name match
         const orderBy = search
             ? [{ name: 'asc' as const }]
             : [{ createdAt: 'desc' as const }, { id: 'desc' as const }];
 
-        const products = await prisma.product.findMany({
-            where,
-            include: {
-                category: true,
-                variants: {
-                    orderBy: { isDefault: 'desc' },
-                    select: {
-                        id: true,
-                        productId: true,
-                        unit: true,
-                        unitQty: true,
-                        price: true,
-                        costPrice: true,
-                        isDefault: true
+        // If using recommendations, modify query to fetch by recommended IDs
+        let products: any[];
+
+        if (recommendedIds.length > 0) {
+            // Fetch products by recommended IDs (already in scored order)
+            const paginatedIds = recommendedIds.slice(skip, skip + limit);
+
+            const fetchedProducts = await prisma.product.findMany({
+                where: {
+                    id: { in: paginatedIds },
+                    isActive: true,
+                },
+                include: {
+                    category: true,
+                    variants: {
+                        orderBy: { isDefault: 'desc' },
+                        select: {
+                            id: true,
+                            productId: true,
+                            unit: true,
+                            unitQty: true,
+                            price: true,
+                            costPrice: true,
+                            isDefault: true
+                        }
                     }
-                }
-            },
-            orderBy,
-            take: limit,
-            skip: skip,
-        }) as any;
+                },
+            });
+
+            // Sort by recommended order
+            const idOrder = new Map(paginatedIds.map((id, i) => [id, i]));
+            products = fetchedProducts.sort((a, b) =>
+                (idOrder.get(a.id) ?? 999) - (idOrder.get(b.id) ?? 999)
+            );
+        } else {
+            // Default query
+            products = await prisma.product.findMany({
+                where,
+                include: {
+                    category: true,
+                    variants: {
+                        orderBy: { isDefault: 'desc' },
+                        select: {
+                            id: true,
+                            productId: true,
+                            unit: true,
+                            unitQty: true,
+                            price: true,
+                            costPrice: true,
+                            isDefault: true
+                        }
+                    }
+                },
+                orderBy,
+                take: limit,
+                skip: skip,
+            });
+        }
 
         // Transform prices from Decimal to number and calculate display price
         const transformedProducts = products.map((p: any) => {

@@ -62,7 +62,8 @@ export default function ShopHomeClient({
             if (pageNum === 1) setLoading(true);
             else setLoadingMore(true);
 
-            const res = await fetch(`/api/shop/products?page=${pageNum}&limit=${ITEMS_PER_PAGE}`);
+            // Use recommended=true for personalized product ordering
+            const res = await fetch(`/api/shop/products?page=${pageNum}&limit=${ITEMS_PER_PAGE}&recommended=true`);
             if (!res.ok) throw new Error('Failed to fetch products');
 
             const data = await res.json();
