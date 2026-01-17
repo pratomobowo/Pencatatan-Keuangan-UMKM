@@ -634,10 +634,10 @@ export default function AIChatbot() {
                                         : 'bg-white border border-orange-50 text-stone-800 rounded-tl-none'
                                         }`}>
                                         <div className="prose prose-sm max-w-none whitespace-pre-line break-words
-                                            [&>ul]:list-disc [&>ul]:ml-4 [&>ul]:mt-2 [&>ul]:space-y-1
-                                            [&>ol]:list-decimal [&>ol]:ml-4 [&>ol]:mt-2 [&>ol]:space-y-1
-                                            [&>li]:pl-1
-                                            [&>p]:mb-2 last:[&>p]:mb-0">
+                                            [&>ul]:list-disc [&>ul]:ml-4 [&>ul]:mt-1
+                                            [&>ol]:list-decimal [&>ol]:ml-4 [&>ol]:mt-1
+                                            [&>li]:pl-1 [&>li]:mt-0
+                                            [&>p]:mb-1 last:[&>p]:mb-0">
                                             {(() => {
                                                 // Split content by all action tags
                                                 const tagRegex = /(\[PRODUCT:[a-zA-Z0-9-]+\]|\[WHATSAPP\]|\[CHECK_ORDER\]|\[CART_VIEW\]|\[CART_ADD:[a-zA-Z0-9-]+:\d+:[^\]]+\]|\[STOCK_CHECK:[a-zA-Z0-9-]+\])/g;
