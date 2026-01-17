@@ -326,7 +326,9 @@ const ChatCartAddCard = ({ productId, qty, targetUnit }: { productId: string; qt
             id: product.id,
             name: product.name,
             variant: selectedVariant?.unit || product.displayUnit || product.unit,
-            price: selectedVariant ? Number(selectedVariant.price) : (product.displayPrice || Number(product.price)),
+            price: price,
+            originalPrice: product.originalPrice || price,
+            isPromo: !!product.originalPrice && !selectedVariant,
             image: product.image || '/images/coming-soon.jpg',
         }, qty);
 

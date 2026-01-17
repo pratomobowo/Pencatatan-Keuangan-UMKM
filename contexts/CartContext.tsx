@@ -10,6 +10,7 @@ export interface CartItem {
     variant: string;
     price: number;
     originalPrice?: number;
+    isPromo?: boolean;
     quantity: number;
     image: string;
     note?: string;
@@ -212,12 +213,22 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
     const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
+    // Eligible subtotal for discounts (excluding promo items)
+    const eligibleSubtotal = items.reduce((sum, item) => {
+        if (item.isPromo) return sum;
+        return sum + item.price * item.quantity;
+    }, 0);
+
     const verifyCoupon = async (code: string) => {
         try {
             const res = await fetch('/api/shop/coupons/verify', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ code, subtotal }),
+                body: JSON.stringify({
+                    code,
+                    subtotal: eligibleSubtotal, // Use eligible subtotal for discount calculation
+                    fullSubtotal: subtotal // Pass full subtotal for min purchase check if needed
+                }),
             });
 
             const data = await res.json();

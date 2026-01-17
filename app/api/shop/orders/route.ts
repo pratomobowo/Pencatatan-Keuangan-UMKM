@@ -62,7 +62,8 @@ export async function POST(request: NextRequest) {
             shippingMethod,
             shippingMethodId,
             notes,
-            voucherCode
+            voucherCode,
+            couponCode
         } = body;
 
         if (!items || items.length === 0) {
@@ -70,41 +71,34 @@ export async function POST(request: NextRequest) {
         }
 
         // Validate order limits
-        const limitsCheck = validateOrderLimits(items, 0); // Will recalculate with validated prices
+        const limitsCheck = validateOrderLimits(items, 0);
         if (!limitsCheck.valid) {
             return NextResponse.json({ error: limitsCheck.error }, { status: 400 });
         }
 
-        // Sanitize text inputs
         const sanitizedNotes = sanitizeString(notes);
         const sanitizedAddressLabel = sanitizeString(addressLabel);
-
         const orderNumber = generateOrderNumber();
 
-        // 1. Validate items and get actual prices from database
+        // 1. Validate items and get actual prices
         const validatedItems: any[] = [];
         for (const item of items) {
-            if (!item.productId) {
-                return NextResponse.json({ error: `Product ID missing for ${item.name}` }, { status: 400 });
-            }
-
             const product = await prisma.product.findUnique({
                 where: { id: item.productId },
-                include: { variants: true }
-            });
+                include: { variants: true },
+                // Select includes all fields by default when using include
+            }) as any;
 
             if (!product) {
                 return NextResponse.json({ error: `Produk tidak ditemukan: ${item.name}` }, { status: 400 });
             }
 
-            // Stock validation (skip for ALWAYS_READY products)
             if (product.stockStatus !== 'ALWAYS_READY' && product.stock < item.quantity) {
                 return NextResponse.json({
                     error: `Stok tidak cukup untuk ${product.name}. Tersedia: ${product.stock}`
                 }, { status: 400 });
             }
 
-            // Get correct price from variant or base product
             let actualPrice = Number(product.price);
             let actualCostPrice = Number(product.costPrice);
 
@@ -122,18 +116,15 @@ export async function POST(request: NextRequest) {
                 costPrice: actualCostPrice,
                 productName: product.name,
                 productImage: product.image,
+                isPromo: !!product.originalPrice && (!item.variant || item.variant === product.unit),
             });
         }
 
-        // 2. Calculate base subtotal with validated prices
-        const subtotal = validatedItems.reduce((sum: number, item: any) =>
-            sum + (item.price * item.quantity), 0
-        );
+        const subtotal = validatedItems.reduce((sum: number, i: any) => sum + (i.price * i.quantity), 0);
 
-        // 3. Validate voucher if provided
-        let discount = 0;
+        // 2. Validate Coupons/Vouchers
+        let voucherDiscount = 0;
         let voucherToUpdate = null;
-
         if (voucherCode && customerId) {
             const voucher = await (prisma as any).voucher.findUnique({
                 where: { code: voucherCode },
@@ -141,25 +132,50 @@ export async function POST(request: NextRequest) {
             });
 
             if (voucher && !voucher.isUsed && voucher.customerId === customerId) {
-                if (voucher.type === 'DISCOUNT' || voucher.type === 'SHIPPING') {
-                    discount = Number(voucher.value);
-                } else if (voucher.type === 'PRODUCT' && voucher.productId) {
-                    discount = Number(voucher.value) || 0;
-                }
+                voucherDiscount = Number(voucher.value) || 0;
                 voucherToUpdate = voucher.id;
             }
         }
 
+        let couponDiscount = 0;
+        let couponToUpdateId = null;
+        if (couponCode) {
+            const coupon = await prisma.coupon.findUnique({
+                where: { code: couponCode.toUpperCase() }
+            });
+
+            if (coupon && coupon.isActive) {
+                const now = new Date();
+                const isStarted = !coupon.startDate || now >= coupon.startDate;
+                const isNotExpired = !coupon.endDate || now <= coupon.endDate;
+                const isUnderLimit = !coupon.usageLimit || coupon.usageCount < coupon.usageLimit;
+
+                if (isStarted && isNotExpired && isUnderLimit) {
+                    const meetsMinPurchase = !coupon.minPurchase || subtotal >= Number(coupon.minPurchase);
+                    if (meetsMinPurchase) {
+                        const eligibleSubtotal = validatedItems
+                            .filter(i => !i.isPromo)
+                            .reduce((sum, i) => sum + (i.price * i.quantity), 0);
+
+                        if (coupon.type === 'PERCENTAGE') {
+                            const raw = (eligibleSubtotal * Number(coupon.value)) / 100;
+                            couponDiscount = coupon.maxDiscount && raw > Number(coupon.maxDiscount) ? Number(coupon.maxDiscount) : raw;
+                        } else if (coupon.type === 'FIXED') {
+                            couponDiscount = Math.min(Number(coupon.value), eligibleSubtotal);
+                        }
+                        couponToUpdateId = coupon.id;
+                    }
+                }
+            }
+        }
+
+        const totalDiscount = voucherDiscount + couponDiscount;
         const shippingFee = Number(body.shippingFee) || 0;
         const serviceFee = Number(body.serviceFee) || 0;
+        const grandTotal = Math.max(0, subtotal + shippingFee + serviceFee - totalDiscount);
 
-        // Final total: Subtotal + Ongkir + Service - Discount
-        // Ensure grand total is not negative
-        const grandTotal = Math.max(0, subtotal + shippingFee + serviceFee - discount);
-
-        // 4. Perform everything in a transaction
+        // 3. Perform Transaction
         const result = await prisma.$transaction(async (tx) => {
-            // a. Deduct stock (already validated above)
             for (const item of validatedItems) {
                 if (item.productId) {
                     await tx.product.update({
@@ -169,7 +185,6 @@ export async function POST(request: NextRequest) {
                 }
             }
 
-            // b. Mark voucher as used
             if (voucherToUpdate) {
                 await (tx as any).voucher.update({
                     where: { id: voucherToUpdate },
@@ -177,20 +192,21 @@ export async function POST(request: NextRequest) {
                 });
             }
 
-            // c. Clear database cart
-            if (customerId) {
-                await tx.cart.delete({
-                    where: { customerId: customerId }
-                }).catch(() => {
-                    // Ignore if cart doesn't exist
+            if (couponToUpdateId && couponDiscount > 0) {
+                await tx.coupon.update({
+                    where: { id: couponToUpdateId },
+                    data: { usageCount: { increment: 1 } }
                 });
             }
 
-            // d. Create order
+            if (customerId) {
+                await tx.cart.delete({ where: { customerId } }).catch(() => { });
+            }
+
             return await tx.order.create({
                 data: {
-                    orderNumber: orderNumber,
-                    customerId: customerId,
+                    orderNumber,
+                    customerId,
                     recipientName: addressName,
                     recipientPhone: addressPhone,
                     shippingAddress: addressFull,
@@ -200,7 +216,7 @@ export async function POST(request: NextRequest) {
                     subtotal,
                     shippingFee,
                     serviceFee,
-                    discount,
+                    discount: totalDiscount,
                     grandTotal,
                     source: 'ONLINE',
                     paymentMethod: paymentMethod || 'cod',
@@ -217,52 +233,39 @@ export async function POST(request: NextRequest) {
                             unit: item.variant || 'pcs',
                             price: item.price,
                             originalPrice: item.originalPrice || item.price,
-                            costPrice: item.costPrice, // Now properly snapshotted from database
+                            costPrice: item.costPrice,
                             total: item.price * item.quantity,
                             note: item.note || null,
                         })),
                     },
                 } as any,
-                include: { items: true, method: true }
+                include: { items: true }
             });
         });
 
-        // 4. Send WhatsApp Notifications (Async)
+        // 4. Notifications (Async)
         (async () => {
             try {
-                // Fetch notification config from GowaConfig
-                const config = await prisma.gowaConfig.findUnique({
-                    where: { id: 'global' }
-                });
-
+                const config = await prisma.gowaConfig.findUnique({ where: { id: 'global' } });
                 if (config) {
                     const cfg = config as any;
-                    // a. Notify Admins (Broadcast)
-                    if (cfg.notifyAdmin && cfg.adminPhones && cfg.adminPhones.length > 0) {
+                    if (cfg.notifyAdmin && cfg.adminPhones?.length > 0) {
                         const adminMsg = formatAdminNotification(result, cfg.adminTemplate || undefined);
-                        // Send to all admin numbers
-                        await Promise.all(cfg.adminPhones.map((phone: string) =>
-                            sendWhatsAppMessage(phone, adminMsg)
-                        ));
+                        await Promise.all(cfg.adminPhones.map((phone: string) => sendWhatsAppMessage(phone, adminMsg)));
                     }
-
-                    // b. Notify Customer
                     if (cfg.notifyCustomer && addressPhone) {
                         const customerMsg = formatOrderMessage(result, cfg.customerTemplate || undefined);
                         await sendWhatsAppMessage(addressPhone, customerMsg);
                     }
                 }
-            } catch (notifyError) {
-                console.error('Error sending WhatsApp notifications:', notifyError);
+            } catch (err) {
+                console.error('Notification error:', err);
             }
         })();
 
         return NextResponse.json({
             message: 'Order berhasil dibuat',
-            order: {
-                id: result.id,
-                orderNumber: result.orderNumber,
-            },
+            order: { id: result.id, orderNumber: result.orderNumber },
         }, { status: 201 });
 
     } catch (error: any) {

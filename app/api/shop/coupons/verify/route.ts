@@ -3,7 +3,9 @@ import { prisma } from '@/lib/prisma';
 
 export async function POST(req: Request) {
     try {
-        const { code, subtotal } = await req.json();
+        const { code, subtotal, fullSubtotal } = await req.json();
+        const calculationSubtotal = subtotal; // This is the eligible subtotal from frontend
+        const validationSubtotal = fullSubtotal || subtotal; // Use full if provided, fallback to subtotal
 
         if (!code) {
             return NextResponse.json({ error: 'Kode kupon wajib diisi' }, { status: 400 });
@@ -38,7 +40,7 @@ export async function POST(req: Request) {
         }
 
         // 5. Check Minimum Purchase
-        if (coupon.minPurchase && subtotal < Number(coupon.minPurchase)) {
+        if (coupon.minPurchase && validationSubtotal < Number(coupon.minPurchase)) {
             return NextResponse.json({
                 error: `Minimal belanja Rp ${Number(coupon.minPurchase).toLocaleString('id-ID')}`
             }, { status: 400 });
@@ -47,7 +49,7 @@ export async function POST(req: Request) {
         // 6. Calculate Discount
         let discount = 0;
         if (coupon.type === 'PERCENTAGE') {
-            const rawDiscount = (subtotal * Number(coupon.value)) / 100;
+            const rawDiscount = (calculationSubtotal * Number(coupon.value)) / 100;
             // Apply Max Cap if set
             if (coupon.maxDiscount && rawDiscount > Number(coupon.maxDiscount)) {
                 discount = Number(coupon.maxDiscount);
@@ -56,9 +58,11 @@ export async function POST(req: Request) {
             }
         } else if (coupon.type === 'FIXED') {
             discount = Number(coupon.value);
-        } else if (coupon.type === 'FREE_SHIPPING') {
-            // Handled separately on frontend/checkout, but return valid here
-            discount = 0;
+            // Ensure fixed discount doesn't exceed calculationSubtotal? 
+            // Usually fixed is fixed, but let's cap it at subtotal to be safe
+            if (discount > calculationSubtotal) {
+                discount = calculationSubtotal;
+            }
         }
 
         return NextResponse.json({

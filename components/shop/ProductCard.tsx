@@ -81,6 +81,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             variant: currentUnit,
             price: currentPrice,
             originalPrice: (!selectedVariant || selectedVariant.isDefault) ? (originalPrice || currentPrice) : currentPrice,
+            isPromo: !!originalPrice && (!selectedVariant || selectedVariant.isDefault),
             image,
         });
         setAdded(true);
