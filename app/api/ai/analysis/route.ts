@@ -57,10 +57,28 @@ export async function POST() {
         const finiteStockProducts = products.filter(p => p.stockStatus !== 'ALWAYS_READY');
         const alwaysReadyCount = products.filter(p => p.stockStatus === 'ALWAYS_READY').length;
 
-        const bestSellers = finiteStockProducts
-            .map(p => ({ name: p.name, stock: p.stock, unit: p.unit }))
-            .sort((a, b) => b.stock - a.stock)
-            .slice(0, 5);
+        // Calculate actual bestsellers from order items (real sales data)
+        const productSalesMap: Record<string, { name: string; quantity: number; revenue: number }> = {};
+        orders.forEach(order => {
+            order.items.forEach((item: any) => {
+                const productId = item.productId;
+                const productName = item.productName || 'Unknown';
+                const qty = Number(item.quantity) || 0;
+                const total = Number(item.total) || 0;
+
+                if (!productSalesMap[productId]) {
+                    productSalesMap[productId] = { name: productName, quantity: 0, revenue: 0 };
+                }
+                productSalesMap[productId].quantity += qty;
+                productSalesMap[productId].revenue += total;
+            });
+        });
+
+        // Convert to array and sort by quantity sold
+        const bestSellers = Object.values(productSalesMap)
+            .sort((a, b) => b.quantity - a.quantity)
+            .slice(0, 8)  // Top 8 products for chart
+            .map(p => ({ name: p.name, sales: p.quantity, revenue: p.revenue }));
 
         const lowStock = finiteStockProducts
             .filter(p => p.stock <= 5 && p.stock > 0)
@@ -96,7 +114,7 @@ export async function POST() {
                 "productAnalysis": {
                     "topPerforming": "...",
                     "suggestion": "...",
-                    "chartData": [ { "name": "Produk A", "sales": 100 }, ... (Min 5 produk) ]
+                    "chartData": "GUNAKAN DATA DARI BESTSELLERS DI BAWAH (jangan generate sendiri)"
                 },
                 "inventoryHealth": {
                     "status": "Aman|Peringatan|Bahaya",
@@ -116,11 +134,15 @@ export async function POST() {
             
             DATA OPERASIONAL:
             - Ringkasan Keuangan: ${JSON.stringify(summary)}
-            - Produk Stok Tertinggi: ${JSON.stringify(bestSellers)}
+            - Produk Terlaris (data nyata dari order): ${JSON.stringify(bestSellers)}
+            - PENTING: Untuk chartData pada productAnalysis, GUNAKAN data ini langsung: ${JSON.stringify(bestSellers.map(p => ({ name: p.name, sales: p.sales })))}
             - Produk Stok Menipis (perlu restock): ${JSON.stringify(lowStock)}
             - Produk Stok Habis: ${JSON.stringify(outOfStock)}
             - Produk Unlimited/Selalu Ready: ${alwaysReadyCount} produk (tidak perlu dimonitor stoknya)
             - Statistik Pelanggan: Total ${totalCustomers}, Repeat ${repeatCustomers} (${totalCustomers > 0 ? ((repeatCustomers / totalCustomers) * 100).toFixed(1) : 0}%)
+            
+            INSTRUKSI CHARTDATA: Untuk field "chartData" di productAnalysis, salin LANGSUNG array berikut tanpa modifikasi:
+            ${JSON.stringify(bestSellers.map(p => ({ name: p.name, sales: p.sales })))}
             
             Berikan JSON yang valid. Jangan ada teks lain di luar block JSON.
         `;
