@@ -9,6 +9,6 @@ export default function robots(): MetadataRoute.Robots {
                 disallow: ['/admin', '/api/', '/checkout', '/cart'],
             },
         ],
-        sitemap: 'https://pasarantar.id/sitemap.xml',
+        sitemap: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://pasarantar.id'}/sitemap.xml`,
     };
 }
