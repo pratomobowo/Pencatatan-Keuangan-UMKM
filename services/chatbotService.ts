@@ -97,34 +97,58 @@ GUNAKAN DATA INI UNTUK:
 === RESEP TERSEDIA ===
 ${recipes.map(r => `- ${r.title}: ${r.ingredients}`).join('\n')}
 
-PANDUAN RESEP:
+PANDUAN RESEP & PORSI:
 - Jika user tanya "mau masak X", rekomendasikan bahan dari daftar produk
 - Jika ada resep yang cocok, sebutkan judulnya
-- Tawarkan produk-produk yang dibutuhkan untuk resep tersebut
+- HITUNG KEBUTUHAN berdasarkan jumlah porsi:
+  * 1 porsi protein (ayam/ikan/daging) = ~150-200g
+  * 4 orang = ~600-800g atau 0.6-0.8kg
+  * 6 orang = ~1kg
+- Pilih VARIANT yang tepat berdasarkan kebutuhan (contoh: butuh 500g, pilih variant "500g")
 ========================
 `;
         }
 
-        // Format product context for the AI
+        // Format product context for the AI with variants
         const productContext = products.length > 0
-            ? "\n=== DAFTAR PRODUK ===\n" + products.map(p =>
-                `- ${p.name} (${p.unit}): Rp ${p.price.toLocaleString('id-ID')} | Stok: ${p.stock > 0 ? p.stock : 'HABIS'} [ID: ${p.id}]`
-            ).join("\n") + `
+            ? "\n=== DAFTAR PRODUK & VARIANT ===\n" + products.map(p => {
+                const variantInfo = p.variants && p.variants.length > 0
+                    ? ` | Pilihan: ${p.variants.map((v: any) => `${v.unit}=Rp${v.price.toLocaleString('id-ID')}`).join(', ')}`
+                    : '';
+                return `- ${p.name} (${p.unit}): Rp ${p.price.toLocaleString('id-ID')} | Stok: ${p.stock > 0 ? p.stock : 'HABIS'}${variantInfo} [ID: ${p.id}]`;
+            }).join("\n") + `
 
 === ACTION TAGS ===
 1. [PRODUCT:ID] - Tampilkan kartu produk (maks 3)
 2. [WHATSAPP] - Link ke WhatsApp admin
 3. [CHECK_ORDER] - Tampilkan pesanan customer
-4. [CART_ADD:ID:QTY] - Tambah ke keranjang (contoh: [CART_ADD:abc123:2])
+4. [CART_ADD:ID:QTY] - Tambah ke keranjang dengan jumlah (contoh: [CART_ADD:abc123:2] untuk 2 pcs/unit)
 5. [CART_VIEW] - Tampilkan isi keranjang
 6. [STOCK_CHECK:ID] - Cek ketersediaan produk
+
+=== PANDUAN REKOMENDASI RESEP ===
+Jika user minta rekomendasi bahan untuk masakan:
+1. Identifikasi jumlah porsi (default 4 orang jika tidak disebutkan)
+2. Hitung kebutuhan:
+   - Protein utama: 150-200g per orang (4 orang = 600-800g)
+   - Ayam: 1 ekor = ~1.2kg (untuk 6-8 orang)
+   - Ikan sedang: 1 ekor = ~300-500g (untuk 2-3 orang)
+3. Pilih variant yang PALING MENDEKATI kebutuhan
+4. Gunakan [CART_ADD:ID:QTY] untuk langsung menambahkan
+
+Contoh respons untuk "mau masak ayam ungkep 4 orang":
+"Untuk Ayam Ungkep 4 porsi, kak perlu:
+- Ayam Potong ~800g (saya pilihkan variant 1kg biar cukup)
+- Bawang Merah, Bawang Putih, Lengkuas, dll
+
+Mau saya tambahkan ke keranjang? [CART_ADD:id-ayam:1]"
 
 === ATURAN RESPONS ===
 - SINGKAT dan langsung ke poinnya
 - Gunakan 1 jenis action tag per respons
 - Personalisasi berdasarkan data customer
 - Jika customer punya favorit/history, rekomendasikan produk serupa
-- Jika user sebut nama masakan, rekomendasikan bahan yang tersedia`
+- Selalu sebutkan estimasi porsi dan variant yang dipilih`
             : "";
 
         const payload = {

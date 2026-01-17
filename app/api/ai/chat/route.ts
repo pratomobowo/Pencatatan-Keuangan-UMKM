@@ -143,6 +143,12 @@ export async function POST(request: NextRequest) {
                 displayPrice = Number(p.promoPrice);
             }
 
+            // Include all variants for AI to choose best match
+            const variantsList = p.variants?.map(v => ({
+                unit: v.unit,
+                price: Number(v.price)
+            })) || [];
+
             return {
                 id: p.id,
                 name: p.name,
@@ -151,6 +157,7 @@ export async function POST(request: NextRequest) {
                 stock: p.stock,
                 isPromo: p.isPromo,
                 promoPrice: p.promoPrice,
+                variants: variantsList,
             };
         });
 
