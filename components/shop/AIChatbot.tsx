@@ -246,60 +246,94 @@ const ChatCartCard = ({ onLoad }: { onLoad?: () => void }) => {
     );
 };
 
-// Cart Add Confirmation Card
-const ChatCartAddCard = ({ productId, qty, onSuccess }: { productId: string; qty: number; onSuccess?: () => void }) => {
+// Cart Add Confirmation Card - Shows product card with add button (NOT auto-add)
+const ChatCartAddCard = ({ productId, qty }: { productId: string; qty: number }) => {
     const { addItem } = useCart();
     const [product, setProduct] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [added, setAdded] = useState(false);
-    const hasAddedRef = useRef(false); // Prevent duplicate adds
 
+    // Only fetch product data, don't auto-add
     useEffect(() => {
-        // Guard: Only execute once
-        if (hasAddedRef.current) return;
-        hasAddedRef.current = true;
-
-        const fetchAndAdd = async () => {
+        const fetchProduct = async () => {
             try {
                 const res = await fetch(`/api/shop/products/${productId}`);
                 if (res.ok) {
                     const data = await res.json();
                     setProduct(data);
-
-                    // Add item with quantity (single call, not loop)
-                    addItem({
-                        id: data.id,
-                        name: data.name,
-                        variant: data.displayUnit || data.unit,
-                        price: data.displayPrice || Number(data.price),
-                        image: data.image || '/images/coming-soon.jpg',
-                    }, qty); // Pass quantity as second parameter
-
-                    setAdded(true);
-                    onSuccess?.();
                 }
             } catch (err) {
-                console.error("Error adding product to cart:", err);
+                console.error("Error fetching product:", err);
             } finally {
                 setLoading(false);
             }
         };
-        fetchAndAdd();
-    }, [productId, qty, onSuccess]); // Removed addItem from dependencies
+        fetchProduct();
+    }, [productId]);
 
-    if (loading) return <div className="h-16 w-full animate-pulse bg-green-50 rounded-xl mt-3" />;
+    const handleAddToCart = () => {
+        if (!product || added) return;
+
+        addItem({
+            id: product.id,
+            name: product.name,
+            variant: product.displayUnit || product.unit,
+            price: product.displayPrice || Number(product.price),
+            image: product.image || '/images/coming-soon.jpg',
+        }, qty);
+
+        setAdded(true);
+    };
+
+    if (loading) return <div className="h-20 w-full animate-pulse bg-orange-50 rounded-xl my-4" />;
     if (!product) return null;
 
+    const price = product.displayPrice || Number(product.price);
+    const unit = product.displayUnit || product.unit;
+
     return (
-        <div className="my-4 bg-green-50 border border-green-200 rounded-xl p-3 animate-in fade-in zoom-in-95 duration-300">
-            <div className="flex items-center gap-2">
-                <div className="size-8 rounded-full bg-green-500 flex items-center justify-center text-white">
-                    <Check size={16} />
+        <div className="my-4 bg-white border border-orange-100 rounded-xl p-3 shadow-sm animate-in fade-in duration-300">
+            <div className="flex items-center gap-3">
+                <div className="relative size-14 rounded-lg overflow-hidden shrink-0 bg-gray-100">
+                    <Image
+                        src={product.image || '/images/coming-soon.jpg'}
+                        alt={product.name}
+                        fill
+                        className="object-cover"
+                    />
                 </div>
-                <div>
-                    <p className="text-[11px] font-bold text-green-700">Ditambahkan ke Keranjang!</p>
-                    <p className="text-[10px] text-green-600">{qty}x {product.name}</p>
+                <div className="flex-1 min-w-0">
+                    <h4 className="text-[11px] font-bold text-stone-900 truncate">{product.name}</h4>
+                    <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-xs font-bold text-orange-600">
+                            Rp {price.toLocaleString('id-ID')}/{unit}
+                        </span>
+                        <span className="text-[10px] text-stone-500">× {qty}</span>
+                    </div>
+                    <p className="text-[10px] text-stone-400 mt-0.5">
+                        Total: Rp {(price * qty).toLocaleString('id-ID')}
+                    </p>
                 </div>
+                <button
+                    onClick={handleAddToCart}
+                    disabled={added}
+                    className={`px-3 py-2 rounded-lg text-xs font-bold transition-all shrink-0 flex items-center gap-1 ${added
+                            ? 'bg-green-500 text-white'
+                            : 'bg-orange-500 text-white hover:bg-orange-600 active:scale-95'
+                        }`}
+                >
+                    {added ? (
+                        <>
+                            <Check size={14} />
+                            <span>Ditambahkan</span>
+                        </>
+                    ) : (
+                        <>
+                            <Plus size={14} />
+                            <span>Tambah</span>
+                        </>
+                    )}
+                </button>
             </div>
         </div>
     );
