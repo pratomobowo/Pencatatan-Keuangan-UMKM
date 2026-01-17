@@ -11,7 +11,8 @@ interface ProductVariantModalProps {
         id: string;
         name: string;
         image: string;
-        price: number; // Base/Default price
+        price: number; // Current display price (could be promo price)
+        originalPrice?: number; // Original price if on promo
     };
     variants: ProductVariant[];
 }
@@ -26,13 +27,24 @@ export const ProductVariantModal: React.FC<ProductVariantModalProps> = ({
 
     if (!isOpen) return null;
 
+    // Check if product is on promo (has originalPrice different from current price)
+    const isPromoProduct = product.originalPrice && product.originalPrice > product.price;
+
     const handleAddVariant = (variant: ProductVariant) => {
+        // For default variant on promo product, use promo price
+        const isDefaultVariant = variant.isDefault;
+        const usePromoPrice = isPromoProduct && isDefaultVariant;
+
+        const price = usePromoPrice ? product.price : Number(variant.price);
+        const originalPrice = usePromoPrice ? product.originalPrice : Number(variant.price);
+
         addItem({
             id: product.id,
             name: product.name,
             variant: variant.unit,
-            price: Number(variant.price),
-            originalPrice: Number(variant.price), // Variants usually don't have separate original price stored yet, using price as base
+            price: price,
+            originalPrice: originalPrice,
+            isPromo: !!usePromoPrice,
             image: product.image,
         });
         onClose();

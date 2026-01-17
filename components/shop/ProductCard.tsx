@@ -167,7 +167,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                         id,
                         name,
                         image,
-                        price: defaultPrice
+                        price: defaultPrice,
+                        originalPrice: originalPrice
                     }}
                     variants={variants}
                 />
@@ -276,7 +277,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                     id,
                     name,
                     image,
-                    price: defaultPrice
+                    price: defaultPrice,
+                    originalPrice: originalPrice
                 }}
                 variants={variants}
             />
