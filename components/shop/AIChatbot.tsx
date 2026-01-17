@@ -56,7 +56,7 @@ const ChatProductCard = ({ productId }: { productId: string }) => {
     };
 
     return (
-        <div className="mt-3 bg-white border border-orange-100 rounded-xl overflow-hidden shadow-sm flex items-center gap-2 p-2 animate-in fade-in zoom-in-95 duration-300">
+        <div className="my-4 bg-white border border-orange-100 rounded-xl overflow-hidden shadow-sm flex items-center gap-2 p-2 animate-in fade-in zoom-in-95 duration-300">
             <div className="relative size-14 rounded-lg overflow-hidden shrink-0">
                 <Image
                     src={product.image || '/images/coming-soon.jpg'}
@@ -114,7 +114,7 @@ const WhatsAppChatCard = () => {
     }, []);
 
     return (
-        <div className="mt-4 bg-white border border-green-100 rounded-xl overflow-hidden shadow-sm animate-in fade-in slide-in-from-right-4 duration-300">
+        <div className="my-4 bg-white border border-green-100 rounded-xl overflow-hidden shadow-sm animate-in fade-in slide-in-from-right-4 duration-300">
             <div className="flex items-center gap-3 p-3">
                 <div className="size-10 rounded-xl bg-green-50 flex items-center justify-center text-green-500 shrink-0">
                     <MessageCircle size={20} />
@@ -182,7 +182,7 @@ const ChatOrderCard = ({ onLoad }: { onLoad?: () => void }) => {
     };
 
     return (
-        <div className="mt-3 space-y-2 animate-in fade-in duration-300">
+        <div className="my-4 space-y-2 animate-in fade-in duration-300">
             {orders.slice(0, 3).map((order) => (
                 <div key={order.id} className="bg-white border border-blue-100 rounded-xl p-3 shadow-sm">
                     <div className="flex items-center justify-between mb-1">
@@ -212,7 +212,7 @@ const ChatCartCard = ({ onLoad }: { onLoad?: () => void }) => {
 
     if (items.length === 0) {
         return (
-            <div className="mt-3 bg-orange-50 border border-orange-100 rounded-xl p-3 text-center">
+            <div className="my-4 bg-orange-50 border border-orange-100 rounded-xl p-3 text-center">
                 <ShoppingCart className="mx-auto mb-1 text-orange-400" size={20} />
                 <p className="text-xs text-orange-600">Keranjang masih kosong.</p>
             </div>
@@ -220,7 +220,7 @@ const ChatCartCard = ({ onLoad }: { onLoad?: () => void }) => {
     }
 
     return (
-        <div className="mt-3 bg-white border border-orange-100 rounded-xl overflow-hidden shadow-sm animate-in fade-in duration-300">
+        <div className="my-4 bg-white border border-orange-100 rounded-xl overflow-hidden shadow-sm animate-in fade-in duration-300">
             <div className="p-3">
                 <div className="flex items-center gap-2 mb-2">
                     <ShoppingCart size={16} className="text-orange-500" />
@@ -286,7 +286,7 @@ const ChatCartAddCard = ({ productId, qty, onSuccess }: { productId: string; qty
     if (!product) return null;
 
     return (
-        <div className="mt-3 bg-green-50 border border-green-200 rounded-xl p-3 animate-in fade-in zoom-in-95 duration-300">
+        <div className="my-4 bg-green-50 border border-green-200 rounded-xl p-3 animate-in fade-in zoom-in-95 duration-300">
             <div className="flex items-center gap-2">
                 <div className="size-8 rounded-full bg-green-500 flex items-center justify-center text-white">
                     <Check size={16} />
