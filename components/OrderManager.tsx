@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Order, OrderItem, Product, Customer, ShopOrderStatus } from '@/lib/types';
 import { Card } from './ui/Card';
-import { Plus, Search, X, Trash2, Eye, CheckCircle, XCircle, Printer, MessageSquare, ShoppingBag, Clock, Package, Edit2 } from 'lucide-react';
+import { Plus, Search, X, Trash2, Eye, CheckCircle, XCircle, Printer, MessageSquare, ShoppingBag, Clock, Package, Edit2, FileDown, Send } from 'lucide-react';
+import { downloadInvoicePDF } from '@/lib/generateInvoicePDF';
 
 interface OrderManagerProps {
   orders: Order[]; // All orders (MANUAL + ONLINE)
@@ -927,15 +928,41 @@ export const OrderManager: React.FC<OrderManagerProps> = ({
                 <h2 className="text-xl font-bold text-slate-800">Invoice</h2>
                 <div className="flex gap-2">
                   <button
-                    onClick={() => sendToWhatsApp(selectedOrder)}
-                    className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                    title="Kirim ke WhatsApp"
+                    onClick={() => downloadInvoicePDF(selectedOrder)}
+                    className="flex items-center gap-1 px-3 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    title="Download PDF"
                   >
-                    <MessageSquare size={20} />
+                    <FileDown size={16} />
+                    <span className="hidden sm:inline">Download</span>
+                  </button>
+                  <button
+                    onClick={async () => {
+                      if (!selectedOrder.customerPhone) {
+                        alert('Nomor HP pelanggan tidak tersedia');
+                        return;
+                      }
+                      if (!confirm(`Kirim invoice ke ${selectedOrder.customerPhone}?`)) return;
+                      try {
+                        const res = await fetch(`/api/orders/${selectedOrder.id}/invoice`, { method: 'POST' });
+                        const data = await res.json();
+                        if (data.success) {
+                          alert(data.fallback ? 'Invoice terkirim sebagai teks (PDF gagal)' : 'Invoice berhasil dikirim via WhatsApp!');
+                        } else {
+                          alert(data.error || 'Gagal mengirim invoice');
+                        }
+                      } catch (e) {
+                        alert('Gagal mengirim invoice');
+                      }
+                    }}
+                    className="flex items-center gap-1 px-3 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                    title="Kirim via WhatsApp"
+                  >
+                    <Send size={16} />
+                    <span className="hidden sm:inline">Kirim WA</span>
                   </button>
                   <button
                     onClick={handlePrintInvoice}
-                    className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                    className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
                     title="Print"
                   >
                     <Printer size={20} />
