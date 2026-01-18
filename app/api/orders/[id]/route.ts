@@ -39,6 +39,83 @@ export async function GET(
     }
 }
 
+// PUT /api/orders/[id] - Full order update (items, customer, etc.)
+export async function PUT(
+    request: NextRequest,
+    { params }: { params: Promise<{ id: string }> }
+) {
+    try {
+        const { id } = await params;
+        const body = await request.json();
+        const { items, customerName, customerPhone, customerAddress, shippingMethod, shippingFee, paymentMethod, discount, notes, subtotal, grandTotal, date } = body;
+
+        const existingOrder = await prisma.order.findUnique({
+            where: { id },
+            include: { items: true },
+        });
+
+        if (!existingOrder) {
+            return NextResponse.json(
+                { error: 'Order not found' },
+                { status: 404 }
+            );
+        }
+
+        // Delete old items
+        await prisma.orderItem.deleteMany({
+            where: { orderId: id },
+        });
+
+        // Create new items
+        const newItems = await Promise.all(
+            items.map(async (item: any) => {
+                return prisma.orderItem.create({
+                    data: {
+                        orderId: id,
+                        productId: item.productId || null,
+                        productName: item.productName,
+                        qty: item.qty,
+                        unit: item.unit,
+                        price: item.price,
+                        originalPrice: item.originalPrice,
+                        costPrice: item.costPrice,
+                        total: item.total || item.qty * item.price,
+                    },
+                });
+            })
+        );
+
+        // Update order
+        const updatedOrder = await prisma.order.update({
+            where: { id },
+            data: {
+                customerName,
+                customerPhone,
+                customerAddress,
+                shippingMethod,
+                shippingFee: shippingFee || 0,
+                paymentMethod,
+                discount: discount || 0,
+                notes,
+                subtotal,
+                grandTotal,
+            },
+            include: {
+                items: true,
+                customer: true,
+            },
+        });
+
+        return NextResponse.json(updatedOrder);
+    } catch (error) {
+        console.error('Error updating order:', error);
+        return NextResponse.json(
+            { error: 'Failed to update order' },
+            { status: 500 }
+        );
+    }
+}
+
 // PATCH /api/orders/[id] - Update order status
 export async function PATCH(
     request: NextRequest,

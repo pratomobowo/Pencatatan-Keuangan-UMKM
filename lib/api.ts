@@ -64,6 +64,10 @@ export const ordersAPI = {
         method: 'POST',
         body: JSON.stringify(data),
     }),
+    update: (id: string, data: any) => fetchAPI<Order>(`/orders/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(data),
+    }),
     updateStatus: (id: string, status: 'PENDING' | 'PAID' | 'CANCELLED' | ShopOrderStatus) =>
         fetchAPI<Order>(`/orders/${id}`, {
             method: 'PATCH',

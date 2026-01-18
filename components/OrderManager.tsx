@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Order, OrderItem, Product, Customer, ShopOrderStatus } from '@/lib/types';
 import { Card } from './ui/Card';
-import { Plus, Search, X, Trash2, Eye, CheckCircle, XCircle, Printer, MessageSquare, ShoppingBag, Clock, Package } from 'lucide-react';
+import { Plus, Search, X, Trash2, Eye, CheckCircle, XCircle, Printer, MessageSquare, ShoppingBag, Clock, Package, Edit2 } from 'lucide-react';
 
 interface OrderManagerProps {
   orders: Order[]; // All orders (MANUAL + ONLINE)
   products: Product[];
   customers?: Customer[];
   onAddOrder?: (order: Order) => void;
+  onUpdateOrder?: (order: Order) => void;
   onUpdateStatus?: (id: string, status: 'PAID' | 'CANCELLED' | ShopOrderStatus) => void;
   onDeleteOrder?: (id: string) => void;
   onBulkDelete?: (ids: string[]) => void;
@@ -93,6 +94,7 @@ export const OrderManager: React.FC<OrderManagerProps> = ({
   products,
   customers = [],
   onAddOrder,
+  onUpdateOrder,
   onUpdateStatus,
   onDeleteOrder,
   onBulkDelete,
@@ -105,6 +107,8 @@ export const OrderManager: React.FC<OrderManagerProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingOrderId, setEditingOrderId] = useState<string | null>(null);
 
   // Form State
   const [formData, setFormData] = useState<{
@@ -184,27 +188,55 @@ export const OrderManager: React.FC<OrderManagerProps> = ({
     const subtotal = itemsWithTotal.reduce((sum, item) => sum + item.total, 0);
     const grandTotal = subtotal + Number(formData.shippingFee) - Number(formData.discount);
 
-    const newOrder: Order = {
-      id: crypto.randomUUID(),
-      orderNumber: `ORD-${Date.now()}`,
-      date: new Date(formData.date).toISOString(),
-      customerName: formData.customerName,
-      customerPhone: formData.customerPhone,
-      customerAddress: formData.customerAddress,
-      items: itemsWithTotal as any,
-      subtotal,
-      shippingFee: Number(formData.shippingFee),
-      shippingMethod: formData.shippingMethod,
-      paymentMethod: formData.paymentMethod,
-      discount: Number(formData.discount),
-      serviceFee: 0,
-      grandTotal,
-      status: 'PENDING',
-      notes: formData.notes,
-      createdAt: new Date().toISOString(),
-    };
+    if (isEditing && editingOrderId) {
+      // Update existing order
+      const existingOrder = orders.find(o => o.id === editingOrderId);
+      const updatedOrder: Order = {
+        ...existingOrder,
+        id: editingOrderId,
+        orderNumber: existingOrder?.orderNumber || `ORD-${Date.now()}`,
+        date: new Date(formData.date).toISOString(),
+        customerName: formData.customerName,
+        customerPhone: formData.customerPhone,
+        customerAddress: formData.customerAddress,
+        items: itemsWithTotal as any,
+        subtotal,
+        shippingFee: Number(formData.shippingFee),
+        shippingMethod: formData.shippingMethod,
+        paymentMethod: formData.paymentMethod,
+        discount: Number(formData.discount),
+        serviceFee: existingOrder?.serviceFee || 0,
+        grandTotal,
+        status: existingOrder?.status || 'PENDING',
+        notes: formData.notes,
+        createdAt: existingOrder?.createdAt || new Date().toISOString(),
+      };
 
-    if (onAddOrder) onAddOrder(newOrder);
+      if (onUpdateOrder) onUpdateOrder(updatedOrder);
+    } else {
+      // Create new order
+      const newOrder: Order = {
+        id: crypto.randomUUID(),
+        orderNumber: `ORD-${Date.now()}`,
+        date: new Date(formData.date).toISOString(),
+        customerName: formData.customerName,
+        customerPhone: formData.customerPhone,
+        customerAddress: formData.customerAddress,
+        items: itemsWithTotal as any,
+        subtotal,
+        shippingFee: Number(formData.shippingFee),
+        shippingMethod: formData.shippingMethod,
+        paymentMethod: formData.paymentMethod,
+        discount: Number(formData.discount),
+        serviceFee: 0,
+        grandTotal,
+        status: 'PENDING',
+        notes: formData.notes,
+        createdAt: new Date().toISOString(),
+      };
+
+      if (onAddOrder) onAddOrder(newOrder);
+    }
     handleCancel();
   };
 
@@ -222,6 +254,33 @@ export const OrderManager: React.FC<OrderManagerProps> = ({
       discount: 0,
       notes: ''
     });
+    setIsEditing(false);
+    setEditingOrderId(null);
+  };
+
+  const handleEditOrder = (order: Order) => {
+    setFormData({
+      customerId: order.customerId,
+      customerName: order.customerName,
+      customerAddress: order.customerAddress || '',
+      customerPhone: order.customerPhone || '',
+      date: order.date ? new Date(order.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+      items: order.items.map(item => ({
+        productId: item.productId,
+        productName: item.productName,
+        qty: item.qty,
+        unit: item.unit,
+        price: item.price
+      })),
+      paymentMethod: order.paymentMethod || 'CASH',
+      shippingMethod: order.shippingMethod || 'DELIVERY',
+      shippingFee: order.shippingFee || 0,
+      discount: order.discount || 0,
+      notes: order.notes || ''
+    });
+    setIsEditing(true);
+    setEditingOrderId(order.id);
+    setShowFormModal(true);
   };
 
   const handleViewInvoice = (order: Order) => {
@@ -495,6 +554,15 @@ export const OrderManager: React.FC<OrderManagerProps> = ({
                         >
                           <Eye size={16} />
                         </button>
+                        {onUpdateOrder && (
+                          <button
+                            onClick={() => handleEditOrder(order)}
+                            className="p-1.5 text-slate-400 hover:text-orange-600 transition-colors"
+                            title="Edit Pesanan"
+                          >
+                            <Edit2 size={16} />
+                          </button>
+                        )}
                         {order.status === 'PENDING' && onUpdateStatus && (
                           <button
                             onClick={() => onUpdateStatus(order.id, 'PAID')}
@@ -549,7 +617,7 @@ export const OrderManager: React.FC<OrderManagerProps> = ({
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
             <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
               <div className="sticky top-0 z-10 flex items-center justify-between p-4 border-b bg-white">
-                <h2 className="text-xl font-bold text-slate-800">Tambah Pesanan Baru</h2>
+                <h2 className="text-xl font-bold text-slate-800">{isEditing ? 'Edit Pesanan' : 'Tambah Pesanan Baru'}</h2>
                 <button
                   onClick={handleCancel}
                   className="p-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100 transition-colors"

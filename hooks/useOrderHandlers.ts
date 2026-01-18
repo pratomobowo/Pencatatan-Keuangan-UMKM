@@ -93,5 +93,19 @@ export function useOrderHandlers({
         }
     };
 
-    return { addOrder, updateOrderStatus, deleteOrder, deleteBulkOrders };
+    const updateOrder = async (order: Order) => {
+        try {
+            const updatedOrder = await ordersAPI.update(order.id, order);
+            setOrders(prev => prev.map(o => o.id === order.id ? updatedOrder : o));
+            // Refresh products to get updated stock
+            const updatedProducts = await productsAPI.getAll();
+            setProducts(updatedProducts);
+            alert('Pesanan berhasil diupdate!');
+        } catch (error) {
+            console.error('Failed to update order:', error);
+            alert('Gagal mengupdate order');
+        }
+    };
+
+    return { addOrder, updateOrder, updateOrderStatus, deleteOrder, deleteBulkOrders };
 }

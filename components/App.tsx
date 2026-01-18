@@ -78,7 +78,7 @@ const App: React.FC = () => {
     } = useAdminData(isAdmin);
 
     // CRUD Handlers from custom hooks
-    const { addOrder, updateOrderStatus, deleteOrder, deleteBulkOrders } = useOrderHandlers({
+    const { addOrder, updateOrder, updateOrderStatus, deleteOrder, deleteBulkOrders } = useOrderHandlers({
         setOrders, setProducts, setCustomers, setTransactions,
     });
 
@@ -220,6 +220,7 @@ const App: React.FC = () => {
                             products={products}
                             customers={customers}
                             onAddOrder={addOrder}
+                            onUpdateOrder={updateOrder}
                             onUpdateStatus={(id, status) => updateOrderStatus(id, status, orders)}
                             onDeleteOrder={deleteOrder}
                             onBulkDelete={deleteBulkOrders}
