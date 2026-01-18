@@ -168,17 +168,17 @@ export default function ProcurementManager() {
             {/* Main Card */}
             <Card>
                 {/* Action Bar */}
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                <div className="flex flex-col gap-4 mb-6">
                     <div>
                         <h3 className="text-lg font-semibold text-slate-800">Data Rekap Belanja</h3>
                         <p className="text-xs text-slate-500 mt-0.5">Kelola daftar belanja harian dan harga modal.</p>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-col sm:flex-row gap-2">
                         <input
                             type="date"
                             value={selectedDate}
                             onChange={(e) => setSelectedDate(e.target.value)}
-                            className="px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="flex-1 sm:flex-none px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         />
                         <button
                             onClick={generateSession}
@@ -207,7 +207,7 @@ export default function ProcurementManager() {
                 ) : (
                     <>
                         {/* Status & Progress */}
-                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 pb-4 border-b border-slate-200">
+                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6 pb-4 border-b border-slate-200">
                             <div className="flex items-center gap-3">
                                 <label className="text-sm text-slate-700 font-medium">Status</label>
                                 <select
@@ -226,8 +226,8 @@ export default function ProcurementManager() {
                         </div>
 
                         {/* Filter/Search Bar */}
-                        <div className="flex flex-col sm:flex-row gap-3 mb-6">
-                            <div className="relative flex-1 max-w-md">
+                        <div className="mb-4">
+                            <div className="relative">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                                 <input
                                     type="text"
@@ -244,8 +244,8 @@ export default function ProcurementManager() {
                             Menampilkan {filteredItems.length} dari {totalItems} item
                         </div>
 
-                        {/* Table */}
-                        <div className="overflow-x-auto">
+                        {/* Desktop Table (hidden on mobile) */}
+                        <div className="hidden md:block overflow-x-auto">
                             <table className="w-full">
                                 <thead className="bg-slate-50">
                                     <tr className="border-b border-slate-200">
@@ -301,6 +301,60 @@ export default function ProcurementManager() {
                                 </tbody>
                             </table>
                         </div>
+
+                        {/* Mobile Card View (shown only on mobile) */}
+                        <div className="md:hidden space-y-3">
+                            {filteredItems.length === 0 ? (
+                                <div className="text-center py-12">
+                                    <p className="text-slate-500 text-sm">Tidak ada item ditemukan.</p>
+                                </div>
+                            ) : (
+                                filteredItems.map((item) => (
+                                    <div
+                                        key={item.id}
+                                        className={`p-4 border rounded-lg ${item.isPurchased ? 'bg-emerald-50 border-emerald-200' : 'bg-white border-slate-200'}`}
+                                    >
+                                        {/* Row 1: Checkbox + Product Name */}
+                                        <div className="flex items-start gap-3 mb-3">
+                                            <input
+                                                type="checkbox"
+                                                checked={item.isPurchased}
+                                                onChange={() => updateItem(item.id, { isPurchased: !item.isPurchased })}
+                                                className="w-5 h-5 mt-0.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                                            />
+                                            <div className="flex-1">
+                                                <p className={`font-medium ${item.isPurchased ? 'line-through text-slate-400' : 'text-slate-900'}`}>
+                                                    {item.productName}
+                                                </p>
+                                                <p className="text-sm text-slate-600 mt-0.5">
+                                                    <span className="font-medium">{item.totalQty}</span> {item.unit}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        {/* Row 2: Price Input + Subtotal */}
+                                        <div className="flex items-center gap-3 pl-8">
+                                            <div className="flex-1">
+                                                <label className="text-xs text-slate-500 mb-1 block">Harga Modal</label>
+                                                <input
+                                                    type="number"
+                                                    placeholder="0"
+                                                    value={item.costPrice || ''}
+                                                    onChange={(e) => updateItem(item.id, { costPrice: e.target.value ? parseFloat(e.target.value) : null })}
+                                                    className="w-full p-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                />
+                                            </div>
+                                            <div className="text-right">
+                                                <label className="text-xs text-slate-500 mb-1 block">Subtotal</label>
+                                                <p className="font-medium text-slate-900 py-2">
+                                                    {item.costPrice ? formatCurrency(item.costPrice * item.totalQty) : '-'}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
                     </>
                 )}
             </Card>
@@ -313,30 +367,32 @@ export default function ProcurementManager() {
                         <h3 className="text-lg font-semibold text-slate-800 mb-6">Pengeluaran Tambahan</h3>
 
                         {/* Add Expense Form */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                            <div>
-                                <label className="block text-sm text-slate-700 font-medium mb-1">Kategori</label>
-                                <select
-                                    value={newExpense.category}
-                                    onChange={(e) => setNewExpense({ ...newExpense, category: e.target.value })}
-                                    className="w-full p-2.5 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                >
-                                    {expenseCategories.map((cat) => (
-                                        <option key={cat.value} value={cat.value}>{cat.label}</option>
-                                    ))}
-                                </select>
+                        <div className="space-y-4 mb-6">
+                            <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label className="block text-sm text-slate-700 font-medium mb-1">Kategori</label>
+                                    <select
+                                        value={newExpense.category}
+                                        onChange={(e) => setNewExpense({ ...newExpense, category: e.target.value })}
+                                        className="w-full p-2.5 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    >
+                                        {expenseCategories.map((cat) => (
+                                            <option key={cat.value} value={cat.value}>{cat.label}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-sm text-slate-700 font-medium mb-1">Jumlah</label>
+                                    <input
+                                        type="number"
+                                        placeholder="0"
+                                        value={newExpense.amount}
+                                        onChange={(e) => setNewExpense({ ...newExpense, amount: e.target.value })}
+                                        className="w-full p-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    />
+                                </div>
                             </div>
                             <div>
-                                <label className="block text-sm text-slate-700 font-medium mb-1">Jumlah</label>
-                                <input
-                                    type="number"
-                                    placeholder="0"
-                                    value={newExpense.amount}
-                                    onChange={(e) => setNewExpense({ ...newExpense, amount: e.target.value })}
-                                    className="w-full p-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                />
-                            </div>
-                            <div className="md:col-span-2">
                                 <label className="block text-sm text-slate-700 font-medium mb-1">Keterangan</label>
                                 <input
                                     type="text"
@@ -359,7 +415,9 @@ export default function ProcurementManager() {
                         {session.expenses.length > 0 && (
                             <div className="mt-6 pt-6 border-t border-slate-200">
                                 <h4 className="text-sm font-semibold text-slate-700 mb-3">Daftar Pengeluaran</h4>
-                                <div className="overflow-x-auto">
+
+                                {/* Desktop Table */}
+                                <div className="hidden sm:block overflow-x-auto">
                                     <table className="w-full">
                                         <thead className="bg-slate-50">
                                             <tr className="border-b border-slate-200">
@@ -394,6 +452,31 @@ export default function ProcurementManager() {
                                         </tbody>
                                     </table>
                                 </div>
+
+                                {/* Mobile List */}
+                                <div className="sm:hidden space-y-2">
+                                    {session.expenses.map((expense) => (
+                                        <div key={expense.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-sm font-medium text-slate-900">
+                                                    {expenseCategories.find(c => c.value === expense.category)?.label || expense.category}
+                                                </p>
+                                                {expense.description && (
+                                                    <p className="text-xs text-slate-500 truncate">{expense.description}</p>
+                                                )}
+                                            </div>
+                                            <div className="flex items-center gap-2 ml-3">
+                                                <span className="font-medium text-slate-900 text-sm">{formatCurrency(Number(expense.amount))}</span>
+                                                <button
+                                                    onClick={() => deleteExpense(expense.id)}
+                                                    className="p-1.5 text-slate-400 hover:text-rose-600 rounded transition-colors"
+                                                >
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
                         )}
                     </Card>
@@ -411,8 +494,8 @@ export default function ProcurementManager() {
                                 <span className="text-sm font-medium text-slate-900">{formatCurrency(session.expensesTotal || 0)}</span>
                             </div>
                             <div className="flex justify-between items-center py-3 bg-slate-50 -mx-6 px-6 -mb-6 rounded-b-xl">
-                                <span className="text-lg font-semibold text-slate-800">GRAND TOTAL</span>
-                                <span className="text-2xl font-semibold text-blue-600">{formatCurrency(session.grandTotal || 0)}</span>
+                                <span className="text-base sm:text-lg font-semibold text-slate-800">GRAND TOTAL</span>
+                                <span className="text-xl sm:text-2xl font-semibold text-blue-600">{formatCurrency(session.grandTotal || 0)}</span>
                             </div>
                         </div>
                     </Card>
