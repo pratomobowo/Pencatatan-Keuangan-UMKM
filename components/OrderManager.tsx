@@ -642,24 +642,61 @@ export const OrderManager: React.FC<OrderManagerProps> = ({
                       {formData.items.map((item, index) => (
                         <div key={index} className="flex gap-2">
                           <Autocomplete
-                            placeholder="Cari Produk..."
+                            placeholder="Cari Produk / Varian..."
                             value={item.productName}
                             required
                             onChange={(val) => updateItem(index, 'productName', val)}
-                            options={products.map(p => ({
-                              id: p.id,
-                              label: p.name,
-                              sublabel: `${formatCurrency(p.price)}/${p.unit}`,
-                              value: p
-                            }))}
-                            onSelect={(product: Product) => {
+                            options={(() => {
+                              // Build options with products AND their variants
+                              const allOptions: { id: string; label: string; sublabel?: string; value: any }[] = [];
+
+                              products.forEach(p => {
+                                // Add base product
+                                allOptions.push({
+                                  id: p.id,
+                                  label: p.name,
+                                  sublabel: `${formatCurrency(p.price)}/${p.unit}`,
+                                  value: { type: 'product', product: p }
+                                });
+
+                                // Add variants if exists
+                                if (p.variants && p.variants.length > 0) {
+                                  p.variants.forEach(v => {
+                                    allOptions.push({
+                                      id: `${p.id}-${v.id}`,
+                                      label: `${p.name} - ${v.unit}`,
+                                      sublabel: `${formatCurrency(v.price)}`,
+                                      value: { type: 'variant', product: p, variant: v }
+                                    });
+                                  });
+                                }
+                              });
+
+                              return allOptions;
+                            })()}
+                            onSelect={(selected) => {
                               const newItems = [...formData.items];
-                              newItems[index] = {
-                                productName: product.name,
-                                qty: item.qty,
-                                unit: product.unit,
-                                price: product.price
-                              };
+
+                              if (selected.type === 'variant') {
+                                // Selected a variant
+                                newItems[index] = {
+                                  productName: `${selected.product.name} - ${selected.variant.unit}`,
+                                  qty: item.qty,
+                                  unit: selected.variant.unit,
+                                  price: selected.variant.price,
+                                  productId: selected.product.id
+                                };
+                              } else {
+                                // Selected base product
+                                newItems[index] = {
+                                  productName: selected.product.name,
+                                  qty: item.qty,
+                                  unit: selected.product.unit,
+                                  price: selected.product.price,
+                                  productId: selected.product.id
+                                };
+                              }
+
                               setFormData({ ...formData, items: newItems });
                             }}
                             className="flex-1 p-2 bg-white border border-slate-300 rounded-lg text-sm"
