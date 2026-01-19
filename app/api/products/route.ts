@@ -55,6 +55,10 @@ export async function POST(request: NextRequest) {
             counter++;
         }
 
+        // Get costPrice from body, or fallback to first variant's costPrice, or calculate from price
+        const defaultVariant = variants?.find((v: any) => v.isDefault) || variants?.[0];
+        const productCostPrice = costPrice || defaultVariant?.costPrice || (price * 0.7);
+
         const product = await prisma.product.create({
             data: {
                 sku: productSku,
@@ -62,7 +66,7 @@ export async function POST(request: NextRequest) {
                 slug: finalSlug,
                 description: description || null,
                 price,
-                costPrice,
+                costPrice: productCostPrice,
                 stock: stock || 0,
                 stockStatus: stockStatus || 'FINITE',
                 unit,
@@ -87,7 +91,7 @@ export async function POST(request: NextRequest) {
                         unitQty: v.unitQty || 1,
                         price: v.price,
                         costPrice: v.costPrice || v.price * 0.7,
-                        isDefault: index === 0 // First variant is default
+                        isDefault: v.isDefault !== undefined ? v.isDefault : index === 0
                     }))
                 } : undefined
             },

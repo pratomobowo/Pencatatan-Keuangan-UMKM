@@ -138,7 +138,7 @@ model ProductVariant {
   updatedAt DateTime @updatedAt
   product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
 
-  @@unique([productId, unit])
+  @@unique([productId, unit, unitQty])
   @@index([productId])
 }
 
