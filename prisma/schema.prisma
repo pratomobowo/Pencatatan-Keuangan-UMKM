@@ -690,6 +690,7 @@ model ProcurementItem {
   sessionId    String
   productId    String?
   productName  String
+  customerName String?
   unit         String
   totalQty     Int      // Agregat dari semua order hari itu
   costPrice    Decimal? @db.Decimal(10, 2)

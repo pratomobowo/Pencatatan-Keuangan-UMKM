@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card } from './ui/Card';
 import { Search, Trash2 } from 'lucide-react';
 
@@ -8,6 +8,7 @@ interface ProcurementItem {
     id: string;
     productId: string | null;
     productName: string;
+    customerName: string | null;
     unit: string;
     totalQty: number;
     costPrice: number | null;
@@ -50,19 +51,76 @@ const expenseCategories = [
     { value: 'lainnya', label: 'Lainnya' }
 ];
 
+const MobileItemCard = ({ item, updateItem }: { item: any, updateItem: any }) => (
+    <div
+        className={`p-4 border rounded-lg ${item.isPurchased ? 'bg-emerald-50 border-emerald-200' : 'bg-white border-slate-200'}`}
+    >
+        <div className="flex items-start gap-3 mb-3">
+            <input
+                type="checkbox"
+                checked={item.isPurchased}
+                onChange={() => updateItem(item.id, { isPurchased: !item.isPurchased })}
+                className="w-5 h-5 mt-0.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+            />
+            <div className="flex-1">
+                <p className={`font-medium ${item.isPurchased ? 'line-through text-slate-400' : 'text-slate-900'}`}>
+                    {item.productName}
+                </p>
+                {item.customerName && (
+                    <p className="text-[10px] font-semibold text-blue-600 uppercase mt-0.5">
+                        {item.customerName}
+                    </p>
+                )}
+                {item.notes && (
+                    <p className="text-[10px] text-slate-500 italic mt-0.5">
+                        "{item.notes}"
+                    </p>
+                )}
+                <p className="text-sm text-slate-600 mt-0.5">
+                    <span className="font-medium">{item.totalQty}</span> {item.unit}
+                </p>
+            </div>
+        </div>
+
+        <div className="flex items-center gap-3 pl-8">
+            <div className="flex-1">
+                <label className="text-xs text-slate-500 mb-1 block">Harga Modal</label>
+                <input
+                    type="number"
+                    placeholder="0"
+                    value={item.costPrice || ''}
+                    onChange={(e) => updateItem(item.id, { costPrice: e.target.value ? parseFloat(e.target.value) : null })}
+                    className="w-full p-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+            </div>
+            <div className="text-right">
+                <label className="text-xs text-slate-500 mb-1 block">Subtotal</label>
+                <p className="font-medium text-slate-900 py-2">
+                    {item.costPrice ? formatCurrency(item.costPrice * item.totalQty) : '-'}
+                </p>
+            </div>
+        </div>
+    </div>
+);
+
 export default function ProcurementManager() {
     const [session, setSession] = useState<ProcurementSession | null>(null);
     const [loading, setLoading] = useState(false);
     const [generating, setGenerating] = useState(false);
-    const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+    const [selectedDate, setSelectedDate] = useState(new Date().toLocaleDateString('en-CA'));
+    const [endDate, setEndDate] = useState(new Date().toLocaleDateString('en-CA'));
     const [newExpense, setNewExpense] = useState({ category: 'parkir', amount: '', description: '' });
     const [addingExpense, setAddingExpense] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
+    const [groupByCategory, setGroupByCategory] = useState(true);
 
     const fetchSession = useCallback(async () => {
         setLoading(true);
         try {
-            const res = await fetch(`/api/admin/procurement?date=${selectedDate}`);
+            const url = endDate && endDate !== selectedDate
+                ? `/api/admin/procurement?startDate=${selectedDate}&endDate=${endDate}`
+                : `/api/admin/procurement?date=${selectedDate}`;
+            const res = await fetch(url);
             const data = await res.json();
             setSession(data.session);
         } catch (error) {
@@ -70,7 +128,7 @@ export default function ProcurementManager() {
         } finally {
             setLoading(false);
         }
-    }, [selectedDate]);
+    }, [selectedDate, endDate]);
 
     useEffect(() => {
         fetchSession();
@@ -160,8 +218,18 @@ export default function ProcurementManager() {
     const totalItems = session?.items.length || 0;
 
     const filteredItems = session?.items.filter(item =>
-        item.productName.toLowerCase().includes(searchTerm.toLowerCase())
+        item.productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.customerName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.notes?.toLowerCase().includes(searchTerm.toLowerCase())
     ) || [];
+
+    // Group items by category
+    const groupedItems = filteredItems.reduce((acc, item: any) => {
+        const cat = item.category || 'Lainnya';
+        if (!acc[cat]) acc[cat] = [];
+        acc[cat].push(item);
+        return acc;
+    }, {} as Record<string, any[]>);
 
     return (
         <div className="space-y-6">
@@ -173,20 +241,42 @@ export default function ProcurementManager() {
                         <h3 className="text-lg font-semibold text-slate-800">Data Rekap Belanja</h3>
                         <p className="text-xs text-slate-500 mt-0.5">Kelola daftar belanja harian dan harga modal.</p>
                     </div>
-                    <div className="flex flex-col sm:flex-row gap-2">
-                        <input
-                            type="date"
-                            value={selectedDate}
-                            onChange={(e) => setSelectedDate(e.target.value)}
-                            className="flex-1 sm:flex-none px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        />
-                        <button
-                            onClick={generateSession}
-                            disabled={generating}
-                            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            {generating ? 'Loading...' : session ? 'Refresh' : 'Generate'}
-                        </button>
+                    <div className="flex flex-col sm:flex-row items-end gap-3">
+                        <div className="flex-1 sm:flex-none">
+                            <label className="block text-[10px] uppercase font-bold text-slate-400 mb-1 ml-1">Dari Tanggal</label>
+                            <input
+                                type="date"
+                                value={selectedDate}
+                                onChange={(e) => setSelectedDate(e.target.value)}
+                                className="w-full sm:w-auto px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            />
+                        </div>
+                        <div className="flex-1 sm:flex-none">
+                            <label className="block text-[10px] uppercase font-bold text-slate-400 mb-1 ml-1">Sampai Tanggal</label>
+                            <input
+                                type="date"
+                                value={endDate}
+                                min={selectedDate}
+                                onChange={(e) => setEndDate(e.target.value)}
+                                className="w-full sm:w-auto px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            />
+                        </div>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={fetchSession}
+                                disabled={loading}
+                                className="px-4 py-2 border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 transition-colors text-sm font-medium disabled:opacity-50"
+                            >
+                                {loading ? '...' : 'Cek'}
+                            </button>
+                            <button
+                                onClick={generateSession}
+                                disabled={generating}
+                                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {generating ? 'Loading...' : session ? 'Refresh Data' : 'Generate'}
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -226,8 +316,8 @@ export default function ProcurementManager() {
                         </div>
 
                         {/* Filter/Search Bar */}
-                        <div className="mb-4">
-                            <div className="relative">
+                        <div className="flex flex-col sm:flex-row gap-3 mb-4">
+                            <div className="relative flex-1">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                                 <input
                                     type="text"
@@ -237,6 +327,15 @@ export default function ProcurementManager() {
                                     className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 />
                             </div>
+                            <button
+                                onClick={() => setGroupByCategory(!groupByCategory)}
+                                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors border ${groupByCategory
+                                    ? 'bg-blue-50 border-blue-200 text-blue-600'
+                                    : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                                    }`}
+                            >
+                                {groupByCategory ? 'Grup by Kategori: ON' : 'Grup by Kategori: OFF'}
+                            </button>
                         </div>
 
                         {/* Info Text */}
@@ -246,11 +345,13 @@ export default function ProcurementManager() {
 
                         {/* Desktop Table (hidden on mobile) */}
                         <div className="hidden md:block overflow-x-auto">
-                            <table className="w-full">
+                            <table className="w-full border-collapse">
                                 <thead className="bg-slate-50">
                                     <tr className="border-b border-slate-200">
                                         <th className="text-center px-4 py-3 text-sm font-semibold text-slate-700 w-16">Beli</th>
                                         <th className="text-left px-4 py-3 text-sm font-semibold text-slate-700">Produk</th>
+                                        <th className="text-left px-4 py-3 text-sm font-semibold text-slate-700">Pesanan</th>
+                                        <th className="text-left px-4 py-3 text-sm font-semibold text-slate-700">Catatan</th>
                                         <th className="text-center px-4 py-3 text-sm font-semibold text-slate-700 w-24">Qty</th>
                                         <th className="text-right px-4 py-3 text-sm font-semibold text-slate-700 w-36">Harga Modal</th>
                                         <th className="text-right px-4 py-3 text-sm font-semibold text-slate-700 w-32">Subtotal</th>
@@ -263,6 +364,59 @@ export default function ProcurementManager() {
                                                 <p className="text-slate-500 text-sm">Tidak ada item ditemukan.</p>
                                             </td>
                                         </tr>
+                                    ) : groupByCategory ? (
+                                        Object.entries(groupedItems).map(([category, items]) => (
+                                            <React.Fragment key={category}>
+                                                <tr className="bg-slate-100/80">
+                                                    <td colSpan={5} className="px-4 py-2 text-xs font-bold text-slate-600 uppercase tracking-wider border-y border-slate-200">
+                                                        {category}
+                                                    </td>
+                                                </tr>
+                                                {items.map((item) => (
+                                                    <tr key={item.id} className={`border-b border-slate-100 hover:bg-slate-50/50 transition-colors ${item.isPurchased ? 'bg-emerald-50' : ''}`}>
+                                                        <td className="px-4 py-3 text-center">
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={item.isPurchased}
+                                                                onChange={() => updateItem(item.id, { isPurchased: !item.isPurchased })}
+                                                                className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                                                            />
+                                                        </td>
+                                                        <td className="px-4 py-3">
+                                                            <span className={item.isPurchased ? 'line-through text-slate-400' : 'text-slate-900'}>
+                                                                {item.productName}
+                                                            </span>
+                                                        </td>
+                                                        <td className="px-4 py-3">
+                                                            <span className="text-xs font-semibold text-blue-600 uppercase">
+                                                                {item.customerName || '-'}
+                                                            </span>
+                                                        </td>
+                                                        <td className="px-4 py-3">
+                                                            <span className="text-xs text-slate-500 italic">
+                                                                {item.notes || '-'}
+                                                            </span>
+                                                        </td>
+                                                        <td className="px-4 py-3 text-center">
+                                                            <span className="font-medium text-slate-900">{item.totalQty}</span>
+                                                            <span className="text-slate-600 ml-1">{item.unit}</span>
+                                                        </td>
+                                                        <td className="px-4 py-3">
+                                                            <input
+                                                                type="number"
+                                                                placeholder="0"
+                                                                value={item.costPrice || ''}
+                                                                onChange={(e) => updateItem(item.id, { costPrice: e.target.value ? parseFloat(e.target.value) : null })}
+                                                                className="w-full p-2.5 text-sm text-right border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                            />
+                                                        </td>
+                                                        <td className="px-4 py-3 text-right font-medium text-slate-900">
+                                                            {item.costPrice ? formatCurrency(item.costPrice * item.totalQty) : '-'}
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </React.Fragment>
+                                        ))
                                     ) : (
                                         filteredItems.map((item) => (
                                             <tr key={item.id} className={`border-b border-slate-100 hover:bg-slate-50/50 transition-colors ${item.isPurchased ? 'bg-emerald-50' : ''}`}>
@@ -277,6 +431,16 @@ export default function ProcurementManager() {
                                                 <td className="px-4 py-3">
                                                     <span className={item.isPurchased ? 'line-through text-slate-400' : 'text-slate-900'}>
                                                         {item.productName}
+                                                    </span>
+                                                </td>
+                                                <td className="px-4 py-3">
+                                                    <span className="text-xs font-semibold text-blue-600 uppercase">
+                                                        {item.customerName || '-'}
+                                                    </span>
+                                                </td>
+                                                <td className="px-4 py-3">
+                                                    <span className="text-xs text-slate-500 italic">
+                                                        {item.notes || '-'}
                                                     </span>
                                                 </td>
                                                 <td className="px-4 py-3 text-center">
@@ -308,50 +472,20 @@ export default function ProcurementManager() {
                                 <div className="text-center py-12">
                                     <p className="text-slate-500 text-sm">Tidak ada item ditemukan.</p>
                                 </div>
+                            ) : groupByCategory ? (
+                                Object.entries(groupedItems).map(([category, items]) => (
+                                    <div key={category} className="space-y-3">
+                                        <div className="px-2 py-1 bg-slate-100 rounded text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                                            {category}
+                                        </div>
+                                        {items.map((item) => (
+                                            <MobileItemCard key={item.id} item={item} updateItem={updateItem} />
+                                        ))}
+                                    </div>
+                                ))
                             ) : (
                                 filteredItems.map((item) => (
-                                    <div
-                                        key={item.id}
-                                        className={`p-4 border rounded-lg ${item.isPurchased ? 'bg-emerald-50 border-emerald-200' : 'bg-white border-slate-200'}`}
-                                    >
-                                        {/* Row 1: Checkbox + Product Name */}
-                                        <div className="flex items-start gap-3 mb-3">
-                                            <input
-                                                type="checkbox"
-                                                checked={item.isPurchased}
-                                                onChange={() => updateItem(item.id, { isPurchased: !item.isPurchased })}
-                                                className="w-5 h-5 mt-0.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                                            />
-                                            <div className="flex-1">
-                                                <p className={`font-medium ${item.isPurchased ? 'line-through text-slate-400' : 'text-slate-900'}`}>
-                                                    {item.productName}
-                                                </p>
-                                                <p className="text-sm text-slate-600 mt-0.5">
-                                                    <span className="font-medium">{item.totalQty}</span> {item.unit}
-                                                </p>
-                                            </div>
-                                        </div>
-
-                                        {/* Row 2: Price Input + Subtotal */}
-                                        <div className="flex items-center gap-3 pl-8">
-                                            <div className="flex-1">
-                                                <label className="text-xs text-slate-500 mb-1 block">Harga Modal</label>
-                                                <input
-                                                    type="number"
-                                                    placeholder="0"
-                                                    value={item.costPrice || ''}
-                                                    onChange={(e) => updateItem(item.id, { costPrice: e.target.value ? parseFloat(e.target.value) : null })}
-                                                    className="w-full p-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                                />
-                                            </div>
-                                            <div className="text-right">
-                                                <label className="text-xs text-slate-500 mb-1 block">Subtotal</label>
-                                                <p className="font-medium text-slate-900 py-2">
-                                                    {item.costPrice ? formatCurrency(item.costPrice * item.totalQty) : '-'}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    <MobileItemCard key={item.id} item={item} updateItem={updateItem} />
                                 ))
                             )}
                         </div>
