@@ -241,8 +241,9 @@ export default function ProcurementManager() {
                         <h3 className="text-lg font-semibold text-slate-800">Data Rekap Belanja</h3>
                         <p className="text-xs text-slate-500 mt-0.5">Kelola daftar belanja harian dan harga modal.</p>
                     </div>
-                    <div className="flex flex-col sm:flex-row items-end gap-3">
-                        <div className="flex-1 sm:flex-none">
+                    {/* Date pickers: side-by-side on mobile, inline on desktop */}
+                    <div className="grid grid-cols-2 sm:flex sm:flex-row items-end gap-3">
+                        <div className="col-span-1">
                             <label className="block text-[10px] uppercase font-bold text-slate-400 mb-1 ml-1">Dari Tanggal</label>
                             <input
                                 type="date"
@@ -251,7 +252,7 @@ export default function ProcurementManager() {
                                 className="w-full sm:w-auto px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             />
                         </div>
-                        <div className="flex-1 sm:flex-none">
+                        <div className="col-span-1">
                             <label className="block text-[10px] uppercase font-bold text-slate-400 mb-1 ml-1">Sampai Tanggal</label>
                             <input
                                 type="date"
@@ -261,18 +262,18 @@ export default function ProcurementManager() {
                                 className="w-full sm:w-auto px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             />
                         </div>
-                        <div className="flex gap-2">
+                        <div className="col-span-2 sm:col-span-1 flex gap-2">
                             <button
                                 onClick={fetchSession}
                                 disabled={loading}
-                                className="px-4 py-2 border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 transition-colors text-sm font-medium disabled:opacity-50"
+                                className="flex-1 sm:flex-none px-4 py-2 border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 transition-colors text-sm font-medium disabled:opacity-50"
                             >
                                 {loading ? '...' : 'Cek'}
                             </button>
                             <button
                                 onClick={generateSession}
                                 disabled={generating}
-                                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="flex-1 sm:flex-none px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {generating ? 'Loading...' : session ? 'Refresh Data' : 'Generate'}
                             </button>
