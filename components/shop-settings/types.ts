@@ -50,6 +50,7 @@ export interface ShopConfigState {
     popupLink: string | null;
     popupShowOnce: boolean;
     popupDelay: number;
+    aiChatEnabled: boolean;
 }
 
 // Common props for all tab components

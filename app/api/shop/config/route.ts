@@ -62,6 +62,7 @@ export async function GET() {
             popupLink: config.popupLink,
             popupShowOnce: config.popupShowOnce,
             popupDelay: config.popupDelay,
+            aiChatEnabled: config.aiChatEnabled,
         });
     } catch (error) {
         console.error('Error fetching public shop config:', error);

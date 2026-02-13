@@ -377,6 +377,8 @@ model ShopConfig {
   popupShowOnce        Boolean  @default(true) // Show only once per session
   popupDelay           Int      @default(2000) // Delay in ms before showing
   
+  aiChatEnabled        Boolean  @default(true)
+  
   updatedAt            DateTime @updatedAt
 }
 

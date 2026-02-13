@@ -63,6 +63,7 @@ export const ShopSettingsManager = () => {
         popupLink: null,
         popupShowOnce: true,
         popupDelay: 2000,
+        aiChatEnabled: true,
     });
 
     useEffect(() => {
@@ -102,6 +103,7 @@ export const ShopSettingsManager = () => {
                 popupLink: data.popupLink || null,
                 popupShowOnce: data.popupShowOnce !== false,
                 popupDelay: data.popupDelay || 2000,
+                aiChatEnabled: data.aiChatEnabled !== false,
             });
         } catch (error) {
             console.error('Failed to fetch shop settings:', error);

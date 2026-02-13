@@ -31,6 +31,7 @@ export async function GET() {
             qrisImage: config.qrisImage,
             operationalHours: JSON.parse(config.operationalHours || '{}'),
             contactInfo: JSON.parse(config.contactInfo || '{}'),
+            aiChatEnabled: config.aiChatEnabled,
         });
     } catch (error) {
         console.error('Error fetching shop config:', error);
@@ -98,6 +99,7 @@ export async function POST(request: Request) {
                 popupLink: data.popupLink,
                 popupShowOnce: data.popupShowOnce !== false,
                 popupDelay: data.popupDelay || 2000,
+                aiChatEnabled: data.aiChatEnabled !== false,
             },
             create: {
                 id: 'global',

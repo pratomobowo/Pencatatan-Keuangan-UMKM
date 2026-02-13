@@ -401,7 +401,24 @@ export default function AIChatbot() {
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [conversationId, setConversationId] = useState<string | null>(null);
+    const [isEnabled, setIsEnabled] = useState(true);
     const messagesEndRef = useRef<HTMLDivElement>(null);
+
+    // Check if chat is enabled
+    useEffect(() => {
+        const checkEnabled = async () => {
+            try {
+                const res = await fetch('/api/shop/config');
+                const data = await res.json();
+                if (data.aiChatEnabled === false) {
+                    setIsEnabled(false);
+                }
+            } catch (err) {
+                console.error("Error checking chat enabled status:", err);
+            }
+        };
+        checkEnabled();
+    }, []);
 
     // Load saved conversation and history
     useEffect(() => {
@@ -560,6 +577,8 @@ export default function AIChatbot() {
             setIsLoading(false);
         }
     };
+
+    if (!isEnabled) return null;
 
     return (
         <>

@@ -38,6 +38,26 @@ export const StoreInfoTab: React.FC<TabProps> = ({ config, setConfig }) => (
                     placeholder="Deskripsi singkat tentang toko..."
                 />
             </div>
+
+            <div className="pt-4 border-t border-slate-100 mt-4">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h4 className="text-sm font-semibold text-slate-800">AI Chatbot (Minsar)</h4>
+                        <p className="text-xs text-slate-500">Tampilkan atau sembunyikan asisten AI di halaman depan toko.</p>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={() => setConfig({ ...config, aiChatEnabled: !config.aiChatEnabled })}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${config.aiChatEnabled ? 'bg-blue-600' : 'bg-slate-200'
+                            }`}
+                    >
+                        <span
+                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${config.aiChatEnabled ? 'translate-x-6' : 'translate-x-1'
+                                }`}
+                        />
+                    </button>
+                </div>
+            </div>
         </div>
     </Card>
 );
